@@ -1,0 +1,42 @@
+[1.189s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/src/turtlebot3/turtlebot3_teleop': PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/turtlebot3_teleop build --build-base /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/build install --record /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/install.log --single-version-externally-managed install_data
+[1.398s] running egg_info
+[1.399s] creating ../../../build/turtlebot3_teleop/turtlebot3_teleop.egg-info
+[1.399s] writing ../../../build/turtlebot3_teleop/turtlebot3_teleop.egg-info/PKG-INFO
+[1.399s] writing dependency_links to ../../../build/turtlebot3_teleop/turtlebot3_teleop.egg-info/dependency_links.txt
+[1.399s] writing entry points to ../../../build/turtlebot3_teleop/turtlebot3_teleop.egg-info/entry_points.txt
+[1.399s] writing requirements to ../../../build/turtlebot3_teleop/turtlebot3_teleop.egg-info/requires.txt
+[1.399s] writing top-level names to ../../../build/turtlebot3_teleop/turtlebot3_teleop.egg-info/top_level.txt
+[1.402s] writing manifest file '../../../build/turtlebot3_teleop/turtlebot3_teleop.egg-info/SOURCES.txt'
+[1.402s] reading manifest file '../../../build/turtlebot3_teleop/turtlebot3_teleop.egg-info/SOURCES.txt'
+[1.403s] writing manifest file '../../../build/turtlebot3_teleop/turtlebot3_teleop.egg-info/SOURCES.txt'
+[1.403s] running build
+[1.403s] running build_py
+[1.403s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/build
+[1.404s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/build/lib
+[1.405s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/build/lib/turtlebot3_teleop
+[1.405s] copying turtlebot3_teleop/__init__.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/build/lib/turtlebot3_teleop
+[1.405s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/build/lib/turtlebot3_teleop/script
+[1.405s] copying turtlebot3_teleop/script/__init__.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/build/lib/turtlebot3_teleop/script
+[1.405s] copying turtlebot3_teleop/script/teleop_keyboard.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/build/lib/turtlebot3_teleop/script
+[1.405s] running install
+[1.406s] running install_lib
+[1.407s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/lib/python3.10/site-packages/turtlebot3_teleop
+[1.407s] copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/build/lib/turtlebot3_teleop/__init__.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/lib/python3.10/site-packages/turtlebot3_teleop
+[1.407s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/lib/python3.10/site-packages/turtlebot3_teleop/script
+[1.407s] copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/build/lib/turtlebot3_teleop/script/__init__.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/lib/python3.10/site-packages/turtlebot3_teleop/script
+[1.407s] copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/build/lib/turtlebot3_teleop/script/teleop_keyboard.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/lib/python3.10/site-packages/turtlebot3_teleop/script
+[1.412s] byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/lib/python3.10/site-packages/turtlebot3_teleop/__init__.py to __init__.cpython-310.pyc
+[1.413s] byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/lib/python3.10/site-packages/turtlebot3_teleop/script/__init__.py to __init__.cpython-310.pyc
+[1.413s] byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/lib/python3.10/site-packages/turtlebot3_teleop/script/teleop_keyboard.py to teleop_keyboard.cpython-310.pyc
+[1.415s] running install_data
+[1.415s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/share/ament_index
+[1.415s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/share/ament_index/resource_index
+[1.415s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/share/ament_index/resource_index/packages
+[1.415s] copying resource/turtlebot3_teleop -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/share/ament_index/resource_index/packages
+[1.416s] copying package.xml -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/share/turtlebot3_teleop
+[1.417s] running install_egg_info
+[1.417s] Copying ../../../build/turtlebot3_teleop/turtlebot3_teleop.egg-info to /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/lib/python3.10/site-packages/turtlebot3_teleop-2.3.3-py3.10.egg-info
+[1.419s] running install_scripts
+[1.442s] Installing teleop_keyboard script to /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/lib/turtlebot3_teleop
+[1.443s] writing list of installed files to '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/install.log'
+[1.480s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/src/turtlebot3/turtlebot3_teleop' returned '0': PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/turtlebot3_teleop/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/turtlebot3_teleop build --build-base /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/build install --record /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/turtlebot3_teleop/install.log --single-version-externally-managed install_data

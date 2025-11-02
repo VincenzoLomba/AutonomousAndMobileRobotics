@@ -1,0 +1,3 @@
+[console_scripts]
+navigation_from_text = navigation_from_text.navigation_from_text:main
+

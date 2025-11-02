@@ -1,0 +1,35 @@
+[0.878s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/src/autonomous_exploration': PS1=(ros2pythonvenv) PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/autonomous_exploration/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/install/autonomous_exploration/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/autonomous_exploration build --build-base /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/autonomous_exploration/build install --record /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/autonomous_exploration/install.log --single-version-externally-managed install_data
+[1.069s] running egg_info
+[1.070s] creating ../../build/autonomous_exploration/autonomous_exploration.egg-info
+[1.072s] writing ../../build/autonomous_exploration/autonomous_exploration.egg-info/PKG-INFO
+[1.072s] writing dependency_links to ../../build/autonomous_exploration/autonomous_exploration.egg-info/dependency_links.txt
+[1.072s] writing entry points to ../../build/autonomous_exploration/autonomous_exploration.egg-info/entry_points.txt
+[1.072s] writing requirements to ../../build/autonomous_exploration/autonomous_exploration.egg-info/requires.txt
+[1.072s] writing top-level names to ../../build/autonomous_exploration/autonomous_exploration.egg-info/top_level.txt
+[1.072s] writing manifest file '../../build/autonomous_exploration/autonomous_exploration.egg-info/SOURCES.txt'
+[1.072s] reading manifest file '../../build/autonomous_exploration/autonomous_exploration.egg-info/SOURCES.txt'
+[1.073s] writing manifest file '../../build/autonomous_exploration/autonomous_exploration.egg-info/SOURCES.txt'
+[1.073s] running build
+[1.073s] running build_py
+[1.073s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/autonomous_exploration/build
+[1.073s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/autonomous_exploration/build/lib
+[1.073s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/autonomous_exploration/build/lib/autonomous_exploration
+[1.074s] copying autonomous_exploration/__init__.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/autonomous_exploration/build/lib/autonomous_exploration
+[1.074s] running install
+[1.074s] running install_lib
+[1.075s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/install/autonomous_exploration/lib/python3.10/site-packages/autonomous_exploration
+[1.075s] copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/autonomous_exploration/build/lib/autonomous_exploration/__init__.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/install/autonomous_exploration/lib/python3.10/site-packages/autonomous_exploration
+[1.075s] byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/install/autonomous_exploration/lib/python3.10/site-packages/autonomous_exploration/__init__.py to __init__.cpython-310.pyc
+[1.076s] running install_data
+[1.076s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/install/autonomous_exploration/share/ament_index
+[1.076s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/install/autonomous_exploration/share/ament_index/resource_index
+[1.076s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/install/autonomous_exploration/share/ament_index/resource_index/packages
+[1.076s] copying resource/autonomous_exploration -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/install/autonomous_exploration/share/ament_index/resource_index/packages
+[1.076s] copying package.xml -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/install/autonomous_exploration/share/autonomous_exploration
+[1.077s] creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/install/autonomous_exploration/share/autonomous_exploration/launch
+[1.077s] copying launch/autonomous_exploration.launch.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/install/autonomous_exploration/share/autonomous_exploration/launch
+[1.079s] running install_egg_info
+[1.079s] Copying ../../build/autonomous_exploration/autonomous_exploration.egg-info to /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/install/autonomous_exploration/lib/python3.10/site-packages/autonomous_exploration-0.0.0-py3.10.egg-info
+[1.079s] running install_scripts
+[1.100s] writing list of installed files to '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/autonomous_exploration/install.log'
+[1.125s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/src/autonomous_exploration' returned '0': PS1=(ros2pythonvenv) PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/autonomous_exploration/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/install/autonomous_exploration/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/autonomous_exploration build --build-base /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/autonomous_exploration/build install --record /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/autonomous_exploration/install.log --single-version-externally-managed install_data

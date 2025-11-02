@@ -1,0 +1,22 @@
+[1.061s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/src/autonomous_localization': PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/autonomous_localization/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/autonomous_localization/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/autonomous_localization build --build-base /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/autonomous_localization/build install --record /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/autonomous_localization/install.log --single-version-externally-managed install_data
+[1.220s] running egg_info
+[1.220s] writing ../../build/autonomous_localization/autonomous_localization.egg-info/PKG-INFO
+[1.221s] writing dependency_links to ../../build/autonomous_localization/autonomous_localization.egg-info/dependency_links.txt
+[1.221s] writing entry points to ../../build/autonomous_localization/autonomous_localization.egg-info/entry_points.txt
+[1.221s] writing requirements to ../../build/autonomous_localization/autonomous_localization.egg-info/requires.txt
+[1.221s] writing top-level names to ../../build/autonomous_localization/autonomous_localization.egg-info/top_level.txt
+[1.222s] reading manifest file '../../build/autonomous_localization/autonomous_localization.egg-info/SOURCES.txt'
+[1.222s] writing manifest file '../../build/autonomous_localization/autonomous_localization.egg-info/SOURCES.txt'
+[1.223s] running build
+[1.223s] running build_py
+[1.223s] running install
+[1.223s] running install_lib
+[1.224s] running install_data
+[1.224s] running install_egg_info
+[1.225s] removing '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/autonomous_localization/lib/python3.10/site-packages/autonomous_localization-0.0.0-py3.10.egg-info' (and everything under it)
+[1.225s] Copying ../../build/autonomous_localization/autonomous_localization.egg-info to /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/autonomous_localization/lib/python3.10/site-packages/autonomous_localization-0.0.0-py3.10.egg-info
+[1.225s] running install_scripts
+[1.239s] Installing autonomous_localization script to /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/autonomous_localization/lib/autonomous_localization
+[1.239s] Installing reset_node script to /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/autonomous_localization/lib/autonomous_localization
+[1.239s] writing list of installed files to '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/autonomous_localization/install.log'
+[1.257s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/src/autonomous_localization' returned '0': PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/autonomous_localization/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/install/autonomous_localization/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/autonomous_localization build --build-base /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/autonomous_localization/build install --record /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab5workspace/build/autonomous_localization/install.log --single-version-externally-managed install_data

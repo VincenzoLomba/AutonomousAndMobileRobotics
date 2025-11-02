@@ -1,0 +1,13 @@
+{
+  "package_name": "turtlesim",
+  "non_idl_tuples": [
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/src/ros_tutorials/turtlesim:action/RotateAbsolute.action",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/src/ros_tutorials/turtlesim:msg/Color.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/src/ros_tutorials/turtlesim:msg/Pose.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/src/ros_tutorials/turtlesim:srv/Kill.srv",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/src/ros_tutorials/turtlesim:srv/SetPen.srv",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/src/ros_tutorials/turtlesim:srv/Spawn.srv",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/src/ros_tutorials/turtlesim:srv/TeleportAbsolute.srv",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/src/ros_tutorials/turtlesim:srv/TeleportRelative.srv"
+  ]
+}

@@ -1,0 +1,11 @@
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/cpp_pubsub/CMakeFiles/uninstall.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/cpp_pubsub/CMakeFiles/cpp_pubsub_uninstall.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/cpp_pubsub/CMakeFiles/talker.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/cpp_pubsub/CMakeFiles/listener.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/cpp_pubsub/CMakeFiles/test.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/cpp_pubsub/CMakeFiles/edit_cache.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/cpp_pubsub/CMakeFiles/rebuild_cache.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/cpp_pubsub/CMakeFiles/list_install_components.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/cpp_pubsub/CMakeFiles/install.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/cpp_pubsub/CMakeFiles/install/local.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/cpp_pubsub/CMakeFiles/install/strip.dir

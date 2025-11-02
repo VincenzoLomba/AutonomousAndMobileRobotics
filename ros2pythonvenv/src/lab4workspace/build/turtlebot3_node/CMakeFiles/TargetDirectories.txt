@@ -1,0 +1,11 @@
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_node/CMakeFiles/uninstall.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_node/CMakeFiles/turtlebot3_node_uninstall.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_node/CMakeFiles/turtlebot3_node_lib.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_node/CMakeFiles/turtlebot3_ros.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_node/CMakeFiles/test.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_node/CMakeFiles/edit_cache.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_node/CMakeFiles/rebuild_cache.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_node/CMakeFiles/list_install_components.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_node/CMakeFiles/install.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_node/CMakeFiles/install/local.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_node/CMakeFiles/install/strip.dir

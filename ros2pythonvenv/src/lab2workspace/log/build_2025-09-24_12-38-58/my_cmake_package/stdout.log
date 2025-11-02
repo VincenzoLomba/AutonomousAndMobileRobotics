@@ -1,0 +1,45 @@
+-- The C compiler identification is GNU 11.4.0
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+-- Found Python3: /home/vincenzo/Documenti/AMR/ros2pythonvenv/bin/python3 (found version "3.10.12") found components: Interpreter 
+-- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)
+-- Added test 'cppcheck' to perform static code analysis on C / C++ code
+-- Configured cppcheck include dirs: $<BUILD_INTERFACE:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/src/my_cmake_package/include>
+-- Configured cppcheck exclude dirs and/or files: 
+-- Added test 'lint_cmake' to check CMake code style
+-- Added test 'uncrustify' to check C / C++ code style
+-- Configured uncrustify additional arguments: 
+-- Added test 'xmllint' to check XML markup files
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/my_cmake_package
+[ 50%] [32mBuilding CXX object CMakeFiles/my_cmake_node.dir/src/my_cmake_node.cpp.o[0m
+[100%] [32m[1mLinking CXX executable my_cmake_node[0m
+[100%] Built target my_cmake_node
+-- Install configuration: ""
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/lib/my_cmake_package/my_cmake_node
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/ament_index/resource_index/package_run_dependencies/my_cmake_package
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/ament_index/resource_index/parent_prefix_path/my_cmake_package
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/environment/ament_prefix_path.sh
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/environment/ament_prefix_path.dsv
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/environment/path.sh
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/environment/path.dsv
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/local_setup.bash
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/local_setup.sh
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/local_setup.zsh
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/local_setup.dsv
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/package.dsv
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/ament_index/resource_index/packages/my_cmake_package
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/cmake/my_cmake_packageConfig.cmake
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/cmake/my_cmake_packageConfig-version.cmake
+-- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/package.xml

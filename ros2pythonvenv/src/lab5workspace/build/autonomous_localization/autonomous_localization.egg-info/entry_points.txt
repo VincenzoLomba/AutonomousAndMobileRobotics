@@ -1,0 +1,4 @@
+[console_scripts]
+autonomous_localization = autonomous_localization.autonomous_localization:main
+reset_node = autonomous_localization.reset_node:main
+

@@ -1,0 +1,51 @@
+[0.009s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/my_cmake_package': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_python_package:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/src/my_cmake_package -DCMAKE_INSTALL_PREFIX=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package
+[0.054s] -- The C compiler identification is GNU 11.4.0
+[0.092s] -- The CXX compiler identification is GNU 11.4.0
+[0.100s] -- Detecting C compiler ABI info
+[0.153s] -- Detecting C compiler ABI info - done
+[0.159s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.159s] -- Detecting C compile features
+[0.159s] -- Detecting C compile features - done
+[0.161s] -- Detecting CXX compiler ABI info
+[0.221s] -- Detecting CXX compiler ABI info - done
+[0.231s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.231s] -- Detecting CXX compile features
+[0.231s] -- Detecting CXX compile features - done
+[0.234s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.328s] -- Found Python3: /home/vincenzo/Documenti/AMR/ros2pythonvenv/bin/python3 (found version "3.10.12") found components: Interpreter 
+[0.382s] -- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[0.442s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[0.442s] -- Configured cppcheck include dirs: $<BUILD_INTERFACE:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/src/my_cmake_package/include>
+[0.442s] -- Configured cppcheck exclude dirs and/or files: 
+[0.443s] -- Added test 'lint_cmake' to check CMake code style
+[0.443s] -- Added test 'uncrustify' to check C / C++ code style
+[0.443s] -- Configured uncrustify additional arguments: 
+[0.443s] -- Added test 'xmllint' to check XML markup files
+[0.444s] -- Configuring done
+[0.446s] -- Generating done
+[0.447s] -- Build files have been written to: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/my_cmake_package
+[0.450s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/my_cmake_package' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_python_package:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/src/my_cmake_package -DCMAKE_INSTALL_PREFIX=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package
+[0.452s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/my_cmake_package': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_python_package:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --build /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/my_cmake_package -- -j16 -l16
+[0.491s] [ 50%] [32mBuilding CXX object CMakeFiles/my_cmake_node.dir/src/my_cmake_node.cpp.o[0m
+[0.513s] [100%] [32m[1mLinking CXX executable my_cmake_node[0m
+[0.547s] [100%] Built target my_cmake_node
+[0.556s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/my_cmake_package' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_python_package:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --build /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/my_cmake_package -- -j16 -l16
+[0.565s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/my_cmake_package': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_python_package:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --install /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/my_cmake_package
+[0.574s] -- Install configuration: ""
+[0.575s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/lib/my_cmake_package/my_cmake_node
+[0.575s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/ament_index/resource_index/package_run_dependencies/my_cmake_package
+[0.575s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/ament_index/resource_index/parent_prefix_path/my_cmake_package
+[0.575s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/environment/ament_prefix_path.sh
+[0.575s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/environment/ament_prefix_path.dsv
+[0.575s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/environment/path.sh
+[0.575s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/environment/path.dsv
+[0.576s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/local_setup.bash
+[0.576s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/local_setup.sh
+[0.576s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/local_setup.zsh
+[0.576s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/local_setup.dsv
+[0.576s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/package.dsv
+[0.576s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/ament_index/resource_index/packages/my_cmake_package
+[0.576s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/cmake/my_cmake_packageConfig.cmake
+[0.576s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/cmake/my_cmake_packageConfig-version.cmake
+[0.577s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/package.xml
+[0.579s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/my_cmake_package' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_python_package:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --install /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/build/my_cmake_package

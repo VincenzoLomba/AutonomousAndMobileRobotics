@@ -1,0 +1,19 @@
+[35m[1mConsolidate compiler generated dependencies of target my_cmake_node[0m
+[100%] Built target my_cmake_node
+-- Install configuration: ""
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/lib/my_cmake_package/my_cmake_node
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/ament_index/resource_index/package_run_dependencies/my_cmake_package
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/ament_index/resource_index/parent_prefix_path/my_cmake_package
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/environment/ament_prefix_path.sh
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/environment/ament_prefix_path.dsv
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/environment/path.sh
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/environment/path.dsv
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/local_setup.bash
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/local_setup.sh
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/local_setup.zsh
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/local_setup.dsv
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/package.dsv
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/ament_index/resource_index/packages/my_cmake_package
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/cmake/my_cmake_packageConfig.cmake
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/cmake/my_cmake_packageConfig-version.cmake
+-- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab2workspace/install/my_cmake_package/share/my_cmake_package/package.xml

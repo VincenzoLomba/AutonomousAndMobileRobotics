@@ -1,0 +1,4 @@
+
+libqt5core5t64:
+  ubuntu:
+    jammy: libqt5core5a
