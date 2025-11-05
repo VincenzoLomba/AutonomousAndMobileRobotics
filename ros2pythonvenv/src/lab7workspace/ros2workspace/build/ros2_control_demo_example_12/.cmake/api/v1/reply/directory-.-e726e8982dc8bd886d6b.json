@@ -1,0 +1,750 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install",
+			"pluginlib_export_plugin_description_file",
+			"generate_parameter_library",
+			"ament_environment_hooks",
+			"_ament_cmake_export_libraries_register_environment_hook",
+			"ament_export_targets",
+			"ament_index_register_resource",
+			"ament_cmake_environment_generate_package_run_dependencies_marker",
+			"include",
+			"ament_execute_extensions",
+			"ament_package",
+			"ament_cmake_environment_generate_parent_prefix_path_marker",
+			"ament_generate_package_environment",
+			"ament_index_register_package",
+			"_ament_package"
+		],
+		"files" : 
+		[
+			"/opt/ros/humble/share/pluginlib/cmake/pluginlib_export_plugin_description_file.cmake",
+			"CMakeLists.txt",
+			"/opt/ros/humble/share/generate_parameter_library/cmake/generate_parameter_library.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/environment_hooks/ament_environment_hooks.cmake",
+			"/opt/ros/humble/share/ament_cmake_export_libraries/cmake/ament_cmake_export_libraries-extras.cmake",
+			"/opt/ros/humble/share/ament_cmake_export_targets/cmake/ament_export_targets.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/index/ament_index_register_resource.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/environment/ament_cmake_environment_package_hook.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/core/ament_execute_extensions.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/core/ament_package.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/environment_hooks/ament_cmake_environment_hooks_package_hook.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/environment_hooks/ament_generate_package_environment.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/index/ament_index_register_package.cmake",
+			"/opt/ros/humble/share/ament_cmake_core/cmake/index/ament_cmake_index_package_hook.cmake",
+			"/opt/ros/humble/share/pluginlib/cmake/pluginlib_package_hook.cmake",
+			"/opt/ros/humble/share/ament_cmake_export_targets/cmake/ament_cmake_export_targets_package_hook.cmake"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 49,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 89,
+				"parent" : 1
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 52,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 2,
+				"line" : 101,
+				"parent" : 3
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 70,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 89,
+				"parent" : 5
+			},
+			{
+				"command" : 0,
+				"file" : 1,
+				"line" : 74,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 1,
+				"line" : 78,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 1,
+				"line" : 82,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 1,
+				"line" : 86,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 1,
+				"line" : 93,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 1,
+				"line" : 98,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 1,
+				"line" : 115,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 5,
+				"line" : 59,
+				"parent" : 13
+			},
+			{
+				"command" : 3,
+				"file" : 4,
+				"line" : 25,
+				"parent" : 14
+			},
+			{
+				"command" : 0,
+				"file" : 3,
+				"line" : 70,
+				"parent" : 15
+			},
+			{
+				"command" : 0,
+				"file" : 3,
+				"line" : 87,
+				"parent" : 15
+			},
+			{
+				"command" : 10,
+				"file" : 1,
+				"line" : 118,
+				"parent" : 0
+			},
+			{
+				"command" : 9,
+				"file" : 9,
+				"line" : 66,
+				"parent" : 18
+			},
+			{
+				"command" : 8,
+				"file" : 8,
+				"line" : 48,
+				"parent" : 19
+			},
+			{
+				"file" : 7,
+				"parent" : 20
+			},
+			{
+				"command" : 7,
+				"file" : 7,
+				"line" : 47,
+				"parent" : 21
+			},
+			{
+				"command" : 6,
+				"file" : 7,
+				"line" : 29,
+				"parent" : 22
+			},
+			{
+				"command" : 0,
+				"file" : 6,
+				"line" : 105,
+				"parent" : 23
+			},
+			{
+				"command" : 11,
+				"file" : 7,
+				"line" : 48,
+				"parent" : 21
+			},
+			{
+				"command" : 6,
+				"file" : 7,
+				"line" : 43,
+				"parent" : 25
+			},
+			{
+				"command" : 0,
+				"file" : 6,
+				"line" : 105,
+				"parent" : 26
+			},
+			{
+				"command" : 8,
+				"file" : 8,
+				"line" : 48,
+				"parent" : 19
+			},
+			{
+				"file" : 10,
+				"parent" : 28
+			},
+			{
+				"command" : 3,
+				"file" : 10,
+				"line" : 20,
+				"parent" : 29
+			},
+			{
+				"command" : 0,
+				"file" : 3,
+				"line" : 70,
+				"parent" : 30
+			},
+			{
+				"command" : 0,
+				"file" : 3,
+				"line" : 87,
+				"parent" : 30
+			},
+			{
+				"command" : 0,
+				"file" : 3,
+				"line" : 70,
+				"parent" : 30
+			},
+			{
+				"command" : 0,
+				"file" : 3,
+				"line" : 87,
+				"parent" : 30
+			},
+			{
+				"command" : 12,
+				"file" : 10,
+				"line" : 26,
+				"parent" : 29
+			},
+			{
+				"command" : 0,
+				"file" : 11,
+				"line" : 91,
+				"parent" : 35
+			},
+			{
+				"command" : 0,
+				"file" : 11,
+				"line" : 91,
+				"parent" : 35
+			},
+			{
+				"command" : 0,
+				"file" : 11,
+				"line" : 91,
+				"parent" : 35
+			},
+			{
+				"command" : 0,
+				"file" : 11,
+				"line" : 107,
+				"parent" : 35
+			},
+			{
+				"command" : 0,
+				"file" : 11,
+				"line" : 119,
+				"parent" : 35
+			},
+			{
+				"command" : 8,
+				"file" : 8,
+				"line" : 48,
+				"parent" : 19
+			},
+			{
+				"file" : 13,
+				"parent" : 41
+			},
+			{
+				"command" : 13,
+				"file" : 13,
+				"line" : 16,
+				"parent" : 42
+			},
+			{
+				"command" : 6,
+				"file" : 12,
+				"line" : 29,
+				"parent" : 43
+			},
+			{
+				"command" : 0,
+				"file" : 6,
+				"line" : 105,
+				"parent" : 44
+			},
+			{
+				"command" : 8,
+				"file" : 8,
+				"line" : 48,
+				"parent" : 19
+			},
+			{
+				"file" : 14,
+				"parent" : 46
+			},
+			{
+				"command" : 6,
+				"file" : 14,
+				"line" : 22,
+				"parent" : 47
+			},
+			{
+				"command" : 0,
+				"file" : 6,
+				"line" : 105,
+				"parent" : 48
+			},
+			{
+				"command" : 6,
+				"file" : 14,
+				"line" : 22,
+				"parent" : 47
+			},
+			{
+				"command" : 0,
+				"file" : 6,
+				"line" : 105,
+				"parent" : 50
+			},
+			{
+				"command" : 8,
+				"file" : 8,
+				"line" : 48,
+				"parent" : 19
+			},
+			{
+				"file" : 15,
+				"parent" : 52
+			},
+			{
+				"command" : 0,
+				"file" : 15,
+				"line" : 28,
+				"parent" : 53
+			},
+			{
+				"command" : 0,
+				"file" : 15,
+				"line" : 28,
+				"parent" : 53
+			},
+			{
+				"command" : 14,
+				"file" : 9,
+				"line" : 68,
+				"parent" : 18
+			},
+			{
+				"command" : 0,
+				"file" : 9,
+				"line" : 122,
+				"parent" : 56
+			},
+			{
+				"command" : 0,
+				"file" : 9,
+				"line" : 122,
+				"parent" : 56
+			},
+			{
+				"command" : 0,
+				"file" : 9,
+				"line" : 150,
+				"parent" : 56
+			},
+			{
+				"command" : 0,
+				"file" : 9,
+				"line" : 157,
+				"parent" : 56
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 2,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12",
+			"paths" : 
+			[
+				"ros2_control_demo_example_12.xml"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 4,
+			"component" : "Unspecified",
+			"destination" : "include",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/include/ros2_control_demo_example_12"
+			],
+			"type" : "directory"
+		},
+		{
+			"backtrace" : 6,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12",
+			"paths" : 
+			[
+				"passthrough_controller.xml"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 7,
+			"component" : "Unspecified",
+			"destination" : "include/ros2_control_demo_example_12",
+			"paths" : 
+			[
+				{
+					"from" : "hardware/include",
+					"to" : "."
+				}
+			],
+			"type" : "directory"
+		},
+		{
+			"backtrace" : 8,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12",
+			"paths" : 
+			[
+				"description/launch",
+				"description/ros2_control",
+				"description/urdf"
+			],
+			"type" : "directory"
+		},
+		{
+			"backtrace" : 9,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12",
+			"paths" : 
+			[
+				"bringup/launch",
+				"bringup/config"
+			],
+			"type" : "directory"
+		},
+		{
+			"backtrace" : 10,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"libros2_control_demo_example_12.so"
+			],
+			"targetId" : "ros2_control_demo_example_12::@6890427a1f51a3e7e1df",
+			"targetIndex" : 2,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 11,
+			"component" : "Unspecified",
+			"destination" : "include/passthrough_controller",
+			"paths" : 
+			[
+				{
+					"from" : "controllers/include",
+					"to" : "."
+				}
+			],
+			"type" : "directory"
+		},
+		{
+			"backtrace" : 12,
+			"component" : "Unspecified",
+			"destination" : "lib",
+			"paths" : 
+			[
+				"libpassthrough_controller.so"
+			],
+			"targetId" : "passthrough_controller::@6890427a1f51a3e7e1df",
+			"targetIndex" : 0,
+			"type" : "target"
+		},
+		{
+			"backtrace" : 16,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12/environment",
+			"paths" : 
+			[
+				"/opt/ros/humble/lib/python3.10/site-packages/ament_package/template/environment_hook/library_path.sh"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 17,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12/environment",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_environment_hooks/library_path.dsv"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 24,
+			"component" : "Unspecified",
+			"destination" : "share/ament_index/resource_index/package_run_dependencies",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/ros2_control_demo_example_12"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 27,
+			"component" : "Unspecified",
+			"destination" : "share/ament_index/resource_index/parent_prefix_path",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_index/share/ament_index/resource_index/parent_prefix_path/ros2_control_demo_example_12"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 31,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12/environment",
+			"paths" : 
+			[
+				"/opt/ros/humble/share/ament_cmake_core/cmake/environment_hooks/environment/ament_prefix_path.sh"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 32,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12/environment",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_environment_hooks/ament_prefix_path.dsv"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 33,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12/environment",
+			"paths" : 
+			[
+				"/opt/ros/humble/share/ament_cmake_core/cmake/environment_hooks/environment/path.sh"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 34,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12/environment",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_environment_hooks/path.dsv"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 36,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_environment_hooks/local_setup.bash"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 37,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_environment_hooks/local_setup.sh"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 38,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_environment_hooks/local_setup.zsh"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 39,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_environment_hooks/local_setup.dsv"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 40,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_environment_hooks/package.dsv"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 45,
+			"component" : "Unspecified",
+			"destination" : "share/ament_index/resource_index/packages",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_index/share/ament_index/resource_index/packages/ros2_control_demo_example_12"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 49,
+			"component" : "Unspecified",
+			"destination" : "share/ament_index/resource_index/hardware_interface__pluginlib__plugin",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_index/share/ament_index/resource_index/hardware_interface__pluginlib__plugin/ros2_control_demo_example_12"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 51,
+			"component" : "Unspecified",
+			"destination" : "share/ament_index/resource_index/controller_interface__pluginlib__plugin",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_index/share/ament_index/resource_index/controller_interface__pluginlib__plugin/ros2_control_demo_example_12"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 54,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12/cmake",
+			"exportName" : "export_passthrough_controller",
+			"exportTargets" : 
+			[
+				{
+					"id" : "passthrough_controller::@6890427a1f51a3e7e1df",
+					"index" : 0
+				},
+				{
+					"id" : "passthrough_controller_parameters::@6890427a1f51a3e7e1df",
+					"index" : 1
+				}
+			],
+			"paths" : 
+			[
+				"CMakeFiles/Export/share/ros2_control_demo_example_12/cmake/export_passthrough_controllerExport.cmake"
+			],
+			"type" : "export"
+		},
+		{
+			"backtrace" : 55,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12/cmake",
+			"exportName" : "export_ros2_control_demo_example_12",
+			"exportTargets" : 
+			[
+				{
+					"id" : "ros2_control_demo_example_12::@6890427a1f51a3e7e1df",
+					"index" : 2
+				}
+			],
+			"paths" : 
+			[
+				"CMakeFiles/Export/share/ros2_control_demo_example_12/cmake/export_ros2_control_demo_example_12Export.cmake"
+			],
+			"type" : "export"
+		},
+		{
+			"backtrace" : 57,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12/cmake",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_export_dependencies/ament_cmake_export_dependencies-extras.cmake"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 58,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12/cmake",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_export_targets/ament_cmake_export_targets-extras.cmake"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 59,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12/cmake",
+			"paths" : 
+			[
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_core/ros2_control_demo_example_12Config.cmake",
+				"/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/ament_cmake_core/ros2_control_demo_example_12Config-version.cmake"
+			],
+			"type" : "file"
+		},
+		{
+			"backtrace" : 60,
+			"component" : "Unspecified",
+			"destination" : "share/ros2_control_demo_example_12",
+			"paths" : 
+			[
+				"package.xml"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	}
+}

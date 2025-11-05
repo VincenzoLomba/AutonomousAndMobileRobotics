@@ -1,0 +1,21 @@
+[33mCMake Warning at /opt/ros/humble/share/ament_cmake_pytest/cmake/ament_add_pytest_test.cmake:79 (message):
+  The Python module 'pytest' was not found, pytests cannot be run.  On Linux,
+  install the 'python3-pytest' package.  On other platforms, install 'pytest'
+  using pip.
+Call Stack (most recent call first):
+  CMakeLists.txt:110 (ament_add_pytest_test)
+
+[0m
+[33mCMake Warning at /opt/ros/humble/share/ament_cmake_pytest/cmake/ament_add_pytest_test.cmake:79 (message):
+  The Python module 'pytest' was not found, pytests cannot be run.  On Linux,
+  install the 'python3-pytest' package.  On other platforms, install 'pytest'
+  using pip.
+Call Stack (most recent call first):
+  CMakeLists.txt:111 (ament_add_pytest_test)
+
+[0m
+In file included from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_control_demos/example_12/controllers/include/passthrough_controller/passthrough_controller.hpp:28[m[K,
+                 from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_control_demos/example_12/controllers/src/passthrough_controller.cpp:15[m[K:
+[01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_demo_example_12/include/passthrough_controller_parameters.hpp:1:175:[m[K [01;36m[Knote: [m[K‘[01m[K#pragma message: #include "passthrough_controller_parameters.hpp" is deprecated. Use #include <ros2_control_demo_example_12/passthrough_controller_parameters.hpp> instead.[m[K’
+    1 | #pragma message("#include \"passthrough_controller_parameters.hpp\" is deprecated. Use #include <ros2_control_demo_example_12/passthrough_controller_parameters.hpp> instead."[01;36m[K)[m[K
+      |                                                                                                                                                                               [01;36m[K^[m[K

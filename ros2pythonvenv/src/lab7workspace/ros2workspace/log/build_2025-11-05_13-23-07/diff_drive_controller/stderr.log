@@ -1,0 +1,12 @@
+In file included from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_controllers/diff_drive_controller/include/diff_drive_controller/diff_drive_controller.hpp:45[m[K,
+                 from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_controllers/diff_drive_controller/src/diff_drive_controller.cpp:25[m[K:
+[01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/diff_drive_controller/include/diff_drive_controller_parameters.hpp:1:166:[m[K [01;36m[Knote: [m[K‘[01m[K#pragma message: #include "diff_drive_controller_parameters.hpp" is deprecated. Use #include <diff_drive_controller/diff_drive_controller_parameters.hpp> instead.[m[K’
+    1 | ers.hpp\" is deprecated. Use #include <diff_drive_controller/diff_drive_controller_parameters.hpp> instead."[01;36m[K)[m[K
+      |                                                                                                             [01;36m[K^[m[K
+
+In file included from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_controllers/diff_drive_controller/include/diff_drive_controller/diff_drive_controller.hpp:45[m[K,
+                 from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_controllers/diff_drive_controller/test/test_diff_drive_controller.cpp:24[m[K:
+[01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/diff_drive_controller/include/diff_drive_controller_parameters.hpp:1:166:[m[K [01;36m[Knote: [m[K‘[01m[K#pragma message: #include "diff_drive_controller_parameters.hpp" is deprecated. Use #include <diff_drive_controller/diff_drive_controller_parameters.hpp> instead.[m[K’
+    1 | ers.hpp\" is deprecated. Use #include <diff_drive_controller/diff_drive_controller_parameters.hpp> instead."[01;36m[K)[m[K
+      |                                                                                                             [01;36m[K^[m[K
+

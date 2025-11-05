@@ -1,0 +1,247 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-8b65959cfacd3eac4bcc.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14
+					]
+				},
+				{
+					"build" : "gmock",
+					"jsonFile" : "directory-gmock-3370d118e31866b3418b.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "/opt/ros/humble/src/gmock_vendor",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				},
+				{
+					"build" : "gtest",
+					"jsonFile" : "directory-gtest-a2408fe1a73b92c5e636.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 2,
+					"source" : "/opt/ros/humble/src/gtest_vendor",
+					"targetIndexes" : 
+					[
+						2,
+						3
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "realtime_tools",
+					"targetIndexes" : 
+					[
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						1
+					],
+					"name" : "gmock",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						2
+					],
+					"name" : "gtest",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "gmock::@0590522bda6a4df7f28a",
+					"jsonFile" : "target-gmock-a81a88316fe22b911d19.json",
+					"name" : "gmock",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "gmock_main::@0590522bda6a4df7f28a",
+					"jsonFile" : "target-gmock_main-0f540719aac73f8d40cc.json",
+					"name" : "gmock_main",
+					"projectIndex" : 1
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "gtest::@0af4add9fe94340e763e",
+					"jsonFile" : "target-gtest-4439ab9910a06f6d055a.json",
+					"name" : "gtest",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "gtest_main::@0af4add9fe94340e763e",
+					"jsonFile" : "target-gtest_main-d94f809911cbd7716c21.json",
+					"name" : "gtest_main",
+					"projectIndex" : 2
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "realtime_box_best_effort_tests::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-realtime_box_best_effort_tests-1fd07e61371c5927bbd7.json",
+					"name" : "realtime_box_best_effort_tests",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "realtime_box_tests::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-realtime_box_tests-4746da2e4e7d2b915406.json",
+					"name" : "realtime_box_tests",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "realtime_buffer_tests::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-realtime_buffer_tests-e51cd9af0fc4210d3534.json",
+					"name" : "realtime_buffer_tests",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "realtime_clock_tests::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-realtime_clock_tests-23a4e59a8c828c93baf3.json",
+					"name" : "realtime_clock_tests",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "realtime_publisher_tests::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-realtime_publisher_tests-1696fca027a55f6183f4.json",
+					"name" : "realtime_publisher_tests",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "realtime_publisher_tests_non_polling::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-realtime_publisher_tests_non_polling-eda989fb167cde0f8dd8.json",
+					"name" : "realtime_publisher_tests_non_polling",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "realtime_server_goal_handle_tests::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-realtime_server_goal_handle_tests-f5ce761c83e3dc0bbdd7.json",
+					"name" : "realtime_server_goal_handle_tests",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "realtime_tools::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-realtime_tools-f9431cb326c81f7e5db0.json",
+					"name" : "realtime_tools",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "realtime_tools_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-realtime_tools_uninstall-af26907b551d0cf73e10.json",
+					"name" : "realtime_tools_uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "thread_priority::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-thread_priority-995ba5acbdd05e657d30.json",
+					"name" : "thread_priority",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-484d0600f78a5dc76f4e.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/realtime_tools",
+		"source" : "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/realtime_tools"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

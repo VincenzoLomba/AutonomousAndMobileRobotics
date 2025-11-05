@@ -1,0 +1,70 @@
+[0.229s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/urdf_test': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/rqt_controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2controlcli:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_controllers_test_nodes:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/src/urdf_test -DCMAKE_INSTALL_PREFIX=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test
+[0.283s] -- The C compiler identification is GNU 11.4.0
+[0.338s] -- The CXX compiler identification is GNU 11.4.0
+[0.345s] -- Detecting C compiler ABI info
+[0.434s] -- Detecting C compiler ABI info - done
+[0.439s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.439s] -- Detecting C compile features
+[0.440s] -- Detecting C compile features - done
+[0.443s] -- Detecting CXX compiler ABI info
+[0.530s] -- Detecting CXX compiler ABI info - done
+[0.538s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.538s] -- Detecting CXX compile features
+[0.538s] -- Detecting CXX compile features - done
+[0.543s] -- Found ament_cmake_auto: 1.3.12 (/opt/ros/humble/share/ament_cmake_auto/cmake)
+[0.704s] -- Found Python3: /home/vincenzo/Documenti/AMR/ros2pythonvenv/bin/python3 (found version "3.10.12") found components: Interpreter 
+[0.909s] -- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[0.958s] -- Added test 'copyright' to check source files copyright and LICENSE
+[0.960s] -- Added test 'flake8' to check Python code syntax and style conventions
+[0.965s] -- Added test 'lint_cmake' to check CMake code style
+[0.967s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[0.969s] -- Added test 'xmllint' to check XML markup files
+[0.969s] -- Configuring done
+[0.970s] -- Generating done
+[0.970s] -- Build files have been written to: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/urdf_test
+[0.999s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/urdf_test' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/rqt_controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2controlcli:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_controllers_test_nodes:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/src/urdf_test -DCMAKE_INSTALL_PREFIX=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test
+[1.000s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/urdf_test': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/rqt_controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2controlcli:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_controllers_test_nodes:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --build /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/urdf_test -- -j16 -l16
+[1.064s] Built target ament_cmake_python_copy_urdf_test
+[1.240s] running egg_info
+[1.240s] creating urdf_test.egg-info
+[1.240s] writing urdf_test.egg-info/PKG-INFO
+[1.240s] writing dependency_links to urdf_test.egg-info/dependency_links.txt
+[1.240s] writing top-level names to urdf_test.egg-info/top_level.txt
+[1.240s] writing manifest file 'urdf_test.egg-info/SOURCES.txt'
+[1.242s] reading manifest file 'urdf_test.egg-info/SOURCES.txt'
+[1.242s] writing manifest file 'urdf_test.egg-info/SOURCES.txt'
+[1.265s] Built target ament_cmake_python_build_urdf_test_egg
+[1.285s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/urdf_test' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/rqt_controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2controlcli:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_controllers_test_nodes:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --build /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/urdf_test -- -j16 -l16
+[1.286s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/urdf_test': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/rqt_controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2controlcli:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_controllers_test_nodes:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --install /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/urdf_test
+[1.296s] -- Install configuration: ""
+[1.296s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/lib/urdf_test/test_urdf.py
+[1.296s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/environment/pythonpath.sh
+[1.297s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/environment/pythonpath.dsv
+[1.297s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/lib/python3.10/site-packages/urdf_test-2.0.3-py3.10.egg-info
+[1.297s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/lib/python3.10/site-packages/urdf_test-2.0.3-py3.10.egg-info/dependency_links.txt
+[1.297s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/lib/python3.10/site-packages/urdf_test-2.0.3-py3.10.egg-info/top_level.txt
+[1.297s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/lib/python3.10/site-packages/urdf_test-2.0.3-py3.10.egg-info/PKG-INFO
+[1.297s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/lib/python3.10/site-packages/urdf_test-2.0.3-py3.10.egg-info/SOURCES.txt
+[1.297s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/lib/python3.10/site-packages/urdf_test
+[1.297s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/lib/python3.10/site-packages/urdf_test/__init__.py
+[1.297s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/lib/python3.10/site-packages/urdf_test/description_test.py
+[1.341s] Listing '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/lib/python3.10/site-packages/urdf_test'...
+[1.341s] Compiling '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/lib/python3.10/site-packages/urdf_test/__init__.py'...
+[1.341s] Compiling '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/lib/python3.10/site-packages/urdf_test/description_test.py'...
+[1.348s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/ament_index/resource_index/package_run_dependencies/urdf_test
+[1.348s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/ament_index/resource_index/parent_prefix_path/urdf_test
+[1.348s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/environment/ament_prefix_path.sh
+[1.348s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/environment/ament_prefix_path.dsv
+[1.348s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/environment/path.sh
+[1.349s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/environment/path.dsv
+[1.349s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/local_setup.bash
+[1.349s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/local_setup.sh
+[1.349s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/local_setup.zsh
+[1.349s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/local_setup.dsv
+[1.349s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/package.dsv
+[1.349s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/ament_index/resource_index/packages/urdf_test
+[1.349s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/cmake/ament_cmake_export_dependencies-extras.cmake
+[1.349s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/cmake/urdf_testConfig.cmake
+[1.350s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/cmake/urdf_testConfig-version.cmake
+[1.350s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/urdf_test/share/urdf_test/package.xml
+[1.360s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/urdf_test' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/rqt_controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2controlcli:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_controllers_test_nodes:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --install /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/urdf_test

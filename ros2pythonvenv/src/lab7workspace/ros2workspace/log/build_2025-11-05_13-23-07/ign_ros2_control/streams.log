@@ -1,0 +1,293 @@
+[0.214s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ign_ros2_control': AMENT_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager/lib/python3.10/site-packages:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs/lib/python3.10/site-packages:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/gz_ros2_control/ign_ros2_control -DCMAKE_INSTALL_PREFIX=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control
+[0.269s] -- The C compiler identification is GNU 11.4.0
+[0.328s] -- The CXX compiler identification is GNU 11.4.0
+[0.337s] -- Detecting C compiler ABI info
+[0.395s] -- Detecting C compiler ABI info - done
+[0.404s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.404s] -- Detecting C compile features
+[0.404s] -- Detecting C compile features - done
+[0.407s] -- Detecting CXX compiler ABI info
+[0.481s] -- Detecting CXX compiler ABI info - done
+[0.490s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.491s] -- Detecting CXX compile features
+[0.491s] -- Detecting CXX compile features - done
+[0.494s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.619s] -- Found Python3: /home/vincenzo/Documenti/AMR/ros2pythonvenv/bin/python3 (found version "3.10.12") found components: Interpreter 
+[0.714s] -- Found ament_index_cpp: 1.4.0 (/opt/ros/humble/share/ament_index_cpp/cmake)
+[0.715s] -- Found controller_manager: 2.41.0 (/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager/share/controller_manager/cmake)
+[0.766s] -- Found rosidl_generator_c: 3.1.7 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[0.772s] -- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.782s] -- Found rosidl_generator_cpp: 3.1.7 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[0.796s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.814s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.999s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[1.002s] -- Found rmw_fastrtps_cpp: 6.2.9 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[1.024s] -- Found TinyXML2 via Config file: TinyXML2_DIR-NOTFOUND
+[1.068s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[1.071s] -- Found TinyXML2 via Config file: TinyXML2_DIR-NOTFOUND
+[1.090s] -- Found FastRTPS: /opt/ros/humble/include  
+[1.090s] -- Found TinyXML2 via Config file: TinyXML2_DIR-NOTFOUND
+[1.098s] -- Found TinyXML2 via Config file: TinyXML2_DIR-NOTFOUND
+[1.111s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[1.118s] -- Looking for pthread.h
+[1.184s] -- Looking for pthread.h - found
+[1.184s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[1.258s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[1.260s] -- Found Threads: TRUE  
+[1.372s] -- Found yaml_cpp_vendor: 8.0.2 (/opt/ros/humble/share/yaml_cpp_vendor/cmake)
+[1.379s] -- Looking for ignition-gazebo6 -- found version 6.17.0
+[1.387s] -- Searching for dependencies of ignition-gazebo6
+[1.390s] -- Looking for sdformat12 -- found version 12.8.0
+[1.390s] -- Searching for dependencies of sdformat12
+[1.396s] -- Checking for module 'tinyxml2'
+[1.408s] --   Found tinyxml2, version 9.0.0
+[1.438s] -- Looking for ignition-math6 -- found version 6.15.1
+[1.438s] -- Searching for dependencies of ignition-math6
+[1.441s] -- Looking for ignition-utils1 -- found version 1.5.1
+[1.442s] -- Searching for dependencies of ignition-utils1
+[1.445s] -- Looking for ignition-plugin1 -- found version 1.4.0
+[1.446s] -- Searching for dependencies of ignition-plugin1
+[1.446s] -- Searching for <ignition-plugin1> component [loader]
+[1.449s] -- Looking for ignition-plugin1-loader -- found version 1.4.0
+[1.449s] -- Searching for dependencies of ignition-plugin1-loader
+[1.450s] -- Searching for <ignition-plugin1> component [register]
+[1.452s] -- Looking for ignition-plugin1-register -- found version 1.4.0
+[1.452s] -- Searching for dependencies of ignition-plugin1-register
+[1.455s] -- Looking for ignition-transport11 -- found version 11.4.1
+[1.456s] -- Searching for dependencies of ignition-transport11
+[1.482s] -- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found version "3.12.4") 
+[1.493s] -- Config-file not installed for ZeroMQ -- checking for pkg-config
+[1.498s] -- Checking for module 'libzmq >= 4'
+[1.508s] --   Found libzmq , version 4.3.4
+[1.537s] -- Found ZeroMQ: TRUE (Required is at least version "4") 
+[1.541s] -- Checking for module 'uuid'
+[1.551s] --   Found uuid, version 2.37.2
+[1.577s] -- Found UUID: TRUE  
+[1.578s] -- Looking for ignition-utils1 -- found version 1.5.1
+[1.578s] -- Searching for dependencies of ignition-utils1
+[1.578s] -- Searching for <ignition-utils1> component [cli]
+[1.581s] -- Looking for ignition-utils1-cli -- found version 1.5.1
+[1.581s] -- Searching for dependencies of ignition-utils1-cli
+[1.583s] -- Looking for ignition-msgs8 -- found version 8.7.0
+[1.584s] -- Searching for dependencies of ignition-msgs8
+[1.599s] -- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found suitable version "3.12.4", minimum required is "3") 
+[1.600s] -- Looking for ignition-math6 -- found version 6.15.1
+[1.607s] -- Searching for <ignition-transport11> component [log]
+[1.609s] -- Looking for ignition-transport11-log -- found version 11.4.1
+[1.609s] -- Searching for dependencies of ignition-transport11-log
+[1.609s] -- Searching for <ignition-transport11> component [parameters]
+[1.611s] -- Looking for ignition-transport11-parameters -- found version 11.4.1
+[1.611s] -- Searching for dependencies of ignition-transport11-parameters
+[1.612s] -- Looking for ignition-msgs8 -- found version 8.7.0
+[1.614s] -- Looking for ignition-common4 -- found version 4.7.0
+[1.614s] -- Searching for dependencies of ignition-common4
+[1.615s] -- Looking for dlfcn.h - found
+[1.615s] -- Looking for libdl - found
+[1.616s] -- Found DL: TRUE  
+[1.626s] -- Searching for <ignition-common4> component [profiler]
+[1.627s] -- Looking for ignition-common4-profiler -- found version 4.7.0
+[1.629s] -- Searching for dependencies of ignition-common4-profiler
+[1.629s] -- Searching for <ignition-common4> component [events]
+[1.632s] -- Looking for ignition-common4-events -- found version 4.7.0
+[1.632s] -- Searching for dependencies of ignition-common4-events
+[1.633s] -- Looking for ignition-math6 -- found version 6.15.1
+[1.633s] -- Searching for <ignition-common4> component [av]
+[1.635s] -- Looking for ignition-common4-av -- found version 4.7.0
+[1.637s] -- Searching for dependencies of ignition-common4-av
+[1.641s] -- Checking for module 'libswscale'
+[1.661s] --   Found libswscale, version 5.9.100
+[1.694s] -- Found SWSCALE: TRUE  
+[1.701s] -- Checking for module 'libavdevice >= 56.4.100'
+[1.716s] --   Found libavdevice , version 58.13.100
+[1.755s] -- Found AVDEVICE: TRUE (Required is at least version "56.4.100") 
+[1.761s] -- Checking for module 'libavformat'
+[1.792s] --   Found libavformat, version 58.76.100
+[1.815s] -- Found AVFORMAT: TRUE  
+[1.817s] -- Checking for module 'libavcodec'
+[1.838s] --   Found libavcodec, version 58.134.100
+[1.880s] -- Found AVCODEC: TRUE  
+[1.889s] -- Checking for module 'libavutil'
+[1.913s] --   Found libavutil, version 56.70.100
+[2.013s] -- Found AVUTIL: TRUE  
+[2.019s] -- Looking for ignition-fuel_tools7 -- found version 7.3.1
+[2.019s] -- Searching for dependencies of ignition-fuel_tools7
+[2.272s] -- Found CURL: /usr/lib/x86_64-linux-gnu/libcurl.so (found version "7.81.0")  
+[2.295s] -- Checking for module 'jsoncpp'
+[2.343s] --   Found jsoncpp, version 1.9.5
+[2.450s] -- Found JSONCPP: TRUE  
+[2.467s] -- Checking for module 'libzip'
+[2.517s] --   Found libzip, version 1.7.3
+[2.635s] -- Found ZIP: TRUE  
+[2.635s] -- Looking for ignition-common4 -- found version 4.7.0
+[2.635s] -- Looking for ignition-math6 -- found version 6.15.1
+[2.638s] -- Looking for ignition-msgs8 -- found version 8.7.0
+[2.644s] -- Looking for ignition-gui6 -- found version 6.8.0
+[2.651s] -- Searching for dependencies of ignition-gui6
+[2.743s] -- Looking for ignition-math6 -- found version 6.15.1
+[2.743s] -- Looking for ignition-common4 -- found version 4.7.0
+[2.744s] -- Looking for ignition-plugin1 -- found version 1.4.0
+[2.755s] -- Looking for ignition-transport11 -- found version 11.4.1
+[2.759s] -- Looking for ignition-rendering6 -- found version 6.6.3
+[2.769s] -- Searching for dependencies of ignition-rendering6
+[2.770s] -- Looking for ignition-math6 -- found version 6.15.1
+[2.770s] -- Searching for dependencies of ignition-math6
+[2.770s] -- Searching for <ignition-math6> component [eigen3]
+[2.788s] -- Looking for ignition-math6-eigen3 -- found version 6.15.1
+[2.788s] -- Searching for dependencies of ignition-math6-eigen3
+[2.814s] -- Looking for ignition-common4 -- found version 4.7.0
+[2.815s] -- Searching for dependencies of ignition-common4
+[2.815s] -- Looking for dlfcn.h - found
+[2.815s] -- Looking for libdl - found
+[2.848s] -- Searching for <ignition-common4> component [graphics]
+[2.861s] -- Looking for ignition-common4-graphics -- found version 4.7.0
+[2.866s] -- Searching for dependencies of ignition-common4-graphics
+[2.866s] -- Looking for ignition-math6 -- found version 6.15.1
+[2.866s] -- Looking for ignition-utils1 -- found version 1.5.1
+[2.869s] -- Searching for <ignition-common4> component [events]
+[2.874s] -- Looking for ignition-plugin1 -- found version 1.4.0
+[2.875s] -- Searching for dependencies of ignition-plugin1
+[2.876s] -- Searching for <ignition-plugin1> component [all]
+[2.879s] -- Looking for all libraries of ignition-plugin1 -- found version 1.4.0
+[2.887s] -- Looking for ignition-plugin1 -- found version 1.4.0
+[2.895s] -- Looking for ignition-msgs8 -- found version 8.7.0
+[2.952s] -- Looking for ignition-physics5 -- found version 5.3.2
+[2.954s] -- Searching for dependencies of ignition-physics5
+[2.955s] -- Looking for ignition-math6 -- found version 6.15.1
+[2.957s] -- Looking for ignition-plugin1 -- found version 1.4.0
+[2.959s] -- Looking for ignition-utils1 -- found version 1.5.1
+[2.959s] -- Searching for <ignition-physics5> component [heightmap]
+[2.971s] -- Looking for ignition-physics5-heightmap -- found version 5.3.2
+[2.971s] -- Searching for dependencies of ignition-physics5-heightmap
+[2.972s] -- Looking for ignition-common4 -- found version 4.7.0
+[2.983s] -- Searching for <ignition-physics5> component [mesh]
+[2.983s] -- Looking for ignition-physics5-mesh -- found version 5.3.2
+[2.989s] -- Searching for dependencies of ignition-physics5-mesh
+[2.989s] -- Looking for ignition-common4 -- found version 4.7.0
+[2.989s] -- Searching for <ignition-physics5> component [sdf]
+[3.001s] -- Looking for ignition-physics5-sdf -- found version 5.3.2
+[3.006s] -- Searching for dependencies of ignition-physics5-sdf
+[3.006s] -- Looking for sdformat12 -- found version 12.8.0
+[3.020s] -- Looking for ignition-sensors6 -- found version 6.8.1
+[3.024s] -- Searching for dependencies of ignition-sensors6
+[3.081s] -- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found version "3.12.4") 
+[3.081s] -- Looking for ignition-math6 -- found version 6.15.1
+[3.083s] -- Looking for ignition-common4 -- found version 4.7.0
+[3.091s] -- Looking for ignition-transport11 -- found version 11.4.1
+[3.091s] -- Looking for ignition-rendering6 -- found version 6.6.3
+[3.091s] -- Looking for ignition-msgs8 -- found version 8.7.0
+[3.091s] -- Looking for sdformat12 -- found version 12.8.0
+[3.091s] -- Searching for <ignition-sensors6> component [air_pressure]
+[3.097s] -- Looking for ignition-sensors6-air_pressure -- found version 6.8.1
+[3.098s] -- Searching for dependencies of ignition-sensors6-air_pressure
+[3.104s] -- Searching for <ignition-sensors6> component [altimeter]
+[3.105s] -- Looking for ignition-sensors6-altimeter -- found version 6.8.1
+[3.111s] -- Searching for dependencies of ignition-sensors6-altimeter
+[3.111s] -- Searching for <ignition-sensors6> component [imu]
+[3.113s] -- Looking for ignition-sensors6-imu -- found version 6.8.1
+[3.114s] -- Searching for dependencies of ignition-sensors6-imu
+[3.114s] -- Searching for <ignition-sensors6> component [force_torque]
+[3.124s] -- Looking for ignition-sensors6-force_torque -- found version 6.8.1
+[3.125s] -- Searching for dependencies of ignition-sensors6-force_torque
+[3.125s] -- Searching for <ignition-sensors6> component [logical_camera]
+[3.132s] -- Looking for ignition-sensors6-logical_camera -- found version 6.8.1
+[3.135s] -- Searching for dependencies of ignition-sensors6-logical_camera
+[3.135s] -- Searching for <ignition-sensors6> component [magnetometer]
+[3.147s] -- Looking for ignition-sensors6-magnetometer -- found version 6.8.1
+[3.147s] -- Searching for dependencies of ignition-sensors6-magnetometer
+[3.147s] -- Searching for <ignition-sensors6> component [navsat]
+[3.150s] -- Looking for ignition-sensors6-navsat -- found version 6.8.1
+[3.154s] -- Searching for dependencies of ignition-sensors6-navsat
+[3.159s] -- Searching for <ignition-sensors6> component [rendering]
+[3.165s] -- Looking for ignition-sensors6-rendering -- found version 6.8.1
+[3.166s] -- Searching for dependencies of ignition-sensors6-rendering
+[3.167s] -- Searching for <ignition-sensors6> component [lidar]
+[3.178s] -- Looking for ignition-sensors6-lidar -- found version 6.8.1
+[3.178s] -- Searching for dependencies of ignition-sensors6-lidar
+[3.179s] -- Looking for ignition-sensors6 -- found version 6.8.1
+[3.187s] -- Searching for <ignition-sensors6> component [gpu_lidar]
+[3.190s] -- Looking for ignition-sensors6-gpu_lidar -- found version 6.8.1
+[3.198s] -- Searching for dependencies of ignition-sensors6-gpu_lidar
+[3.198s] -- Looking for ignition-sensors6 -- found version 6.8.1
+[3.198s] -- Searching for <ignition-sensors6> component [camera]
+[3.209s] -- Looking for ignition-sensors6-camera -- found version 6.8.1
+[3.209s] -- Searching for dependencies of ignition-sensors6-camera
+[3.210s] -- Looking for ignition-sensors6 -- found version 6.8.1
+[3.210s] -- Searching for <ignition-sensors6> component [boundingbox_camera]
+[3.221s] -- Looking for ignition-sensors6-boundingbox_camera -- found version 6.8.1
+[3.221s] -- Searching for dependencies of ignition-sensors6-boundingbox_camera
+[3.221s] -- Searching for <ignition-sensors6> component [segmentation_camera]
+[3.228s] -- Looking for ignition-sensors6-segmentation_camera -- found version 6.8.1
+[3.228s] -- Searching for dependencies of ignition-sensors6-segmentation_camera
+[3.229s] -- Searching for <ignition-sensors6> component [depth_camera]
+[3.237s] -- Looking for ignition-sensors6-depth_camera -- found version 6.8.1
+[3.237s] -- Searching for dependencies of ignition-sensors6-depth_camera
+[3.241s] -- Looking for ignition-sensors6 -- found version 6.8.1
+[3.241s] -- Searching for <ignition-sensors6> component [rgbd_camera]
+[3.248s] -- Looking for ignition-sensors6-rgbd_camera -- found version 6.8.1
+[3.248s] -- Searching for dependencies of ignition-sensors6-rgbd_camera
+[3.248s] -- Looking for ignition-sensors6 -- found version 6.8.1
+[3.252s] -- Searching for <ignition-sensors6> component [thermal_camera]
+[3.257s] -- Looking for ignition-sensors6-thermal_camera -- found version 6.8.1
+[3.260s] -- Searching for dependencies of ignition-sensors6-thermal_camera
+[3.261s] -- Looking for ignition-sensors6 -- found version 6.8.1
+[3.266s] -- Looking for ignition-rendering6 -- found version 6.6.3
+[3.268s] -- Looking for ignition-math6 -- found version 6.15.1
+[3.270s] -- Looking for ignition-utils1 -- found version 1.5.1
+[3.319s] -- Compiling against Ignition Fortress
+[3.325s] -- Looking for ignition-plugin1 -- found version 1.4.0
+[3.408s] -- Found ament_lint_auto: 0.12.14 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[3.752s] -- Added test 'copyright' to check source files copyright and LICENSE
+[3.752s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[3.758s] -- Configured cppcheck include dirs: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/gz_ros2_control/ign_ros2_control/include
+[3.758s] -- Configured cppcheck exclude dirs and/or files: 
+[3.758s] -- Added test 'cpplint' to check C / C++ code against the Google style
+[3.758s] -- Configured cpplint exclude dirs and/or files: 
+[3.758s] -- Added test 'lint_cmake' to check CMake code style
+[3.763s] -- Added test 'uncrustify' to check C / C++ code style
+[3.764s] -- Configured uncrustify additional arguments: 
+[3.768s] -- Added test 'xmllint' to check XML markup files
+[3.772s] -- Configuring done
+[3.925s] -- Generating done
+[3.950s] -- Build files have been written to: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ign_ros2_control
+[4.027s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ign_ros2_control' returned '0': AMENT_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager/lib/python3.10/site-packages:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs/lib/python3.10/site-packages:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/gz_ros2_control/ign_ros2_control -DCMAKE_INSTALL_PREFIX=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control
+[4.037s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ign_ros2_control': AMENT_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager/lib/python3.10/site-packages:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs/lib/python3.10/site-packages:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --build /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ign_ros2_control -- -j16 -l16
+[27.580s] [ 25%] [32mBuilding CXX object CMakeFiles/ign_ros2_control-system.dir/src/ign_ros2_control_plugin.cpp.o[0m
+[27.580s] [ 50%] [32mBuilding CXX object CMakeFiles/ign_hardware_plugins.dir/src/ign_system.cpp.o[0m
+[27.580s] [ 75%] [32m[1mLinking CXX shared library libign_hardware_plugins.so[0m
+[27.580s] [ 75%] Built target ign_hardware_plugins
+[27.581s] [100%] [32m[1mLinking CXX shared library libign_ros2_control-system.so[0m
+[27.741s] [100%] Built target ign_ros2_control-system
+[27.764s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ign_ros2_control' returned '0': AMENT_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager/lib/python3.10/site-packages:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs/lib/python3.10/site-packages:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --build /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ign_ros2_control -- -j16 -l16
+[27.765s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ign_ros2_control': AMENT_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager/lib/python3.10/site-packages:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs/lib/python3.10/site-packages:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --install /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ign_ros2_control
+[30.034s] -- Install configuration: ""
+[30.034s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/lib/libign_hardware_plugins.so
+[30.034s] -- Set runtime path of "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/lib/libign_hardware_plugins.so" to ""
+[30.034s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/include
+[30.034s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/include/ign_ros2_control
+[30.034s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/include/ign_ros2_control/ign_ros2_control_plugin.hpp
+[30.034s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/include/ign_ros2_control/ign_system.hpp
+[30.034s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/include/ign_ros2_control/ign_system_interface.hpp
+[30.034s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/environment/library_path.sh
+[30.034s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/environment/library_path.dsv
+[30.034s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/lib/libign_ros2_control-system.so
+[30.034s] -- Set runtime path of "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/lib/libign_ros2_control-system.so" to ""
+[30.034s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/ign_hardware_plugins.xml
+[30.034s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ament_index/resource_index/package_run_dependencies/ign_ros2_control
+[30.034s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ament_index/resource_index/parent_prefix_path/ign_ros2_control
+[30.034s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/environment/ament_prefix_path.sh
+[30.034s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/environment/ament_prefix_path.dsv
+[30.035s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/environment/path.sh
+[30.035s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/environment/path.dsv
+[30.035s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/local_setup.bash
+[30.035s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/local_setup.sh
+[30.035s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/local_setup.zsh
+[30.035s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/local_setup.dsv
+[30.035s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/package.dsv
+[30.035s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ament_index/resource_index/packages/ign_ros2_control
+[30.035s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ament_index/resource_index/ign_ros2_control__pluginlib__plugin/ign_ros2_control
+[30.035s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/cmake/ament_cmake_export_include_directories-extras.cmake
+[30.039s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/cmake/ament_cmake_export_libraries-extras.cmake
+[30.039s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/cmake/ign_ros2_controlConfig.cmake
+[30.039s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/cmake/ign_ros2_controlConfig-version.cmake
+[30.039s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ign_ros2_control/share/ign_ros2_control/package.xml
+[30.073s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ign_ros2_control' returned '0': AMENT_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager/lib/python3.10/site-packages:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs/lib/python3.10/site-packages:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --install /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ign_ros2_control

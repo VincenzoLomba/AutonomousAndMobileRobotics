@@ -1,0 +1,15 @@
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/ament_index/resource_index/package_run_dependencies/pal_robotiq_gripper
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/ament_index/resource_index/parent_prefix_path/pal_robotiq_gripper
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/pal_robotiq_gripper/environment/ament_prefix_path.sh
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/pal_robotiq_gripper/environment/ament_prefix_path.dsv
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/pal_robotiq_gripper/environment/path.sh
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/pal_robotiq_gripper/environment/path.dsv
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/pal_robotiq_gripper/local_setup.bash
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/pal_robotiq_gripper/local_setup.sh
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/pal_robotiq_gripper/local_setup.zsh
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/pal_robotiq_gripper/local_setup.dsv
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/pal_robotiq_gripper/package.dsv
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/ament_index/resource_index/packages/pal_robotiq_gripper
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/pal_robotiq_gripper/cmake/pal_robotiq_gripperConfig.cmake
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/pal_robotiq_gripper/cmake/pal_robotiq_gripperConfig-version.cmake
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/pal_robotiq_gripper/share/pal_robotiq_gripper/package.xml

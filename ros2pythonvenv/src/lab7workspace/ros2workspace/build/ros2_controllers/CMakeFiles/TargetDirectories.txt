@@ -1,0 +1,8 @@
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_controllers/CMakeFiles/uninstall.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_controllers/CMakeFiles/ros2_controllers_uninstall.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_controllers/CMakeFiles/test.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_controllers/CMakeFiles/edit_cache.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_controllers/CMakeFiles/rebuild_cache.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_controllers/CMakeFiles/list_install_components.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_controllers/CMakeFiles/install.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_controllers/CMakeFiles/install/local.dir

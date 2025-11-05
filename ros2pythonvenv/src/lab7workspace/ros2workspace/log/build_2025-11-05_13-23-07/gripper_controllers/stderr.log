@@ -1,0 +1,13 @@
+In file included from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_controllers/gripper_controllers/include/gripper_controllers/gripper_action_controller.hpp:44[m[K,
+                 from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_controllers/gripper_controllers/src/gripper_action_controller.cpp:18[m[K:
+[01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/gripper_controllers/include/gripper_action_controller_parameters.hpp:1:172:[m[K [01;36m[Knote: [m[K‘[01m[K#pragma message: #include "gripper_action_controller_parameters.hpp" is deprecated. Use #include <gripper_controllers/gripper_action_controller_parameters.hpp> instead.[m[K’
+    1 | s.hpp\" is deprecated. Use #include <gripper_controllers/gripper_action_controller_parameters.hpp> instead."[01;36m[K)[m[K
+      |                                                                                                             [01;36m[K^[m[K
+
+In file included from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_controllers/gripper_controllers/include/gripper_controllers/gripper_action_controller.hpp:44[m[K,
+                 from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_controllers/gripper_controllers/test/test_gripper_controllers.hpp:24[m[K,
+                 from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_controllers/gripper_controllers/test/test_gripper_controllers.cpp:23[m[K:
+[01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/gripper_controllers/include/gripper_action_controller_parameters.hpp:1:172:[m[K [01;36m[Knote: [m[K‘[01m[K#pragma message: #include "gripper_action_controller_parameters.hpp" is deprecated. Use #include <gripper_controllers/gripper_action_controller_parameters.hpp> instead.[m[K’
+    1 | s.hpp\" is deprecated. Use #include <gripper_controllers/gripper_action_controller_parameters.hpp> instead."[01;36m[K)[m[K
+      |                                                                                                             [01;36m[K^[m[K
+

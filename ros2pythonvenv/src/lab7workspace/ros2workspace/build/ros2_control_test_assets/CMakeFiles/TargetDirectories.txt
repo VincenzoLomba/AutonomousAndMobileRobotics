@@ -1,0 +1,9 @@
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_test_assets/CMakeFiles/uninstall.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_test_assets/CMakeFiles/ros2_control_test_assets_uninstall.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_test_assets/CMakeFiles/test.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_test_assets/CMakeFiles/edit_cache.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_test_assets/CMakeFiles/rebuild_cache.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_test_assets/CMakeFiles/list_install_components.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_test_assets/CMakeFiles/install.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_test_assets/CMakeFiles/install/local.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/ros2_control_test_assets/CMakeFiles/install/strip.dir

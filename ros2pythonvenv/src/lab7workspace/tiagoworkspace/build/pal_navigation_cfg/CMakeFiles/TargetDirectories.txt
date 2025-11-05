@@ -1,0 +1,9 @@
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_navigation_cfg/CMakeFiles/uninstall.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_navigation_cfg/CMakeFiles/pal_navigation_cfg_uninstall.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_navigation_cfg/CMakeFiles/test.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_navigation_cfg/CMakeFiles/edit_cache.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_navigation_cfg/CMakeFiles/rebuild_cache.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_navigation_cfg/CMakeFiles/list_install_components.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_navigation_cfg/CMakeFiles/install.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_navigation_cfg/CMakeFiles/install/local.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_navigation_cfg/CMakeFiles/install/strip.dir

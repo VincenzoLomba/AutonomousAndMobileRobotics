@@ -1,0 +1,13 @@
+In file included from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_controllers/steering_controllers_library/include/steering_controllers_library/steering_controllers_library.hpp:35[m[K,
+                 from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_controllers/steering_controllers_library/src/steering_controllers_library.cpp:15[m[K:
+[01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/steering_controllers_library/include/steering_controllers_library_parameters.hpp:1:187:[m[K [01;36m[Knote: [m[K‘[01m[K#pragma message: #include "steering_controllers_library_parameters.hpp" is deprecated. Use #include <steering_controllers_library/steering_controllers_library_parameters.hpp> instead.[m[K’
+    1 | eprecated. Use #include <steering_controllers_library/steering_controllers_library_parameters.hpp> instead."[01;36m[K)[m[K
+      |                                                                                                             [01;36m[K^[m[K
+
+In file included from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_controllers/steering_controllers_library/include/steering_controllers_library/steering_controllers_library.hpp:35[m[K,
+                 from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_controllers/steering_controllers_library/test/test_steering_controllers_library.hpp:34[m[K,
+                 from [01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_controllers/steering_controllers_library/test/test_steering_controllers_library.cpp:15[m[K:
+[01m[K/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/steering_controllers_library/include/steering_controllers_library_parameters.hpp:1:187:[m[K [01;36m[Knote: [m[K‘[01m[K#pragma message: #include "steering_controllers_library_parameters.hpp" is deprecated. Use #include <steering_controllers_library/steering_controllers_library_parameters.hpp> instead.[m[K’
+    1 | eprecated. Use #include <steering_controllers_library/steering_controllers_library_parameters.hpp> instead."[01;36m[K)[m[K
+      |                                                                                                             [01;36m[K^[m[K
+

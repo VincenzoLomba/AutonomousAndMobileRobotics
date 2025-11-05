@@ -1,0 +1,9 @@
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_robot/CMakeFiles/uninstall.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_robot/CMakeFiles/tiago_robot_uninstall.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_robot/CMakeFiles/test.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_robot/CMakeFiles/edit_cache.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_robot/CMakeFiles/rebuild_cache.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_robot/CMakeFiles/list_install_components.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_robot/CMakeFiles/install.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_robot/CMakeFiles/install/local.dir
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_robot/CMakeFiles/install/strip.dir

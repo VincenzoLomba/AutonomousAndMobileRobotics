@@ -1,0 +1,15 @@
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/ament_index/resource_index/package_run_dependencies/tiago_simulation
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/ament_index/resource_index/parent_prefix_path/tiago_simulation
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/tiago_simulation/environment/ament_prefix_path.sh
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/tiago_simulation/environment/ament_prefix_path.dsv
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/tiago_simulation/environment/path.sh
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/tiago_simulation/environment/path.dsv
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/tiago_simulation/local_setup.bash
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/tiago_simulation/local_setup.sh
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/tiago_simulation/local_setup.zsh
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/tiago_simulation/local_setup.dsv
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/tiago_simulation/package.dsv
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/ament_index/resource_index/packages/tiago_simulation
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/tiago_simulation/cmake/tiago_simulationConfig.cmake
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/tiago_simulation/cmake/tiago_simulationConfig-version.cmake
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_simulation/share/tiago_simulation/package.xml

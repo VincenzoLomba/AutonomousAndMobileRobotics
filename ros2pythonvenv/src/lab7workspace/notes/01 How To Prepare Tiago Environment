@@ -1,0 +1,55 @@
+
+If you don't want to use the virtual machine, here are the two workspaces required to run the Tiago Robot.
+ - tiago_ws: all tiago-related packages
+ - ros2_ws: contains the ros-control packages
+ link: https://liveunibo-my.sharepoint.com/personal/alessio_caporali_unibo_it/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Falessio%5Fcaporali%5Funibo%5Fit%2FDocuments%2F0%5FTEACH%2FAMR%2Flab%5Fpackages&ga=1
+
+It is important to keep these workspaces separated since otherwise it is difficult to compile everything.
+
+First, build the ros2_ws and add the corresponding setup.bash to the bashrc.
+Then, proceed to build the tiago_ws.
+
+ATTENTION: before colcon building these two workspaces, you should have ROS2 Humble installed and also install all of the following:
+
+sudo apt update
+sudo apt install ros-humble-test-msgs
+
+sudo apt update
+sudo apt install ros-humble-ros-gz-sim
+
+sudo apt update
+sudo apt install python3-pytest
+
+sudo apt install ros-humble-twist-mux
+
+sudo apt update
+sudo apt install ros-humble-launch-param-builder
+
+sudo apt update
+sudo apt install ros-humble-moveit-configs-utils
+
+sudo apt update
+sudo apt install ros-humble-moveit
+
+per ora ho installato questi!
+
+sudo apt update && sudo apt install -y \
+  ros-humble-play-motion2 \
+  ros-humble-play-motion2-msgs \
+  ros-humble-moveit \
+  ros-humble-moveit-ros-perception \
+  ros-humble-moveit-ros-planning-interface \
+  ros-humble-controller-manager \
+  ros-humble-joint-state-broadcaster \
+  ros-humble-joint-trajectory-controller \
+  ros-humble-diff-drive-controller \
+  ros-humble-force-torque-sensor-broadcaster \
+  ros-humble-twist-mux \
+  ros-humble-twist-mux-msgs \
+  ros-humble-tiago-description \
+  ros-humble-tiago-moveit-config \
+  ros-humble-tiago-gazebo \
+  python3-yaml
+
+pip install PyYAML
+pip install jinja2 typeguard

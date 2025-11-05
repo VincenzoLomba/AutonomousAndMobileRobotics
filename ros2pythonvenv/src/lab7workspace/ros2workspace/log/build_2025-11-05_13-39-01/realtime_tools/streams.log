@@ -1,0 +1,59 @@
+[0.043s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/realtime_tools': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/rqt_controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2controlcli:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_controllers_test_nodes:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --build /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/realtime_tools -- -j16 -l16
+[0.297s] [35m[1mConsolidate compiler generated dependencies of target gmock_main[0m
+[0.298s] [35m[1mConsolidate compiler generated dependencies of target thread_priority[0m
+[0.298s] [35m[1mConsolidate compiler generated dependencies of target realtime_tools[0m
+[0.298s] [35m[1mConsolidate compiler generated dependencies of target gmock[0m
+[0.299s] [  8%] Built target gmock_main
+[0.299s] [ 17%] Built target thread_priority
+[0.299s] [ 26%] Built target realtime_tools
+[0.299s] [ 39%] Built target gmock
+[0.299s] [35m[1mConsolidate compiler generated dependencies of target realtime_box_best_effort_tests[0m
+[0.299s] [35m[1mConsolidate compiler generated dependencies of target realtime_buffer_tests[0m
+[0.299s] [35m[1mConsolidate compiler generated dependencies of target realtime_clock_tests[0m
+[0.299s] [35m[1mConsolidate compiler generated dependencies of target realtime_box_tests[0m
+[0.299s] [35m[1mConsolidate compiler generated dependencies of target realtime_publisher_tests_non_polling[0m
+[0.300s] [35m[1mConsolidate compiler generated dependencies of target realtime_server_goal_handle_tests[0m
+[0.300s] [35m[1mConsolidate compiler generated dependencies of target realtime_publisher_tests[0m
+[0.300s] [ 47%] Built target realtime_clock_tests
+[0.300s] [ 56%] Built target realtime_buffer_tests
+[0.300s] [ 65%] Built target realtime_box_tests
+[0.300s] [ 73%] Built target realtime_publisher_tests_non_polling
+[0.300s] [ 82%] Built target realtime_box_best_effort_tests
+[0.300s] [ 91%] Built target realtime_server_goal_handle_tests
+[0.301s] [100%] Built target realtime_publisher_tests
+[0.317s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/realtime_tools' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/rqt_controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2controlcli:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_controllers_test_nodes:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --build /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/realtime_tools -- -j16 -l16
+[0.319s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/realtime_tools': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/rqt_controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2controlcli:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_controllers_test_nodes:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --install /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/realtime_tools
+[0.331s] -- Install configuration: ""
+[0.331s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/include/realtime_tools
+[0.331s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/include/realtime_tools/realtime_tools
+[0.331s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/include/realtime_tools/realtime_tools/thread_priority.hpp
+[0.331s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/include/realtime_tools/realtime_tools/realtime_clock.h
+[0.331s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/include/realtime_tools/realtime_tools/realtime_server_goal_handle.h
+[0.331s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/include/realtime_tools/realtime_tools/realtime_buffer.h
+[0.331s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/include/realtime_tools/realtime_tools/realtime_box_best_effort.h
+[0.331s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/include/realtime_tools/realtime_tools/realtime_box.h
+[0.331s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/include/realtime_tools/realtime_tools/realtime_publisher.h
+[0.331s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/lib/librealtime_tools.so
+[0.331s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/lib/libthread_priority.so
+[0.331s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/environment/library_path.sh
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/environment/library_path.dsv
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/ament_index/resource_index/package_run_dependencies/realtime_tools
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/ament_index/resource_index/parent_prefix_path/realtime_tools
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/environment/ament_prefix_path.sh
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/environment/ament_prefix_path.dsv
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/environment/path.sh
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/environment/path.dsv
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/local_setup.bash
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/local_setup.sh
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/local_setup.zsh
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/local_setup.dsv
+[0.332s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/package.dsv
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/ament_index/resource_index/packages/realtime_tools
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/cmake/export_realtime_toolsExport.cmake
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/cmake/export_realtime_toolsExport-noconfig.cmake
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/cmake/ament_cmake_export_targets-extras.cmake
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/cmake/ament_cmake_export_dependencies-extras.cmake
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/cmake/realtime_toolsConfig.cmake
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/cmake/realtime_toolsConfig-version.cmake
+[0.332s] -- Up-to-date: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/package.xml
+[0.354s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/realtime_tools' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/rqt_controller_manager:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2controlcli:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_controllers_test_nodes:/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --install /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/realtime_tools

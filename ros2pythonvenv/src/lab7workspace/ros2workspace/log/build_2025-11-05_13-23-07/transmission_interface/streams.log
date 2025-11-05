@@ -1,0 +1,120 @@
+[0.011s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/transmission_interface': AMENT_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_control/transmission_interface -DCMAKE_INSTALL_PREFIX=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface
+[0.050s] -- The C compiler identification is GNU 11.4.0
+[0.105s] -- The CXX compiler identification is GNU 11.4.0
+[0.114s] -- Detecting C compiler ABI info
+[0.174s] -- Detecting C compiler ABI info - done
+[0.181s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.181s] -- Detecting C compile features
+[0.181s] -- Detecting C compile features - done
+[0.183s] -- Detecting CXX compiler ABI info
+[0.247s] -- Detecting CXX compiler ABI info - done
+[0.253s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.253s] -- Detecting CXX compile features
+[0.254s] -- Detecting CXX compile features - done
+[0.255s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.390s] -- Found Python3: /home/vincenzo/Documenti/AMR/ros2pythonvenv/bin/python3 (found version "3.10.12") found components: Interpreter 
+[0.451s] -- Found hardware_interface: 2.41.0 (/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface/share/hardware_interface/cmake)
+[0.478s] -- Found rosidl_generator_c: 3.1.7 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[0.482s] -- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.487s] -- Found rosidl_generator_cpp: 3.1.7 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[0.495s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.506s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.640s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[0.642s] -- Found rmw_fastrtps_cpp: 6.2.9 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[0.659s] -- Found TinyXML2 via Config file: TinyXML2_DIR-NOTFOUND
+[0.701s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[0.703s] -- Found TinyXML2 via Config file: TinyXML2_DIR-NOTFOUND
+[0.718s] -- Found FastRTPS: /opt/ros/humble/include  
+[0.720s] -- Found TinyXML2 via Config file: TinyXML2_DIR-NOTFOUND
+[0.726s] -- Found TinyXML2 via Config file: TinyXML2_DIR-NOTFOUND
+[0.735s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[0.740s] -- Looking for pthread.h
+[0.802s] -- Looking for pthread.h - found
+[0.802s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[0.866s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[0.867s] -- Found Threads: TRUE  
+[0.903s] -- Found ament_cmake_gmock: 1.3.12 (/opt/ros/humble/share/ament_cmake_gmock/cmake)
+[0.904s] -- Found gmock sources under '/opt/ros/humble/src/gmock_vendor': C++ tests using 'Google Mock' will be built
+[0.907s] -- Found ament_cmake_gtest: 1.3.12 (/opt/ros/humble/share/ament_cmake_gtest/cmake)
+[0.908s] -- Found gtest sources under '/opt/ros/humble/src/gtest_vendor': C++ tests using 'Google Test' will be built
+[0.995s] -- Configuring done
+[1.075s] -- Generating done
+[1.091s] -- Build files have been written to: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/transmission_interface
+[1.107s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/transmission_interface' returned '0': AMENT_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/ros2_control/transmission_interface -DCMAKE_INSTALL_PREFIX=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface
+[1.108s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/transmission_interface': AMENT_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --build /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/transmission_interface -- -j16 -l16
+[1.169s] [  4%] [32mBuilding CXX object CMakeFiles/transmission_interface.dir/src/simple_transmission_loader.cpp.o[0m
+[1.173s] [  8%] [32mBuilding CXX object CMakeFiles/transmission_interface.dir/src/four_bar_linkage_transmission_loader.cpp.o[0m
+[1.178s] [ 13%] [32mBuilding CXX object CMakeFiles/transmission_interface.dir/src/differential_transmission_loader.cpp.o[0m
+[1.181s] [ 17%] [32mBuilding CXX object gmock/CMakeFiles/gmock.dir/src/gmock-all.cc.o[0m
+[1.181s] [ 21%] [32mBuilding CXX object gmock/CMakeFiles/gmock_main.dir/src/gmock_main.cc.o[0m
+[1.182s] [ 26%] [32mBuilding CXX object gmock/CMakeFiles/gmock.dir/opt/ros/humble/src/gtest_vendor/src/gtest-all.cc.o[0m
+[2.698s] [ 30%] [32m[1mLinking CXX static library libgmock_main.a[0m
+[2.754s] [ 30%] Built target gmock_main
+[4.819s] [ 34%] [32m[1mLinking CXX shared library libtransmission_interface.so[0m
+[4.959s] [ 34%] Built target transmission_interface
+[5.261s] [ 39%] [32m[1mLinking CXX static library libgmock.a[0m
+[5.302s] [ 39%] Built target gmock
+[5.321s] [ 52%] [32mBuilding CXX object CMakeFiles/test_differential_transmission_loader.dir/test/differential_transmission_loader_test.cpp.o[0m
+[5.321s] [ 52%] [32mBuilding CXX object CMakeFiles/test_four_bar_linkage_transmission.dir/test/four_bar_linkage_transmission_test.cpp.o[0m
+[5.321s] [ 52%] [32mBuilding CXX object CMakeFiles/test_simple_transmission.dir/test/simple_transmission_test.cpp.o[0m
+[5.321s] [ 56%] [32mBuilding CXX object CMakeFiles/test_differential_transmission.dir/test/differential_transmission_test.cpp.o[0m
+[5.321s] [ 60%] [32mBuilding CXX object CMakeFiles/test_utils.dir/test/utils_test.cpp.o[0m
+[5.322s] [ 65%] [32mBuilding CXX object CMakeFiles/test_four_bar_linkage_transmission_loader.dir/test/four_bar_linkage_transmission_loader_test.cpp.o[0m
+[5.323s] [ 69%] [32mBuilding CXX object CMakeFiles/test_simple_transmission_loader.dir/test/simple_transmission_loader_test.cpp.o[0m
+[6.844s] [ 73%] [32m[1mLinking CXX executable test_utils[0m
+[7.161s] [ 78%] [32m[1mLinking CXX executable test_differential_transmission[0m
+[7.243s] [ 78%] Built target test_utils
+[7.477s] [ 82%] [32m[1mLinking CXX executable test_simple_transmission[0m
+[7.563s] [ 82%] Built target test_differential_transmission
+[7.813s] [ 82%] Built target test_simple_transmission
+[8.193s] [ 86%] [32m[1mLinking CXX executable test_four_bar_linkage_transmission[0m
+[8.500s] [ 86%] Built target test_four_bar_linkage_transmission
+[8.828s] [ 91%] [32m[1mLinking CXX executable test_simple_transmission_loader[0m
+[9.116s] [ 91%] Built target test_simple_transmission_loader
+[9.239s] [ 95%] [32m[1mLinking CXX executable test_differential_transmission_loader[0m
+[9.539s] [ 95%] Built target test_differential_transmission_loader
+[9.573s] [100%] [32m[1mLinking CXX executable test_four_bar_linkage_transmission_loader[0m
+[9.855s] [100%] Built target test_four_bar_linkage_transmission_loader
+[9.867s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/transmission_interface' returned '0': AMENT_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --build /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/transmission_interface -- -j16 -l16
+[9.868s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/transmission_interface': AMENT_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --install /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/transmission_interface
+[9.873s] -- Install configuration: ""
+[9.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include
+[9.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include/transmission_interface
+[9.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include/transmission_interface/four_bar_linkage_transmission_loader.hpp
+[9.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include/transmission_interface/handle.hpp
+[9.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include/transmission_interface/simple_transmission_loader.hpp
+[9.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include/transmission_interface/visibility_control.h
+[9.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include/transmission_interface/transmission_loader.hpp
+[9.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include/transmission_interface/four_bar_linkage_transmission.hpp
+[9.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include/transmission_interface/simple_transmission.hpp
+[9.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include/transmission_interface/transmission_interface_exception.hpp
+[9.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include/transmission_interface/exception.hpp
+[9.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include/transmission_interface/accessor.hpp
+[9.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include/transmission_interface/differential_transmission.hpp
+[9.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include/transmission_interface/transmission.hpp
+[9.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/include/transmission_interface/differential_transmission_loader.hpp
+[9.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/ros2_control_plugins.xml
+[9.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/lib/libtransmission_interface.so
+[9.874s] -- Set runtime path of "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/lib/libtransmission_interface.so" to ""
+[9.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/environment/library_path.sh
+[9.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/environment/library_path.dsv
+[9.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/ament_index/resource_index/package_run_dependencies/transmission_interface
+[9.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/ament_index/resource_index/parent_prefix_path/transmission_interface
+[9.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/environment/ament_prefix_path.sh
+[9.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/environment/ament_prefix_path.dsv
+[9.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/environment/path.sh
+[9.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/environment/path.dsv
+[9.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/local_setup.bash
+[9.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/local_setup.sh
+[9.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/local_setup.zsh
+[9.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/local_setup.dsv
+[9.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/package.dsv
+[9.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/ament_index/resource_index/packages/transmission_interface
+[9.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/ament_index/resource_index/transmission_interface__pluginlib__plugin/transmission_interface
+[9.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/cmake/ament_cmake_export_include_directories-extras.cmake
+[9.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/cmake/ament_cmake_export_dependencies-extras.cmake
+[9.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/cmake/ament_cmake_export_libraries-extras.cmake
+[9.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/cmake/transmission_interfaceConfig.cmake
+[9.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/cmake/transmission_interfaceConfig-version.cmake
+[9.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/transmission_interface/share/transmission_interface/package.xml
+[9.877s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/transmission_interface' returned '0': AMENT_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs:/opt/ros/humble LD_LIBRARY_PATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface/lib:/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/lib/python3.10/site-packages:${PYTHONPATH} VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --install /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/transmission_interface

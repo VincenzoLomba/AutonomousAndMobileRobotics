@@ -1,0 +1,98 @@
+running egg_info
+creating ../../build/launch_pal/launch_pal.egg-info
+writing ../../build/launch_pal/launch_pal.egg-info/PKG-INFO
+writing dependency_links to ../../build/launch_pal/launch_pal.egg-info/dependency_links.txt
+writing entry points to ../../build/launch_pal/launch_pal.egg-info/entry_points.txt
+writing requirements to ../../build/launch_pal/launch_pal.egg-info/requires.txt
+writing top-level names to ../../build/launch_pal/launch_pal.egg-info/top_level.txt
+writing manifest file '../../build/launch_pal/launch_pal.egg-info/SOURCES.txt'
+reading manifest file '../../build/launch_pal/launch_pal.egg-info/SOURCES.txt'
+adding license file 'LICENSE'
+writing manifest file '../../build/launch_pal/launch_pal.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build
+creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib
+creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal
+copying launch_pal/__init__.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal
+copying launch_pal/robot_utils.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal
+copying launch_pal/arg_utils.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal
+copying launch_pal/param_utils.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal
+copying launch_pal/include_utils.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal
+creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments
+copying launch_pal/robot_arguments/__init__.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments
+copying launch_pal/robot_arguments/tiago_sea.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments
+copying launch_pal/robot_arguments/omni_base.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments
+copying launch_pal/robot_arguments/tiago_dual.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments
+copying launch_pal/robot_arguments/pmb3.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments
+copying launch_pal/robot_arguments/tiago.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments
+copying launch_pal/robot_arguments/robot.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments
+copying launch_pal/robot_arguments/pmb2.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments
+copying launch_pal/robot_arguments/tiago_pro.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments
+copying launch_pal/robot_arguments/ari.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments
+copying launch_pal/robot_arguments/tiago_sea_dual.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments
+creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/substitutions
+copying launch_pal/substitutions/__init__.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/substitutions
+copying launch_pal/substitutions/load_file.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/substitutions
+running install
+running install_lib
+creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/__init__.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_utils.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/arg_utils.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal
+creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments/__init__.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments/tiago_sea.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments/omni_base.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments/tiago_dual.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments/pmb3.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments/tiago.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments/robot.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments/pmb2.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments/tiago_pro.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments/ari.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/robot_arguments/tiago_sea_dual.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/param_utils.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal
+creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/substitutions
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/substitutions/__init__.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/substitutions
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/substitutions/load_file.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/substitutions
+copying /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/build/lib/launch_pal/include_utils.py -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/__init__.py to __init__.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_utils.py to robot_utils.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/arg_utils.py to arg_utils.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments/__init__.py to __init__.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments/tiago_sea.py to tiago_sea.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments/omni_base.py to omni_base.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments/tiago_dual.py to tiago_dual.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments/pmb3.py to pmb3.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments/tiago.py to tiago.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments/robot.py to robot.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments/pmb2.py to pmb2.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments/tiago_pro.py to tiago_pro.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments/ari.py to ari.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/robot_arguments/tiago_sea_dual.py to tiago_sea_dual.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/param_utils.py to param_utils.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/substitutions/__init__.py to __init__.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/substitutions/load_file.py to load_file.cpython-310.pyc
+byte-compiling /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal/include_utils.py to include_utils.cpython-310.pyc
+running install_data
+creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/ament_index
+creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/ament_index/resource_index
+creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/ament_index/resource_index/packages
+copying resource/launch_pal -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/ament_index/resource_index/packages
+copying package.xml -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/launch_pal
+creating /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/launch_pal/config
+copying config/omni_base_configuration.yaml -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/launch_pal/config
+copying config/robot_configuration.yaml -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/launch_pal/config
+copying config/tiago_configuration.yaml -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/launch_pal/config
+copying config/ari_configuration.yaml -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/launch_pal/config
+copying config/tiago_sea_dual_configuration.yaml -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/launch_pal/config
+copying config/tiago_dual_configuration.yaml -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/launch_pal/config
+copying config/tiago_sea_configuration.yaml -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/launch_pal/config
+copying config/tiago_pro_configuration.yaml -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/launch_pal/config
+copying config/pmb2_configuration.yaml -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/launch_pal/config
+copying config/pmb3_configuration.yaml -> /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/share/launch_pal/config
+running install_egg_info
+Copying ../../build/launch_pal/launch_pal.egg-info to /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/launch_pal/lib/python3.10/site-packages/launch_pal-0.0.12-py3.10.egg-info
+running install_scripts
+writing list of installed files to '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/launch_pal/install.log'

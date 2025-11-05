@@ -1,0 +1,10 @@
+# generated from colcon_core/shell/template/command_prefix.sh.em
+. "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/control_msgs/share/control_msgs/package.sh"
+. "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager_msgs/share/controller_manager_msgs/package.sh"
+. "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/realtime_tools/share/realtime_tools/package.sh"
+. "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/ros2_control_test_assets/share/ros2_control_test_assets/package.sh"
+. "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface/share/hardware_interface/package.sh"
+. "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_interface/share/controller_interface/package.sh"
+. "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/hardware_interface_testing/share/hardware_interface_testing/package.sh"
+. "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/controller_manager/share/controller_manager/package.sh"
+. "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/steering_controllers_library/share/steering_controllers_library/package.sh"

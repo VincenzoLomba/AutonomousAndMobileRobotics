@@ -1,0 +1,65 @@
+[0.176s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/kinematics_interface': CMAKE_PREFIX_PATH=/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/kinematics_interface/kinematics_interface -DCMAKE_INSTALL_PREFIX=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface
+[0.219s] -- The CXX compiler identification is GNU 11.4.0
+[0.224s] -- Detecting CXX compiler ABI info
+[0.287s] -- Detecting CXX compiler ABI info - done
+[0.292s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.292s] -- Detecting CXX compile features
+[0.292s] -- Detecting CXX compile features - done
+[0.294s] -- Found ament_cmake: 1.3.12 (/opt/ros/humble/share/ament_cmake/cmake)
+[0.385s] -- Found Python3: /home/vincenzo/Documenti/AMR/ros2pythonvenv/bin/python3 (found version "3.10.12") found components: Interpreter 
+[0.445s] -- Found rclcpp: 16.0.15 (/opt/ros/humble/share/rclcpp/cmake)
+[0.473s] -- Found rosidl_generator_c: 3.1.7 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[0.476s] -- Found rosidl_adapter: 3.1.7 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[0.481s] -- Found rosidl_generator_cpp: 3.1.7 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[0.490s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.499s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.527s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[0.529s] -- Found rmw_fastrtps_cpp: 6.2.9 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[0.592s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[0.616s] -- Found FastRTPS: /opt/ros/humble/include  
+[0.645s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[0.650s] -- Looking for C++ include pthread.h
+[0.729s] -- Looking for C++ include pthread.h - found
+[0.729s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[0.802s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[0.803s] -- Found Threads: TRUE  
+[0.835s] -- Found rclcpp_lifecycle: 16.0.15 (/opt/ros/humble/share/rclcpp_lifecycle/cmake)
+[0.914s] -- Configuring done
+[0.919s] -- Generating done
+[0.921s] -- Build files have been written to: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/kinematics_interface
+[0.929s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/kinematics_interface' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/kinematics_interface/kinematics_interface -DCMAKE_INSTALL_PREFIX=/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface
+[0.930s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/kinematics_interface': CMAKE_PREFIX_PATH=/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --build /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/kinematics_interface -- -j16 -l16
+[0.967s] [ 50%] [32mBuilding CXX object CMakeFiles/kinematics_interface.dir/src/kinematics_interface.cpp.o[0m
+[2.789s] [100%] [32m[1mLinking CXX shared library libkinematics_interface.so[0m
+[2.857s] [100%] Built target kinematics_interface
+[2.864s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/kinematics_interface' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --build /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/kinematics_interface -- -j16 -l16
+[2.865s] Invoking command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/kinematics_interface': CMAKE_PREFIX_PATH=/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --install /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/kinematics_interface
+[2.873s] -- Install configuration: ""
+[2.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/include/kinematics_interface
+[2.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/include/kinematics_interface/kinematics_interface
+[2.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/include/kinematics_interface/kinematics_interface/kinematics_interface.hpp
+[2.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/include/kinematics_interface/kinematics_interface/visibility_control.h
+[2.873s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/lib/libkinematics_interface.so
+[2.874s] -- Set runtime path of "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/lib/libkinematics_interface.so" to ""
+[2.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/environment/library_path.sh
+[2.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/environment/library_path.dsv
+[2.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/ament_index/resource_index/package_run_dependencies/kinematics_interface
+[2.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/ament_index/resource_index/parent_prefix_path/kinematics_interface
+[2.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/environment/ament_prefix_path.sh
+[2.874s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/environment/ament_prefix_path.dsv
+[2.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/environment/path.sh
+[2.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/environment/path.dsv
+[2.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/local_setup.bash
+[2.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/local_setup.sh
+[2.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/local_setup.zsh
+[2.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/local_setup.dsv
+[2.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/package.dsv
+[2.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/ament_index/resource_index/packages/kinematics_interface
+[2.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/cmake/export_kinematics_interfaceExport.cmake
+[2.875s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/cmake/export_kinematics_interfaceExport-noconfig.cmake
+[2.876s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/cmake/ament_cmake_export_targets-extras.cmake
+[2.876s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/cmake/ament_cmake_export_dependencies-extras.cmake
+[2.876s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/cmake/kinematics_interfaceConfig.cmake
+[2.876s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/cmake/kinematics_interfaceConfig-version.cmake
+[2.876s] -- Installing: /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/install/kinematics_interface/share/kinematics_interface/package.xml
+[2.878s] Invoked command in '/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/kinematics_interface' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble PS1=(ros2pythonvenv) \[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ VIRTUAL_ENV_PROMPT=(ros2pythonvenv) /usr/bin/cmake --install /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/build/kinematics_interface

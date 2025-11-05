@@ -1,0 +1,29 @@
+{
+  "package_name": "control_msgs",
+  "non_idl_tuples": [
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:action/ParallelGripperCommand.action",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:action/FollowJointTrajectory.action",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:action/GripperCommand.action",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:action/JointTrajectory.action",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:action/PointHead.action",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:action/SingleJointPosition.action",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/AdmittanceControllerState.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/DynamicJointState.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/GripperCommand.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/InterfaceValue.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/JointComponentTolerance.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/JointControllerState.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/JointJog.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/JointTolerance.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/JointTrajectoryControllerState.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/MecanumDriveControllerState.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/MultiDOFCommand.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/MultiDOFStateStamped.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/PidState.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/SingleDOFState.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/SingleDOFStateStamped.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:msg/SteeringControllerStatus.msg",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:srv/QueryCalibrationState.srv",
+    "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/ros2workspace/src/ros-controls/control_msgs/control_msgs:srv/QueryTrajectoryState.srv"
+  ]
+}
