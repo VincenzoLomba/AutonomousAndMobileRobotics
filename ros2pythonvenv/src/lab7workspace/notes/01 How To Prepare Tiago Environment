@@ -53,3 +53,8 @@ sudo apt update && sudo apt install -y \
 
 pip install PyYAML
 pip install jinja2 typeguard
+
+pip install PyQt5
+pip install PySide2
+pip install python_qt_binding
+pip install PyQt5-sip

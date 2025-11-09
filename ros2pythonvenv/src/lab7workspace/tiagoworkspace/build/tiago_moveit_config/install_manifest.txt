@@ -15,6 +15,7 @@
 /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_moveit_config/share/tiago_moveit_config/package.xml
 /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_moveit_config/share/tiago_moveit_config/launch/moveit_rviz.launch.py
 /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_moveit_config/share/tiago_moveit_config/launch/move_group.launch.py
+/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_moveit_config/share/tiago_moveit_config/launch/__pycache__/moveit_rviz.launch.cpython-310.pyc
 /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_moveit_config/share/tiago_moveit_config/config/ompl_planning.yaml
 /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_moveit_config/share/tiago_moveit_config/config/kinematics_trac_ik.yaml
 /home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/install/tiago_moveit_config/share/tiago_moveit_config/config/fake_controllers/fake_controllers_no-arm.yaml

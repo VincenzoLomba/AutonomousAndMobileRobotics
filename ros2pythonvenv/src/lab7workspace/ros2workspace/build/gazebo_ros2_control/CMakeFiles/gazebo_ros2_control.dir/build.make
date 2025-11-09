@@ -379,8 +379,8 @@ libgazebo_ros2_control.so: /usr/lib/x86_64-linux-gnu/libccd.so.2.0
 libgazebo_ros2_control.so: /usr/lib/x86_64-linux-gnu/libm.so
 libgazebo_ros2_control.so: /usr/lib/x86_64-linux-gnu/libfcl.so
 libgazebo_ros2_control.so: /usr/lib/x86_64-linux-gnu/libassimp.so
-libgazebo_ros2_control.so: /usr/lib/x86_64-linux-gnu/liboctomap.so.1.9.7
-libgazebo_ros2_control.so: /usr/lib/x86_64-linux-gnu/liboctomath.so.1.9.7
+libgazebo_ros2_control.so: /opt/ros/humble/lib/x86_64-linux-gnu/liboctomap.so.1.9.8
+libgazebo_ros2_control.so: /opt/ros/humble/lib/x86_64-linux-gnu/liboctomath.so.1.9.8
 libgazebo_ros2_control.so: /usr/lib/x86_64-linux-gnu/libboost_atomic.so.1.74.0
 libgazebo_ros2_control.so: /usr/lib/x86_64-linux-gnu/libignition-transport8.so.8.2.1
 libgazebo_ros2_control.so: /usr/lib/x86_64-linux-gnu/libignition-fuel_tools4.so.4.4.0

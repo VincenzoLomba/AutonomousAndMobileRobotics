@@ -61,6 +61,7 @@ def launch_setup(context, *args, **kwargs):
         .trajectory_execution(moveit_simple_controllers_path)
         .planning_pipelines(pipelines=['ompl'])
         .pilz_cartesian_limits(file_path=os.path.join('config', 'pilz_cartesian_limits.yaml'))
+        # .joint_limits(file_path=os.path.join('config', 'joint_limits.yaml'))
         .to_moveit_configs()
     )
 
@@ -84,6 +85,7 @@ def launch_setup(context, *args, **kwargs):
             moveit_config.robot_description_semantic,
             moveit_config.planning_pipelines,
             moveit_config.robot_description_kinematics,
+            # moveit_config.joint_limits,
         ],
     )
 
