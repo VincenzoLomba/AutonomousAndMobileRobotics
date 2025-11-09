@@ -1,3 +1,9 @@
+
+# To avoid problem related to nested Repos:
+**/.git/
+.gitmodules
+
+# Ignored folders:
 **/lib/
 **/log/
 **/install/
