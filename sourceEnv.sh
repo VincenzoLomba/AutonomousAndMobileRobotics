@@ -1,4 +1,5 @@
 
+# ROS2 environment sourcing list:
 
 export LIBGL_ALWAYS_INDIRECT=0                      # Setting up the current terminal (in the current PyEnv) to rely on the GPU w.r.t. the CPU (for example when using Gazebo or RVIDZ) (1/3)
 export __NV_PRIME_RENDER_OFFLOAD=1                  # Setting up the current terminal (in the current PyEnv) to rely on the GPU w.r.t. the CPU (for example when using Gazebo or RVIDZ) (2/3)
@@ -10,6 +11,8 @@ export ROS_OS_OVERRIDE=ubuntu:jammy                 # Telling to ROS2 that the n
 export LC_ALL=en_US.UTF-8                           # Setting eng locals: this is FUNDAMENTAL for MoveIt to properly work! (1/3)
 export LANG=en_US.UTF-8                             # Setting eng locals: this is FUNDAMENTAL for MoveIt to properly work! (2/3)
 export LC_NUMERIC=en_US.UTF-8                       # Setting eng locals: this is FUNDAMENTAL for MoveIt to properly work! (3/3)
+
+# Additional SH code (not strictly related to ROS2 sourcing):
 
 # Activating the Python environment IFF not already actived
 if [[ -z "$VIRTUAL_ENV" ]]; then
