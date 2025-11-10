@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Launch file ROS2 -->
+
+<launch>
+
+  <!-- Start a Gazebo simulation -->
+  <!--include file="$(find-pkg-share wall_follower_ros2)/launch/empty_simulation.launch.py"/-->
+  <include file="$(find-pkg-share turtlebot3_gazebo)/launch/turtlebot3_world.launch.py"/>
+  
+  <!-- Start obstacle avoidance node -->
+  <node name="wall_follower_ros2" pkg="wall_follower_ros2" exec="wall_follower_ros2" output="screen">
+    <param name="linear_x_velocity" value="0.1"/>
+    <param name="angular_z_velocity" value="0.1"/>
+    <param name="safety_distance" value="0.2" />
+  </node>
+
+</launch>

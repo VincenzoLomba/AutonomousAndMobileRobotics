@@ -1,9 +1,0 @@
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_gripper_controller_configuration/CMakeFiles/uninstall.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_gripper_controller_configuration/CMakeFiles/pal_gripper_controller_configuration_uninstall.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_gripper_controller_configuration/CMakeFiles/test.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_gripper_controller_configuration/CMakeFiles/edit_cache.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_gripper_controller_configuration/CMakeFiles/rebuild_cache.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_gripper_controller_configuration/CMakeFiles/list_install_components.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_gripper_controller_configuration/CMakeFiles/install.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_gripper_controller_configuration/CMakeFiles/install/local.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/pal_gripper_controller_configuration/CMakeFiles/install/strip.dir

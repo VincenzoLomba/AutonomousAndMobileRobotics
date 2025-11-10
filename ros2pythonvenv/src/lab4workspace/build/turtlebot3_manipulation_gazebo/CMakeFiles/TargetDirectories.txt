@@ -1,9 +1,0 @@
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_manipulation_gazebo/CMakeFiles/uninstall.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_manipulation_gazebo/CMakeFiles/turtlebot3_manipulation_gazebo_uninstall.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_manipulation_gazebo/CMakeFiles/test.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_manipulation_gazebo/CMakeFiles/edit_cache.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_manipulation_gazebo/CMakeFiles/rebuild_cache.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_manipulation_gazebo/CMakeFiles/list_install_components.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_manipulation_gazebo/CMakeFiles/install.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_manipulation_gazebo/CMakeFiles/install/local.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab4workspace/build/turtlebot3_manipulation_gazebo/CMakeFiles/install/strip.dir

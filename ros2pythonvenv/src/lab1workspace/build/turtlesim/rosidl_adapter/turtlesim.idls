@@ -1,8 +1,0 @@
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/build/turtlesim/rosidl_adapter/turtlesim:action/RotateAbsolute.idl
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/build/turtlesim/rosidl_adapter/turtlesim:msg/Color.idl
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/build/turtlesim/rosidl_adapter/turtlesim:msg/Pose.idl
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/build/turtlesim/rosidl_adapter/turtlesim:srv/Kill.idl
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/build/turtlesim/rosidl_adapter/turtlesim:srv/SetPen.idl
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/build/turtlesim/rosidl_adapter/turtlesim:srv/Spawn.idl
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/build/turtlesim/rosidl_adapter/turtlesim:srv/TeleportAbsolute.idl
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab1workspace/build/turtlesim/rosidl_adapter/turtlesim:srv/TeleportRelative.idl

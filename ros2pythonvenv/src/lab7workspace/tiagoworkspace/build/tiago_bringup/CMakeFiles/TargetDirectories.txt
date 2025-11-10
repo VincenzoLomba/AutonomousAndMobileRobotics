@@ -1,9 +1,0 @@
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_bringup/CMakeFiles/uninstall.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_bringup/CMakeFiles/tiago_bringup_uninstall.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_bringup/CMakeFiles/test.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_bringup/CMakeFiles/edit_cache.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_bringup/CMakeFiles/rebuild_cache.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_bringup/CMakeFiles/list_install_components.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_bringup/CMakeFiles/install.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_bringup/CMakeFiles/install/local.dir
-/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/tiagoworkspace/build/tiago_bringup/CMakeFiles/install/strip.dir
