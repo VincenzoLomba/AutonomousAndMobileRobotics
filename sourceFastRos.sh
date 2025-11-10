@@ -158,8 +158,6 @@ resource(){
   # Description: if invocked within a proper folder, automatically configure the ROS2 environment also sourcing the local build (if an install folder is present in the current path)
 
   fastrosEcho INFO "Setting up AMR environment using rossource..."
-  
-  # --- CALL ROSSOURCE INSTEAD OF DUPLICATING CODE ---
   rossource
 
   # Source the generated setup file (if present)
@@ -181,9 +179,7 @@ recolcon(){
 
   # Check if a subfolder named "src" exists in the current directory
   if [ -d "src" ]; then
-      fastrosEcho INFO "Requirements met, now setting up AMR environment..."
-
-      # --- CALL ROSSOURCE INSTEAD OF DUPLICATING CODE ---
+      fastrosEcho INFO "Detected valid path for 'recolcon' to be called ($(pwd) contains a 'src' folder)..."
       rossource
 
       # Run colcon build

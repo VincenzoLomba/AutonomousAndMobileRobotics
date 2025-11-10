@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'simple_images_subscriber_node = nodes_images.simple_images_subscriber_node:main',
+            'simple_flippedimages_publisher_node = nodes_images.simple_image_publisher_node:main',
         ],
     },
 )
