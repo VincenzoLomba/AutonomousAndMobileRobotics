@@ -6,7 +6,7 @@
 ########################################################################################
 #
 # Important: if needed, recall to source this file automatically in the "~/.bashrc" file!
-# Usually, a variable such as FASTROS_SOURCE="/../sourceFastRos.sh" is properly define and then used to source this file! (named indeed "sourceFastRos.sh")
+# Usually, a variable such as FASTROS_SOURCE="/../sourceFastRos.sh" is properly defined and then used to source this file! (named indeed "sourceFastRos.sh")
 
 fastrosEcho(){
   # ====================================================
