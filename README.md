@@ -9,7 +9,7 @@
 This repository contains all the code developed during lessions of [Autonomous & Mobile Robotics](https://www.unibo.it/it/studiare/insegnamenti-competenze-trasversali-moocs/insegnamenti/insegnamento/2025/454491),
 which is a teaching of [Automation Engeneering's degree](https://corsi.unibo.it/2cycle/AutomationEngineering) ([Alma Mater Studiorum, University of Bologna](https://www.unibo.it/en/homepage)). All **relevant material** in terms of code is contained in the [Workspaces folder](https://github.com/VincenzoLomba/AutonomousAndMobileRobotics/tree/master/ros2pythonvenv/src). <br/>
 <br/>
-All the code is written in [Python](https://www.python.org/about/). All projects and exercises are developed using [VIsual Studio Code](https://code.visualstudio.com/) as editor.
+All the code is written in [Python](https://www.python.org/about/). [ROS2 Humble](https://docs.ros.org/en/humble/index.html) framework is it is widely used. All projects and exercises are developed using [VIsual Studio Code](https://code.visualstudio.com/) as editor.
 
 ### Some useful guides about Git usage
   
