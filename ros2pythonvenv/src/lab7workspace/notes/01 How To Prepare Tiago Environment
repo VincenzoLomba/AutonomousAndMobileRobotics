@@ -58,3 +58,8 @@ pip install PyQt5
 pip install PySide2
 pip install python_qt_binding
 pip install PyQt5-sip
+
+sudo apt install ros-humble-pmb2-description
+sudo apt install ros-humble-pmb2-gazebo
+
+sudo apt install python3-scipy
