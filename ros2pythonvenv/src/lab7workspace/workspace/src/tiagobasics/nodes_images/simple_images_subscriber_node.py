@@ -1,7 +1,6 @@
 
 import rclpy
 from rclpy.node import Node
-
 import time
 import cv2
 from sensor_msgs.msg import Image
