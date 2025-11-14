@@ -1,3 +1,7 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "python.analysis.extraPaths": [
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/lab7workspace/workspace/install/tiagobasics/lib/python3.10/site-packages"
+    ]
 }
