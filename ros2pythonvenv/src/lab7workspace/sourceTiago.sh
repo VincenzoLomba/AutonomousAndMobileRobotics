@@ -44,8 +44,8 @@ fastrosEcho INFO "All done ✅ You're now ready to play with Tiago!"
 echo ""
 
 # -------- Final instructions --------
-fastrosEcho LINK "Launch Tiago Gazebo simulation: ros2 launch tiago_gazebo tiago_gazebo.launch.py"
-fastrosEcho LINK "Launch Tiago control panel:     ros2 run rqt_joint_trajectory_controller rqt_joint_trajectory_controller"
-fastrosEcho LINK "Start MoveIt! on RViz:          ros2 launch tiago_moveit_config moveit_rviz.launch.py"
+fastrosEcho LINK "Launch Tiago Gazebo simulation: " "ros2 launch tiago_gazebo tiago_gazebo.launch.py"
+fastrosEcho LINK "Launch Tiago control panel:     " "ros2 run rqt_joint_trajectory_controller rqt_joint_trajectory_controller"
+fastrosEcho LINK "Start MoveIt! on RViz:          " "ros2 launch tiago_moveit_config moveit_rviz.launch.py"
 echo ""
 
