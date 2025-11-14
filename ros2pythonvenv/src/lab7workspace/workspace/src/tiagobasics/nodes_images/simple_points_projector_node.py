@@ -29,14 +29,6 @@ class SimplePointsProjectorNode(Node):
             self.callback_camera_image,
             10
         )
-
-        # Subscribing to Tiago depth topic
-        self.tiagoDepthSubscription = self.create_subscription(
-            Image,
-            miscellaneous.tiagoFrontCameraDepthTopic,
-            self.callback_camera_depth,
-            10
-        )
         
         # Preparing publisher for elaborated (with projected points) images
         self.image_pub = self.create_publisher(
@@ -45,19 +37,11 @@ class SimplePointsProjectorNode(Node):
             1
         )
 
-        # Preparing publisher for generated 2D points
+        # Preparing publisher for generated 2D points (AKA for projected 3D points)
         self.points_pub = self.create_publisher(
             Point,
             miscellaneous.customTargetPointTopic,
             1
-        )
-
-        # Subscribing to generated 2D point topic
-        self.point2DSubscription = self.create_subscription(
-            Point,
-            miscellaneous.customTargetPointTopic,
-            self.callback_2Dpoint,
-            10
         )
 
         # Getting Tiago camera intrinsic parameters
@@ -73,17 +57,6 @@ class SimplePointsProjectorNode(Node):
 
         self.get_logger().info('Points projector node has been initialized!')
 
-    def callback_camera_depth(self, msg):
-        self.depth_img = self.bridge.imgmsg_to_cv2(msg, desired_encoding = msg.encoding)
-
-    def callback_2Dpoint(self, msg):
-        point = (msg.x, msg.y)
-        depth_value = self.depth_img[int(point[1]), int(point[0])]
-        Z = depth_value
-        X = Z * (point[0] - self.cam_K[0,2]) / self.cam_K[0,0]
-        Y = Z * (point[1] - self.cam_K[1,2]) / self.cam_K[1,1]
-        self.get_logger().info(f'Detected a 2D point {point} that corresponds to 3D point ({X}, {Y}, {Z}) in camera frame!')
-
     def callback_camera_image(self, msg):
         self.get_logger().info(f'New image received from Tiago topic "{miscellaneous.tiagoCameraTopicName}"! Now parsing it (adding gripper origin)...')
         if not hasattr(self, 't'):
@@ -91,8 +64,8 @@ class SimplePointsProjectorNode(Node):
         else:
             img = self.bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
             point2d = self.projectAPoint(np.array([[0, 0, 0]]), self.homogeneous_matrix_from_transform(self.t), self.cam_K, self.cam_D)
-            self.get_logger().info(f'World point (0,0,0) projected at pixel coordinates {point2d}!')
             self.points_pub.publish(Point(x=float(point2d[0]), y=float(point2d[1]), z=0.0))
+            self.get_logger().info(f'World point (0,0,0) projected at pixel coordinates {point2d} (2D point publiched on topic "{miscellaneous.customTargetPointTopic}")!')
             cv2.circle(img, (int(point2d[0]), int(point2d[1])), 5, (0, 255, 0), -1)
             img_msg = self.bridge.cv2_to_imgmsg(img, encoding='bgr8')
             self.image_pub.publish(img_msg)
