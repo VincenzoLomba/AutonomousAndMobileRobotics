@@ -96,6 +96,22 @@ recode() {
     if [ -d "$target_dir" ]; then
         cd "$target_dir" || { fastrosEcho ERROR "Failed to change directory."; return 1; }
         rossource
+
+        # A very simple couple of lines to also source tiago-related stuff!
+        local ws_dir="$target_dir/lab7workspace"
+        if [[ -d "$ws_dir" ]]; then
+            cd "$ws_dir" || { fastrosEcho ERROR "Failed to enter lab7workspace, unable to source Tiago: aborting!"; return 1; }
+            if [[ -f "sourceTiago.sh" ]]; then
+                fastrosEcho INFO "Sourcing Tiago environment (sourceTiago.sh)..."
+                source sourceTiago.sh
+            else
+                fastrosEcho WARN "sourceTiago.sh not found in lab7workspace! Tiago will NOT be sourced."
+            fi
+            cd "$target_dir"
+        else
+            fastrosEcho WARN "lab7workspace directory not found. Tiago will NOT be sourced."
+        fi
+
         if pgrep -x "code" >/dev/null; then
             fastrosEcho INFO "VSCode is already running, you're now ready to work!"
         else
