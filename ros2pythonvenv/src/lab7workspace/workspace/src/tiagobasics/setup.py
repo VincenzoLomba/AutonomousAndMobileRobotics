@@ -31,6 +31,7 @@ setup(
             'simple_moveitplanner_posegoal_node = nodes_moveit.simple_moveitplanner_posegoal_node:main',
             'simple_moveitplanner_configurationgoal_node = nodes_moveit.simple_moveitplanner_configurationgoal_node:main',
             'simple_moveitplanner_grippergoal_node = nodes_moveit.simple_moveitplanner_grippergoal_node:main',
+            'simple_framepublisher_node = nodes_moveit.simple_framepublisher_node:main',
         ],
     },
 )

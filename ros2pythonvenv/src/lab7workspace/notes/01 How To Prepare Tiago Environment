@@ -63,3 +63,6 @@ sudo apt install ros-humble-pmb2-description
 sudo apt install ros-humble-pmb2-gazebo
 
 sudo apt install python3-scipy
+
+sudo apt install python3-pykdl
+
