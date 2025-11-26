@@ -1,4 +1,12 @@
 
+# Compiling guard!
+if [[ -n "$AMR_ENVIRONMENT_INITIALIZED" ]]; then
+    # Already initialized → skip all sourcing to avoid duplicated overlays
+    fastrosEcho INFO "Detected 'sourceEnv.sh' as already sourced! Not sourcing it again.."
+    return 0
+fi
+export AMR_ENVIRONMENT_INITIALIZED=1
+
 # ROS2 environment sourcing list:
 
 export LIBGL_ALWAYS_INDIRECT=0                      # Setting up the current terminal (in the current PyEnv) to rely on the GPU w.r.t. the CPU (for example when using Gazebo or RVIDZ) (1/3)
@@ -14,9 +22,6 @@ export LC_NUMERIC=en_US.UTF-8                       # Setting eng locals: this i
 
 # Additional SH code (not strictly related to ROS2 sourcing):
 
-# Activating the Python environment IFF not already actived
-if [[ -z "$VIRTUAL_ENV" ]]; then
-    source /home/vincenzo/Documenti/AMR/ros2pythonvenv/bin/activate
-fi
+source /home/vincenzo/Documenti/AMR/ros2pythonvenv/bin/activate # Activating the Python environment
 cd /home/vincenzo/Documenti/AMR/ros2pythonvenv/src  # Moving to the workspaces folder
 
