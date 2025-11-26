@@ -27,7 +27,8 @@ setup(
             'simple_images_subscriber_node = nodes_images.simple_images_subscriber_node:main',
             'simple_flippedimages_publisher_node = nodes_images.simple_image_publisher_node:main',
             'simple_points_projector_node = nodes_images.simple_points_projector_node:main',
-            'simple_2Dpoints_subscriber_node = nodes_images.simple_2Dpoints_subscriber:main'
+            'simple_2Dpoints_subscriber_node = nodes_images.simple_2Dpoints_subscriber:main',
+            'simple_moveitplanner_posegoal_node = nodes_moveit.simple_moveitplanner_posegoal_node:main'
         ],
     },
 )
