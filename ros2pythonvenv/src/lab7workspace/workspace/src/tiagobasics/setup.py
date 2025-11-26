@@ -34,6 +34,7 @@ setup(
             'simple_framepublisher_node = nodes_moveit.simple_framepublisher_node:main',
             'aruco_tf_subscriber_node = arucobasic.1_aruco_tf_subscriber:main',
             'aruco_tf_broadcaster_node = arucobasic.2_aruco_grasp_pose_broadcaster:main',
+            'move_arm_to_aruco_node = arucobasic.3_move_arm:main',
         ],
     },
 )
