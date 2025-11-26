@@ -66,3 +66,5 @@ sudo apt install python3-scipy
 
 sudo apt install python3-pykdl
 
+sudo apt-get install ros-humble-aruco-ros
+

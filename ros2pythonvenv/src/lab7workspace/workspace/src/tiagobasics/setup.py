@@ -32,6 +32,8 @@ setup(
             'simple_moveitplanner_configurationgoal_node = nodes_moveit.simple_moveitplanner_configurationgoal_node:main',
             'simple_moveitplanner_grippergoal_node = nodes_moveit.simple_moveitplanner_grippergoal_node:main',
             'simple_framepublisher_node = nodes_moveit.simple_framepublisher_node:main',
+            'aruco_tf_subscriber_node = arucobasic.1_aruco_tf_subscriber:main',
+            'aruco_tf_broadcaster_node = arucobasic.2_aruco_grasp_pose_broadcaster:main',
         ],
     },
 )
