@@ -1,0 +1,7 @@
+LICENSE
+setup.py
+task_priority.egg-info/PKG-INFO
+task_priority.egg-info/SOURCES.txt
+task_priority.egg-info/dependency_links.txt
+task_priority.egg-info/requires.txt
+task_priority.egg-info/top_level.txt

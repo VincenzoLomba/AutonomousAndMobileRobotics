@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 from glob import glob
 import os
 
-package_name = "arucobasic"
+package_name = "lab4_state_machine"
 
 setup(
     name=package_name,
@@ -11,8 +11,6 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
-        (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*launch.[pxy][yma]*')))
-
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -23,9 +21,8 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "1_aruco_tf_sub = arucobasic.1_aruco_tf_subscriber:main",
-            "2_aruco_grap_pose_broadcaster = arucobasic.2_aruco_grasp_pose_broadcaster:main",
-            "3_move_arm = arucobasic.3_move_arm:main",
+            "stat_machine = lab4_state_machine.state_machine:main",
+            "state_machine_not_blocking = lab4_state_machine.state_machine_not_blocking:main",
         ],
     },
 )

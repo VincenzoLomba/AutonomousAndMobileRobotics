@@ -108,8 +108,8 @@ def generate_launch_description():
     ld.add_action(joint_state_broadcaster_launch)
     ld.add_action(torso_controller_launch)
     ld.add_action(head_controller_launch)
-    ld.add_action(arm_controller_launch) #  JT CONTROLLER
-    #ld.add_action(arm_controller_2_launch) # VELOCITY CONTROLLER
+    ld.add_action(arm_controller_launch) #  JT CONTROLLER -> used by MoveIT
+    #ld.add_action(arm_controller_2_launch) # VELOCITY CONTROLLER -> used by Task Priorities Framework PKG
     #ld.add_action(arm_position_controller_launch) # POSITION CONTROLLER
     #ld.add_action(test_pid_controller_launch) # PID
     ld.add_action(ft_sensor_controller_launch)

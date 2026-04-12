@@ -75,6 +75,11 @@ def main(args=None):
     node.gripper.move_to_position(0.02)
     node.gripper.wait_until_executed()
 
+    # OPEN
+    node.get_logger().info("Opening gripper...")
+    node.gripper.open()
+    node.gripper.wait_until_executed()
+
     node.get_logger().info("Gripper sequence done!")
     rclpy.shutdown()
 

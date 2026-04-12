@@ -1,0 +1,36 @@
+
+We are launching Tiago Nav2 with:
+ros2 launch tiago_2dnav tiago_nav_bringup.launch.py is_public_sim:=false rviz:=True slam:=True
+
+we find the said launcher in the folder: tiagoworkspace/src/tiago_navigation/tiago_2dnav/launch
+
+here we see that for is_public_sim == False we launch: pal_navigation_cfg_bringup
+
+we find the said launcher in the folder: tiagoworkspace/src/pal_navigation_cfg_public/pal_navigation_cfg_bringup/launch
+
+here we see that we are loading parameters from: tiagoworkspace/src/pal_navigation_cfg_public/pal_navigation_cfg_params/params/{robot_name}_nav2.yaml
+
+Beeing here {robot_name} pmb2 (CAN BE VERIFIED), we locate parameters in the file: tiagoworkspace/src/pal_navigation_cfg_public/pal_navigation_cfg_params/params/pmb2_nav2.yaml
+
+Inside here, the parameters to be modified are:
+
+# DWB parameters
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+      debug_trajectory_details: True
+      min_vel_x: 0.0
+      min_vel_y: 0.0
+      max_vel_x: 1.00
+      max_vel_y: 0.0
+      max_vel_theta: 0.5
+      min_speed_xy: 0.0
+      max_speed_xy: 1.00
+      min_speed_theta: 0.0
+      acc_lim_x: 2.5
+      acc_lim_y: 0.0
+      acc_lim_theta: 3.2
+      decel_lim_x: -2.5
+      decel_lim_y: 0.0
+      decel_lim_theta: -3.2
+
+      ..and so on...
