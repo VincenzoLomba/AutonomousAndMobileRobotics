@@ -49,6 +49,10 @@ def loc_and_nav(context, *args, **kwargs):
         robot_name + "_nav2.yaml",
     )
 
+    print(f"[DEBUG] debug information from tiago_ws/src/pal_navigation_cfg_public/pal_navigation_cfg_bringup/launch/nav_bringup.launch.py")
+    print(f"[DEBUG] robot_name resolved to: {robot_name}")
+    print(f"[DEBUG] configured_params: {configured_params}")
+
     localization_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [nav2_bringup_pkg, "/localization_launch.py"]
