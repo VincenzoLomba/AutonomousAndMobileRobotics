@@ -5,14 +5,19 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-import importlib.util
 
 def generate_launch_description():
 
-    tiagoExamShareDirectory = get_package_share_directory('tiago_exam')
-    projectParameters = projectParametersImport(tiagoExamShareDirectory)
+    # Using "DeclareLaunchArgument" to declare a launch argument/parameter (that can be set from the command line when launching the file)
+    # This is the name of the Gazebo world to be used the world file (which is "group7.world" by default)
+    worldNameArgumentLabel = 'world_name'
+    declareLaunchArgumentWorldName = DeclareLaunchArgument(
+        worldNameArgumentLabel,
+        default_value = 'group7'
+    )
 
     # Using "IncludeLaunchDescription" to include another launch file within this one
     # Specifically, the launch file related to starting up the Tiago simulation, that performs the following operations:
@@ -24,14 +29,14 @@ def generate_launch_description():
     tiagoExamCMD = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             os.path.join(
-                tiagoExamShareDirectory,
+                get_package_share_directory('tiago_exam'),
                 'launch',
                 'tiago_exam.launch.py'
             )
         ]),
         # Setting up the correct parameters for the launch file
         launch_arguments={
-            'world_name': projectParameters.worldName,
+            'world_name': LaunchConfiguration(worldNameArgumentLabel),
             'moveit': 'true'
         }.items()
     )
@@ -79,25 +84,7 @@ def generate_launch_description():
     )
     
     ld = LaunchDescription()
+    ld.add_action(declareLaunchArgumentWorldName)
     ld.add_action(tiagoExamCMD)
     ld.add_action(tiagoNavBringupCMD)
     return ld
-
-def projectParametersImport(tiagoExamShareDirectory):
-    """
-    This simple method imports the project parameters (that are known to be in the config/projectParameters.py file)
-    """
-    # Locating the projectParameters.py file
-    projectParametersFilePath = os.path.join(
-        tiagoExamShareDirectory,
-        'config',
-        'projectParameters.py'
-    )
-    # Generating the spec (A.K.A. description) of the module to be loaded (i.e. the projectParameters.py file)
-    spec = importlib.util.spec_from_file_location(
-        'projectParameters',        # Module logic name (that we are gonna use)
-        projectParametersFilePath   # Path to the file (that we want to import as a module)
-    )
-    projectParameters = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(projectParameters)
-    return projectParameters
