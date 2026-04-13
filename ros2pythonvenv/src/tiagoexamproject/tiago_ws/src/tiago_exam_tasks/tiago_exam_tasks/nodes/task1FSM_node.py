@@ -15,19 +15,16 @@ class Task1FSMNode(Node):
         super().__init__("task1_fsm_node")
         self.get_logger().info("Starting task1_fsm_node initialization...")
 
-        # FSM state
         self.current_state = Task1FSMState.WAIT_EXPLORE_LITE
 
-        # Publisher used to stop/resume explore_lite
         self.explore_resume_publisher = self.create_publisher(
             Bool,
             "explore/resume",
             10
         )
 
-        # Periodic timer driving the FSM
         self.fsm_timer = self.create_timer(
-            0.5,   # seconds
+            0.5,
             self.state_machine_step
         )
 
@@ -43,22 +40,37 @@ class Task1FSMNode(Node):
             self.handle_stop_exploration()
 
         else:
-            self.get_logger().error(
-                f"Unknown FSM state: {self.current_state}"
+            self.get_logger().error(f"Unknown FSM state: {self.current_state}")
+
+    def is_explore_lite_ready(self) -> bool:
+        subscriptions_info = self.get_subscriptions_info_by_topic("explore/resume")
+
+        if not subscriptions_info:
+            return False
+
+        for endpoint in subscriptions_info:
+            self.get_logger().info(
+                "[WAIT_EXPLORE_LITE] Found subscriber on 'explore/resume' -> "
+                f"name: {endpoint.node_name}, "
+                f"namespace: {endpoint.node_namespace}, "
+                f"type: {endpoint.topic_type}"
             )
+
+            if endpoint.node_name == "explore_node":
+                return True
+
+        return False
 
     def handle_wait_explore_lite(self):
-        subscriber_count = self.count_subscribers("explore/resume")
-
-        self.get_logger().info(
-            f"[WAIT_EXPLORE_LITE] Subscribers on 'explore/resume': {subscriber_count}"
-        )
-
-        if subscriber_count > 0:
+        if self.is_explore_lite_ready():
             self.get_logger().info(
-                "ExploreLite appears to be ready: subscriber detected on 'explore/resume'."
+                "ExploreLite is ready: subscriber 'explore_node' detected on 'explore/resume'."
             )
             self.current_state = Task1FSMState.STOP_EXPLORATION
+        else:
+            self.get_logger().info(
+                "[WAIT_EXPLORE_LITE] ExploreLite subscriber not detected yet."
+            )
 
     def handle_stop_exploration(self):
         msg = Bool()
@@ -70,7 +82,7 @@ class Task1FSMNode(Node):
             "[STOP_EXPLORATION] Published False on 'explore/resume'. ExploreLite should stop."
         )
 
-        # For now, stop here until we add the next state
+        # Temporary stop point until the next FSM state is implemented
         self.fsm_timer.cancel()
         self.get_logger().info(
             "FSM timer cancelled temporarily. Ready to implement next state."
