@@ -1,0 +1,6 @@
+float64[] joint_positions
+---
+bool success
+string message
+---
+string current_state
