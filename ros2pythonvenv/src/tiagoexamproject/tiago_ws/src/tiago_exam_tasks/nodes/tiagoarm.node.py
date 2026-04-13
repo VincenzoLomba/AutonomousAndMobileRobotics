@@ -3,7 +3,7 @@
 
 from rclpy.node import Node
 from rclpy.action import ActionServer
-from tiago_exam_interfaces.action import TiagoArmAction
+from tiago_exam_interfaces.action import TiagoArm
 from . import nodesParameters
 
 class TiagoArmNode(Node):
@@ -16,7 +16,7 @@ class TiagoArmNode(Node):
         # Initializing the Action Server for controlling the Tiago's arm that this Node is gonna expose
         self._action_server = ActionServer(
             self,
-            TiagoArmAction,
+            TiagoArm,
             nodesParameters.tiagoArmActionName,
             self.execute_callback
         )

@@ -1,0 +1,18 @@
+def projectParametersImport(tiagoExamShareDirectory):
+    """
+    This simple method imports the project parameters (that are known to be in the config/projectParameters.py file)
+    """
+    # Locating the projectParameters.py file
+    projectParametersFilePath = os.path.join(
+        tiagoExamShareDirectory,
+        'config',
+        'projectParameters.py'
+    )
+    # Generating the spec (A.K.A. description) of the module to be loaded (i.e. the projectParameters.py file)
+    spec = importlib.util.spec_from_file_location(
+        'projectParameters',        # Module logic name (that we are gonna use)
+        projectParametersFilePath   # Path to the file (that we want to import as a module)
+    )
+    projectParameters = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(projectParameters)
+    return projectParameters

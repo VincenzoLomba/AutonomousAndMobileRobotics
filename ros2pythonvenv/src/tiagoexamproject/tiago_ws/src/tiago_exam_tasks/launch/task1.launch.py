@@ -11,8 +11,8 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 def generate_launch_description():
 
-    # Using "DeclareLaunchArgument" to declare a launch argument/parameter (that can be set from the command line when launching the file)
-    # This is the name of the Gazebo world to be used the world file (which is "group7.world" by default)
+    # Using "DeclareLaunchArgument" to declare a launch argument/parameter (that can be set from the command line when launching the file).
+    # This is the name of the Gazebo world to be used the world file (which is "group7.world" by default).
     worldNameArgumentLabel = 'world_name'
     declareLaunchArgumentWorldName = DeclareLaunchArgument(
         worldNameArgumentLabel,
@@ -24,26 +24,26 @@ def generate_launch_description():
         tiagoSpawnTimeoutArgumentLabel,
         default_value = '30.0'
     )
-    # This is the X coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0)
+    # This is the X coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0).
     tiagoSpawnCoordinateXArgumentLabel = 'tiagoSpawnCoordinateX'
     declareLaunchArgumentTiagoSpawnCoordinateX = DeclareLaunchArgument(
         tiagoSpawnCoordinateXArgumentLabel,
         default_value = '0.0'
     )
-    # This is the Y coordinate of the Tiago robot spawn point in the Gazebo world (default is -1.3)
+    # This is the Y coordinate of the Tiago robot spawn point in the Gazebo world (default is -1.3).
     tiagoSpawnCoordinateYArgumentLabel = 'tiagoSpawnCoordinateY'
     declareLaunchArgumentTiagoSpawnCoordinateY = DeclareLaunchArgument(
         tiagoSpawnCoordinateYArgumentLabel,
         default_value = '-1.3'
     )
-    # This is the Z coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0)
+    # This is the Z coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0).
     tiagoSpawnCoordinateZArgumentLabel = 'tiagoSpawnCoordinateZ'
     declareLaunchArgumentTiagoSpawnCoordinateZ = DeclareLaunchArgument(
         tiagoSpawnCoordinateZArgumentLabel,
         default_value = '0.0'
     )
 
-    # Using "IncludeLaunchDescription" to include another launch file within this one
+    # Using "IncludeLaunchDescription" to include another launch file within this one.
     # Specifically, the launch file related to starting up the Tiago simulation, that performs the following operations:
     # 1. Launches the exam Gazebo world (relying on the proper launcher tiago_exam_worlds/launch/pal_gazebo_exam.launch.py)
     # 2. Spawns the Tiago robot into the simulation (relying on the proper launcher tiago_exam/launch/tiago_spawn.launch.py)
@@ -77,7 +77,7 @@ def generate_launch_description():
         }.items()
     )
 
-    # Again, using "IncludeLaunchDescription" to include another launch file within this one
+    # Again, using "IncludeLaunchDescription" to include another launch file within this one.
     # Specifically, the launch file related to starting up the Nav2 & RViz stack for SLAM and mapping purposes, that performs the following operations:
     #
     # If is_public_sim is True, the launcher uses the following standard Nav2 & RViz Stack bringup (properly customized for the usage of Tiago):
@@ -119,6 +119,9 @@ def generate_launch_description():
         }.items()
     )
     
+    # Again, using "IncludeLaunchDescription" to include another launch file within this one.
+    # Specifically, the launch file related to the ExploreLite package, located in explore_lite/launch/explore.launch.py
+    #
     ld = LaunchDescription()
     ld.add_action(declareLaunchArgumentWorldName)
     ld.add_action(declareLaunchArgumentTiagoSpawnTimeout)
