@@ -1,0 +1,38 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/student/tiago_ws/install/urdf_test/local/lib/python3.10/dist-packages",
+        "/home/student/tiago_ws/install/tiago_description/local/lib/python3.10/dist-packages",
+        "/home/student/tiago_ws/install/pymoveit2/local/lib/python3.10/dist-packages",
+        "/home/student/tiago_ws/install/pmb2_description/local/lib/python3.10/dist-packages",
+        "/home/student/tiago_ws/install/play_motion2_msgs/local/lib/python3.10/dist-packages",
+        "/home/student/tiago_ws/install/linkattacher_msgs/local/lib/python3.10/dist-packages",
+        "/home/student/tiago_ws/build/launch_pal",
+        "/home/student/tiago_ws/install/launch_pal/lib/python3.10/site-packages",
+        "/home/student/ros2_ws/install/rqt_controller_manager/lib/python3.10/site-packages",
+        "/home/student/ros2_ws/install/ros2controlcli/lib/python3.10/site-packages",
+        "/home/student/ros2_ws/install/ros2_controllers_test_nodes/lib/python3.10/site-packages",
+        "/home/student/ros2_ws/install/controller_manager/local/lib/python3.10/dist-packages",
+        "/home/student/ros2_ws/install/controller_manager_msgs/local/lib/python3.10/dist-packages",
+        "/home/student/ros2_ws/install/control_msgs/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/student/tiago_ws/install/urdf_test/local/lib/python3.10/dist-packages",
+        "/home/student/tiago_ws/install/tiago_description/local/lib/python3.10/dist-packages",
+        "/home/student/tiago_ws/install/pymoveit2/local/lib/python3.10/dist-packages",
+        "/home/student/tiago_ws/install/pmb2_description/local/lib/python3.10/dist-packages",
+        "/home/student/tiago_ws/install/play_motion2_msgs/local/lib/python3.10/dist-packages",
+        "/home/student/tiago_ws/install/linkattacher_msgs/local/lib/python3.10/dist-packages",
+        "/home/student/tiago_ws/build/launch_pal",
+        "/home/student/tiago_ws/install/launch_pal/lib/python3.10/site-packages",
+        "/home/student/ros2_ws/install/rqt_controller_manager/lib/python3.10/site-packages",
+        "/home/student/ros2_ws/install/ros2controlcli/lib/python3.10/site-packages",
+        "/home/student/ros2_ws/install/ros2_controllers_test_nodes/lib/python3.10/site-packages",
+        "/home/student/ros2_ws/install/controller_manager/local/lib/python3.10/dist-packages",
+        "/home/student/ros2_ws/install/controller_manager_msgs/local/lib/python3.10/dist-packages",
+        "/home/student/ros2_ws/install/control_msgs/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
+}
