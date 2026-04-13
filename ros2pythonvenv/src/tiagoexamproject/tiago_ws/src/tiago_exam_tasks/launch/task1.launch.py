@@ -120,8 +120,20 @@ def generate_launch_description():
     )
     
     # Again, using "IncludeLaunchDescription" to include another launch file within this one.
-    # Specifically, the launch file related to the ExploreLite package, located in explore_lite/launch/explore.launch.py
-    #
+    # Specifically, the launch file related to the ExploreLite package, located in m-explore-ros2/explore[-lite]/launch/explore.launch.py:
+    exploreLiteCMD = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('explore_lite'),
+                'launch',
+                'explore.launch.py'
+            )
+        ),
+        launch_arguments={
+            'use_sim_time': 'True'
+        }.items()
+    )
+
     ld = LaunchDescription()
     ld.add_action(declareLaunchArgumentWorldName)
     ld.add_action(declareLaunchArgumentTiagoSpawnTimeout)
@@ -130,4 +142,5 @@ def generate_launch_description():
     ld.add_action(declareLaunchArgumentTiagoSpawnCoordinateZ)
     ld.add_action(tiagoExamCMD)
     ld.add_action(tiagoNavBringupCMD)
+    # ld.add_action(exploreLiteCMD)
     return ld

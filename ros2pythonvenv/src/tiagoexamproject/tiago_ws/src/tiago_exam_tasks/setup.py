@@ -20,7 +20,7 @@ setup(
     maintainer='vincenzo',
     maintainer_email='vincenzolombardi99@gmail.com',
     description='A simple package contaning all the developed material in solving the exam project in its three tasks',
-    license='No license... be careful when using this material, my fellow Padawan (also note that 42 is the answer to everything)',
+    license='Proprietary',
     extras_require={
         'test': [
             'pytest',
@@ -28,6 +28,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'tiago_arm_node = tiago_exam_tasks.nodes.tiagoarm_node:main',
+            'task1_fsm_node = tiago_exam_tasks.nodes.task1fsm_node:main',
         ],
     },
 )
