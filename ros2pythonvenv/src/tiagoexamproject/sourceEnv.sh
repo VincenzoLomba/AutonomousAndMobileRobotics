@@ -6,7 +6,7 @@
 # Compiling guard!
 if [[ -n "$AMR_ENVIRONMENT_INITIALIZED" ]]; then
     # Already initialized → skip all sourcing to avoid duplicated overlays
-    fastrosEcho INFO "Detected 'sourceEnv.sh' as already sourced! Not sourcing it again.."
+    fastrosEcho INFO "Detected 'sourceEnv.sh' as already sourced! Not sourcing it again..."
     return 0
 fi
 export AMR_ENVIRONMENT_INITIALIZED=1

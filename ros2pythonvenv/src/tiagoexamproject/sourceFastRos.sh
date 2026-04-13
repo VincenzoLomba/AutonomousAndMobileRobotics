@@ -67,33 +67,27 @@ fastrosEcho(){
 }
 
 # recode:
-# Moves into the "~/Documenti/AMR/ros2pythonvenv/src" directory.
+# Moves into the "~/Documenti/AMR/ros2pythonvenv/src/tiagoexamproject" directory.
 # If successful, runs rossource, sources all what is related to Tiago usage, then launches VS Code (only if it's not already running).
 # Uses fastrosEcho for standardized log output.
 
 recode() {
-    local target_dir="$HOME/Documenti/AMR/ros2pythonvenv/src"
+    local target_dir="$HOME/Documenti/AMR/ros2pythonvenv/src/tiagoexamproject"
 
     if [ -d "$target_dir" ]; then
         cd "$target_dir" || { fastrosEcho ERROR "Failed to move to the directory '$target_dir'."; return 1; }
         rossource || return 1
 
         # A very simple couple of lines to also source tiago-related stuff!
-        local ws_dir="$target_dir/tiagoexamproject"
-        if [[ -d "$ws_dir" ]]; then
-            cd "$ws_dir" || { fastrosEcho ERROR "Failed to enter the 'tiagoexamproject' folder, unable to source Tiago: aborting!"; return 1; }
-            if [[ -f "sourceTiago.sh" ]]; then
-                fastrosEcho INFO "Sourcing Tiago environment (sourceTiago.sh)..."
-                source sourceTiago.sh || return 1
-            else
-                fastrosEcho WARN "sourceTiago.sh not found in the 'tiagoexamproject' folder! Tiago will NOT be sourced."
-            fi
-            cd "$target_dir"
+        if [[ -f "sourceTiago.sh" ]]; then
+            fastrosEcho INFO "Sourcing Tiago environment (sourceTiago.sh)..."
+            source sourceTiago.sh || return 1
         else
-            fastrosEcho WARN "Be aware: 'tiagoexamproject' folder not found. Tiago will NOT be sourced."
+            fastrosEcho WARN "sourceTiago.sh not found in the 'tiagoexamproject' folder! Tiago will NOT be sourced."
         fi
 
         # A very simple couple of lines to also launch VSCode!
+        cd ..
         if pgrep -x "code" >/dev/null; then
             fastrosEcho INFO "VSCode is already running, you're now ready to work!"
         else
@@ -145,7 +139,7 @@ rossource(){
       # Return to the original directory
       cd "$CURRENT_DIR" || return 1
 
-      fastrosEcho INFO "ROS2 Humble environment successfully sourced."
+      fastrosEcho INFO "ROS2 Humble environment successfully sourced!"
 
   else
       fastrosEcho ERROR "Unable to execute: the current path must contain a 'tiagoexamproject' folder! Make sure you are inside a folder which is a subfolder of an 'tiagoexamproject' one (or which is the folder itself)!"
