@@ -58,6 +58,25 @@ def generate_launch_description():
 
     world_name_arg = DeclareLaunchArgument("world_name", default_value="1")
 
+    # ========================= NEW =======================\/
+    declareTiagoSpawnTimeout = DeclareLaunchArgument(
+        'tiagoSpawnTimeout',
+        default_value='30'
+    )
+    declareTiagoSpawnCoordinateX = DeclareLaunchArgument(
+    'tiagoSpawnCoordinateX',
+    default_value='0.0'
+    )
+    declareTiagoSpawnCoordinateY = DeclareLaunchArgument(
+        'tiagoSpawnCoordinateY',
+        default_value='-1.3'
+    )
+    declareTiagoSpawnCoordinateZ = DeclareLaunchArgument(
+        'tiagoSpawnCoordinateZ',
+        default_value='0.0'
+    )
+    # ========================= NEW =======================/\
+
     moveit_arg = DeclareLaunchArgument(
         'moveit', default_value='true',
         description='Specify if launching MoveIt 2'
@@ -72,11 +91,21 @@ def generate_launch_description():
 
     tiago_spawn = include_launch_py_description(
         'tiago_exam', ['launch', 'tiago_spawn.launch.py'],
-        launch_arguments={'use_sim_time': 'True'}.items())
+        launch_arguments={
+            'use_sim_time': 'True',
+            # ========================= NEW =======================\/
+            'tiagoSpawnTimeout': LaunchConfiguration('tiagoSpawnTimeout'),
+            'tiagoSpawnCoordinateX': LaunchConfiguration('tiagoSpawnCoordinateX'),
+            'tiagoSpawnCoordinateY': LaunchConfiguration('tiagoSpawnCoordinateY'),
+            'tiagoSpawnCoordinateZ': LaunchConfiguration('tiagoSpawnCoordinateZ'),
+            # ========================= NEW =======================/\
+        }.items())
 
     tiago_bringup = include_launch_py_description(
         'tiago_bringup', ['launch', 'tiago_bringup.launch.py'],
-        launch_arguments={'use_sim_time': 'True'}.items())
+        launch_arguments={
+            'use_sim_time': 'True'
+        }.items())
 
 
     move_group = include_launch_py_description(
@@ -108,6 +137,13 @@ def generate_launch_description():
 
     ld.add_action(SetEnvironmentVariable('GAZEBO_MODEL_PATH', model_path))
     ld.add_action(world_name_arg)
+
+    # ========================= NEW =======================\/
+    ld.add_action(declareTiagoSpawnTimeout)
+    ld.add_action(declareTiagoSpawnCoordinateX)
+    ld.add_action(declareTiagoSpawnCoordinateY)
+    ld.add_action(declareTiagoSpawnCoordinateZ)
+    # ========================= NEW =======================/\
 
     ld.add_action(gazebo)
     ld.add_action(tiago_spawn)

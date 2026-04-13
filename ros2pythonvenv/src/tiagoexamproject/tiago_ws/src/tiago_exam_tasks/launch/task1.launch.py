@@ -16,7 +16,31 @@ def generate_launch_description():
     worldNameArgumentLabel = 'world_name'
     declareLaunchArgumentWorldName = DeclareLaunchArgument(
         worldNameArgumentLabel,
-        default_value = 'group7'
+        default_value = 'example'
+    )
+    # This is the maximum time the Tiago spawner waits before successfully spawning the robot.
+    tiagoSpawnTimeoutArgumentLabel = 'tiagoSpawnTimeout'
+    declareLaunchArgumentTiagoSpawnTimeout = DeclareLaunchArgument(
+        tiagoSpawnTimeoutArgumentLabel,
+        default_value = '30.0'
+    )
+    # This is the X coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0)
+    tiagoSpawnCoordinateXArgumentLabel = 'tiagoSpawnCoordinateX'
+    declareLaunchArgumentTiagoSpawnCoordinateX = DeclareLaunchArgument(
+        tiagoSpawnCoordinateXArgumentLabel,
+        default_value = '0.0'
+    )
+    # This is the Y coordinate of the Tiago robot spawn point in the Gazebo world (default is -1.3)
+    tiagoSpawnCoordinateYArgumentLabel = 'tiagoSpawnCoordinateY'
+    declareLaunchArgumentTiagoSpawnCoordinateY = DeclareLaunchArgument(
+        tiagoSpawnCoordinateYArgumentLabel,
+        default_value = '-1.3'
+    )
+    # This is the Z coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0)
+    tiagoSpawnCoordinateZArgumentLabel = 'tiagoSpawnCoordinateZ'
+    declareLaunchArgumentTiagoSpawnCoordinateZ = DeclareLaunchArgument(
+        tiagoSpawnCoordinateZArgumentLabel,
+        default_value = '0.0'
     )
 
     # Using "IncludeLaunchDescription" to include another launch file within this one
@@ -37,7 +61,19 @@ def generate_launch_description():
         # Setting up the correct parameters for the launch file
         launch_arguments={
             'world_name': LaunchConfiguration(worldNameArgumentLabel),
-            'moveit': 'true'
+            'moveit': 'true',
+            # Important note: the launcher tiago_exam.launch.py (together with tiago_spawn.launch.py, which it uses), has been modified to accept four new parameters:
+            # - tiagoSpawnTimeout: used to configure the maximum time the Tiago spawner waits before successfully spawning the robot.
+            #                      It can be useful to set this parameter to a relatively high value, because if the Gazebo simulation is slow to start,
+            #                      the spawning process may time out before Gazebo itself is fully up and running.
+            #                      Note indeed that spawning is not possible until the Gazebo simulator has been completely and correctly started.
+            # - tiagoSpawnCoordinateX: used to configure the X coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0)
+            # - tiagoSpawnCoordinateY: used to configure the Y coordinate of the Tiago robot spawn point in the Gazebo world (default is -1.3)
+            # - tiagoSpawnCoordinateZ: used to configure the Z coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0)
+            'tiagoSpawnTimeout': LaunchConfiguration(tiagoSpawnTimeoutArgumentLabel),
+            'tiagoSpawnCoordinateX': LaunchConfiguration(tiagoSpawnCoordinateXArgumentLabel),
+            'tiagoSpawnCoordinateY': LaunchConfiguration(tiagoSpawnCoordinateYArgumentLabel),
+            'tiagoSpawnCoordinateZ': LaunchConfiguration(tiagoSpawnCoordinateZArgumentLabel)
         }.items()
     )
 
@@ -85,6 +121,10 @@ def generate_launch_description():
     
     ld = LaunchDescription()
     ld.add_action(declareLaunchArgumentWorldName)
+    ld.add_action(declareLaunchArgumentTiagoSpawnTimeout)
+    ld.add_action(declareLaunchArgumentTiagoSpawnCoordinateX)
+    ld.add_action(declareLaunchArgumentTiagoSpawnCoordinateY)
+    ld.add_action(declareLaunchArgumentTiagoSpawnCoordinateZ)
     ld.add_action(tiagoExamCMD)
     ld.add_action(tiagoNavBringupCMD)
     return ld

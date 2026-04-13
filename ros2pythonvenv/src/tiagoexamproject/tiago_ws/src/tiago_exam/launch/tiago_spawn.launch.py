@@ -29,8 +29,26 @@ def generate_launch_description():
 
     # @TODO: load PID gains? used in gazebo_ros_control fork
     # @TODO: load tiago_pal_hardware_gazebo
-    
-    spawn_coordinates = [0.0, -1.3, 0.0]
+
+    # ========================= NEW =======================\/
+    # spawn_coordinates = [0.0, -1.3, 0.0]
+    declareTiagoSpawnTimeout = DeclareLaunchArgument(
+        'tiagoSpawnTimeout',
+        default_value='30'
+    )
+    declareTiagoSpawnCoordinateX = DeclareLaunchArgument(
+    'tiagoSpawnCoordinateX',
+    default_value='0.0'
+    )
+    declareTiagoSpawnCoordinateY = DeclareLaunchArgument(
+        'tiagoSpawnCoordinateY',
+        default_value='-1.3'
+    )
+    declareTiagoSpawnCoordinateZ = DeclareLaunchArgument(
+        'tiagoSpawnCoordinateZ',
+        default_value='0.0'
+    )
+    # ========================= NEW =======================/\
 
     model_name = DeclareLaunchArgument(
         'model_name', default_value='tiago',
@@ -41,9 +59,15 @@ def generate_launch_description():
                         arguments=['-topic', 'robot_description',
                                    '-entity', LaunchConfiguration(
                                        'model_name'),
-                                   '-x', str(spawn_coordinates[0]),
-                                   '-y', str(spawn_coordinates[1]),
-                                   '-z', str(spawn_coordinates[2]),
+                                   # ========================= NEW =======================\/
+                                   #'-x', str(spawn_coordinates[0]),
+                                   #'-y', str(spawn_coordinates[1]),
+                                   #'-z', str(spawn_coordinates[2]),
+                                   '-x', LaunchConfiguration('tiagoSpawnCoordinateX'),
+                                   '-y', LaunchConfiguration('tiagoSpawnCoordinateY'),
+                                   '-z', LaunchConfiguration('tiagoSpawnCoordinateZ'),
+                                   '-timeout', LaunchConfiguration('tiagoSpawnTimeout')
+                                   # ========================= NEW =======================/\
                                    # LaunchConfiguration('gzpose'),
                                    ],
                         output='screen')
@@ -52,6 +76,12 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     # ld.add_action(gz_pose)
+    # ========================= NEW =======================\/
+    ld.add_action(declareTiagoSpawnTimeout)
+    ld.add_action(declareTiagoSpawnCoordinateX)
+    ld.add_action(declareTiagoSpawnCoordinateY)
+    ld.add_action(declareTiagoSpawnCoordinateZ)
+    # ========================= NEW =======================/\
     ld.add_action(model_name)
     ld.add_action(tiago_entity)
 
