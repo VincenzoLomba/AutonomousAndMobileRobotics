@@ -1,0 +1,64 @@
+
+ANALISI DIFFERENZE EXPLORELITE (LOCALE VS ONLINE)
+
+1. Differenza principale: STATUS
+- Versione online:
+  - Publisher su topic: explore/status
+  - Usa explore_lite_msgs
+  - Stati: EXPLORATION_STARTED, IN_PROGRESS, PAUSED, COMPLETE
+- Versione locale:
+  - Nessun publisher di stato
+  - Nessun explore_lite_msgs
+  - Solo controllo via explore/resume
+
+2. Subscriber explore/resume
+- Presente in entrambe le versioni
+- Callback resumeCallback
+
+3. Dipendenze
+- Online:
+  - include explore_lite_msgs
+  - include geometry_msgs
+- Locale:
+  - NON include explore_lite_msgs
+
+4. CMakeLists
+- Online:
+  - find_package(explore_lite_msgs REQUIRED)
+- Locale:
+  - NON presente
+
+5. QoS status
+- Online:
+  - transient_local (latched behavior)
+- Locale:
+  - NON esiste
+
+6. Avvio esplorazione
+- Uguale:
+  - timer + makePlan()
+
+7. Launch/config
+- Sostanzialmente identici
+
+8. Versioning
+- Entrambe dichiarano 1.0.0
+- Ma contenuto diverso (online più recente)
+
+----------------------------------------
+
+PARAMS.YAML CONFRONTO
+
+Risultato:
+- Nessuna differenza significativa tra versione locale e online
+- Stessi parametri principali (planner, costmap topics, timeout, ecc.)
+- Quindi comportamento configurazione = IDENTICO
+
+----------------------------------------
+
+CONCLUSIONE
+
+- Versione locale = più vecchia
+- Mancano completamente le feature di status
+- FSM deve funzionare senza feedback da ExploreLite
+- Configurazione parametri invece è coerente tra versioni
