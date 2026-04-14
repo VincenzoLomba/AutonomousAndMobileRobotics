@@ -12,6 +12,7 @@ from . import nodesParameters
 
 # TODO: manage the possibility (unwanted, but possible) of receiving a new goal while one is already being executed
 
+# Note: you may issue "ros2 launch tiago_moveit_config moveit_rviz.launch.py" to open the RViz page related to MoveIT to check for these values
 JOINT_NAMES = [
     "torso_lift_joint",
     "arm_1_joint",
@@ -20,8 +21,7 @@ JOINT_NAMES = [
     "arm_4_joint",
     "arm_5_joint",
     "arm_6_joint",
-    "arm_7_joint",
-    "arm_tool_joint",
+    "arm_7_joint"
 ]
 BASE_LINK_NAME = "base_link"
 END_EFFECTOR_NAME = "arm_tool_link"

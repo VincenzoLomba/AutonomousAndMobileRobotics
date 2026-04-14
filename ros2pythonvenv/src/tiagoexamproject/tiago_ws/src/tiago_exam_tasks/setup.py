@@ -29,7 +29,7 @@ setup(
     entry_points={
         'console_scripts': [
             'tiago_arm_node = tiago_exam_tasks.nodes.tiagoarm_node:main',
-            'task1_fsm_node = tiago_exam_tasks.nodes.task1fsm_node:main',
+            'task1_fsm_node = tiago_exam_tasks.nodes.task1FSM_node:main',
         ],
     },
 )

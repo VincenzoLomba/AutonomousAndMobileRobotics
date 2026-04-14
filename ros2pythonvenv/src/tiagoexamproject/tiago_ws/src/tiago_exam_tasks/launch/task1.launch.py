@@ -8,6 +8,7 @@ from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.actions import Node
 
 def generate_launch_description():
 
@@ -134,6 +135,22 @@ def generate_launch_description():
         }.items()
     )
 
+    # Using "Node" to include within this launch file the Node that implements the FSM that implements the logic that executes the Task1
+    task1FSMNodeCMD = Node(
+        package='tiago_exam_tasks',
+        executable='task1_fsm_node',
+        name='task1_fsm_node',
+        output='screen' # This makes the node's log messages appear in the terminal, which can be useful for debugging and monitoring
+    )
+
+    # Using "Node" to include within this launch file the Node that exposes the Action Server to control and move the Tiago's arm
+    tiagoArmNodeCMD = Node(
+        package='tiago_exam_tasks',
+        executable='tiago_arm_node',
+        name='tiago_arm_node',
+        output='screen' # This makes the node's log messages appear in the terminal, which can be useful for debugging and monitoring
+    )
+    
     ld = LaunchDescription()
     ld.add_action(declareLaunchArgumentWorldName)
     ld.add_action(declareLaunchArgumentTiagoSpawnTimeout)
@@ -142,5 +159,7 @@ def generate_launch_description():
     ld.add_action(declareLaunchArgumentTiagoSpawnCoordinateZ)
     ld.add_action(tiagoExamCMD)
     ld.add_action(tiagoNavBringupCMD)
-    # ld.add_action(exploreLiteCMD)
+    ld.add_action(exploreLiteCMD)
+    ld.add_action(task1FSMNodeCMD)
+    ld.add_action(tiagoArmNodeCMD)
     return ld
