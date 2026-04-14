@@ -65,7 +65,7 @@ class TiagoArmNode(Node):
         self.get_logger().info("MoveIt2 interface successfully created. Planner set to RRTConnectkConfigDefault.")
 
         # Initializing the Action Server for controlling the Tiago's arm that this Node is gonna expose
-        self._action_server = ActionServer(
+        self.actionServer = ActionServer(
             self,
             TiagoArm,
             nodesParameters.tiagoArmActionName,
