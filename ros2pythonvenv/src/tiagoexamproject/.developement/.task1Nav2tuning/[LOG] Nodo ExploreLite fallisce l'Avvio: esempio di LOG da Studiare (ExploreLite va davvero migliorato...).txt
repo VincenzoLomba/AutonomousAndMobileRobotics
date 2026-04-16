@@ -1,0 +1,129 @@
+[INFO] [spawner-8]: process has finished cleanly [pid 205499]
+[gzserver-1] [INFO] [1776278444.707453193] [controller_manager]: Loading controller 'head_controller'
+[spawner-5] [INFO] [1776278444.709234135] [spawner_joint_state_broadcaster]: Set controller type to "joint_state_broadcaster/JointStateBroadcaster" for joint_state_broadcaster
+[task1_fsm_node-30] [INFO] [1776278444.729972450] [task1_fsm_node]: [WAIT_EXPLORE_LITE] ExploreLite subscriber 'explore_node' not detected yet, still waiting for it...
+[INFO] [spawner-6]: process has finished cleanly [pid 205494]
+[gzserver-1] [WARN] [1776278444.763131806] [head_controller]: [Deprecated]: "allow_nonzero_velocity_at_trajectory_end" is set to true. The default behavior will change to false.
+[spawner-7] [INFO] [1776278444.765283287] [spawner_head_controller]: Loaded head_controller
+[spawner-9] [INFO] [1776278444.766716482] [spawner_ft_sensor_controller]: Set controller params file to "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/tiagoexamproject/tiago_ws/install/tiago_controller_configuration/share/tiago_controller_configuration/config/ft_sensor_controller.yaml" for ft_sensor_controller
+[spawner-4] [INFO] [1776278444.786469098] [spawner_mobile_base_controller]: Configured and activated mobile_base_controller
+[gzserver-1] [INFO] [1776278444.786672136] [controller_manager]: Loading controller 'ft_sensor_controller'
+[spawner-5] [INFO] [1776278444.787605509] [spawner_joint_state_broadcaster]: Set controller params file to "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/tiagoexamproject/tiago_ws/install/tiago_controller_configuration/share/tiago_controller_configuration/config/joint_state_broadcaster.yaml" for joint_state_broadcaster
+[sync_slam_toolbox_node-19] [WARN] [1776278444.825373515] [slam_toolbox]: minimum laser range setting (0.0 m) exceeds the capabilities of the used Lidar (0.1 m)
+[sync_slam_toolbox_node-19] Registering sensor: [Custom Described Lidar]
+[gzserver-1] [INFO] [1776278444.845697022] [controller_manager]: Configuring controller 'head_controller'
+[gzserver-1] [INFO] [1776278444.845881502] [head_controller]: No specific joint names are used for command interfaces. Using 'joints' parameter.
+[gzserver-1] [INFO] [1776278444.845907505] [head_controller]: Command interfaces are [position] and state interfaces are [position].
+[gzserver-1] [INFO] [1776278444.845917256] [head_controller]: Using 'splines' interpolation method.
+[spawner-9] [INFO] [1776278444.846365042] [spawner_ft_sensor_controller]: Loaded ft_sensor_controller
+[gzserver-1] [INFO] [1776278444.847161781] [head_controller]: Controller state will be published at 50.00 Hz.
+[gzserver-1] [INFO] [1776278444.850186498] [head_controller]: Action status changes will be monitored at 20.00 Hz.
+[INFO] [spawner-10]: process has finished cleanly [pid 205505]
+[gzserver-1] [INFO] [1776278444.866897994] [controller_manager]: Loading controller 'joint_state_broadcaster'
+[gzserver-1] [INFO] [1776278444.909049681] [controller_manager]: Configuring controller 'ft_sensor_controller'
+[spawner-5] [INFO] [1776278444.909538359] [spawner_joint_state_broadcaster]: Loaded joint_state_broadcaster
+[gzserver-1] [INFO] [1776278444.919641939] [controller_manager]: Configuring controller 'joint_state_broadcaster'
+[gzserver-1] [INFO] [1776278444.919768780] [joint_state_broadcaster]: 'joints' or 'interfaces' parameter is empty. All available state interfaces will be published
+[INFO] [spawner-4]: process has finished cleanly [pid 205490]
+[spawner-7] [INFO] [1776278444.950479542] [spawner_head_controller]: Configured and activated head_controller
+[spawner-9] [INFO] [1776278444.971343406] [spawner_ft_sensor_controller]: Configured and activated ft_sensor_controller
+[spawner-5] [INFO] [1776278444.995029832] [spawner_joint_state_broadcaster]: Configured and activated joint_state_broadcaster
+[rviz2-28] [INFO] [1776278445.046880568] [rviz]: Message Filter dropping message: frame 'base_laser_link' at time 189.193 for reason 'discarding message because the queue is full'
+[INFO] [spawner-7]: process has finished cleanly [pid 205496]
+[INFO] [spawner-9]: process has finished cleanly [pid 205501]
+[INFO] [spawner-5]: process has finished cleanly [pid 205492]
+[task1_fsm_node-30] [INFO] [1776278445.229523773] [task1_fsm_node]: [WAIT_EXPLORE_LITE] ExploreLite subscriber 'explore_node' not detected yet, still waiting for it...
+[task1_fsm_node-30] [INFO] [1776278445.729611797] [task1_fsm_node]: [WAIT_EXPLORE_LITE] ExploreLite subscriber 'explore_node' not detected yet, still waiting for it...
+[task1_fsm_node-30] [INFO] [1776278446.229581627] [task1_fsm_node]: [WAIT_EXPLORE_LITE] ExploreLite subscriber 'explore_node' not detected yet, still waiting for it...
+[move_group-15] [WARN] [1776278446.571779334] [moveit.plugins.ros_control_interface]: Failed to read controllers from /controller_manager/list_controllers within 3 seconds
+[move_group-15] [INFO] [1776278446.610924562] [moveit_ros.trajectory_execution_manager]: Trajectory execution is managing controllers
+[move_group-15] [INFO] [1776278446.610962412] [move_group.move_group]: MoveGroup debug mode is ON
+[move_group-15] Loading 'move_group/ApplyPlanningSceneService'...
+[move_group-15] Loading 'move_group/ClearOctomapService'...
+[move_group-15] Loading 'move_group/MoveGroupCartesianPathService'...
+[move_group-15] Loading 'move_group/MoveGroupExecuteTrajectoryAction'...
+[move_group-15] Loading 'move_group/MoveGroupGetPlanningSceneService'...
+[move_group-15] Loading 'move_group/MoveGroupKinematicsService'...
+[move_group-15] Loading 'move_group/MoveGroupMoveAction'...
+[move_group-15] Loading 'move_group/MoveGroupPlanService'...
+[move_group-15] Loading 'move_group/MoveGroupQueryPlannersService'...
+[move_group-15] Loading 'move_group/MoveGroupStateValidationService'...
+[move_group-15] [INFO] [1776278446.671707010] [move_group.move_group]: 
+[move_group-15] 
+[move_group-15] ********************************************************
+[move_group-15] * MoveGroup using: 
+[move_group-15] *     - ApplyPlanningSceneService
+[move_group-15] *     - ClearOctomapService
+[move_group-15] *     - CartesianPathService
+[move_group-15] *     - ExecuteTrajectoryAction
+[move_group-15] *     - GetPlanningSceneService
+[move_group-15] *     - KinematicsService
+[move_group-15] *     - MoveAction
+[move_group-15] *     - MotionPlanService
+[move_group-15] *     - QueryPlannersService
+[move_group-15] *     - StateValidationService
+[move_group-15] ********************************************************
+[move_group-15] 
+[move_group-15] [INFO] [1776278446.671815252] [moveit_move_group_capabilities_base.move_group_context]: MoveGroup context using planning plugin ompl_interface/OMPLPlanner
+[move_group-15] [INFO] [1776278446.671839395] [moveit_move_group_capabilities_base.move_group_context]: MoveGroup context initialization complete
+[move_group-15] 
+[move_group-15] You can start planning now!
+[move_group-15] 
+[task1_fsm_node-30] [INFO] [1776278446.729683656] [task1_fsm_node]: [WAIT_EXPLORE_LITE] ExploreLite subscriber 'explore_node' not detected yet, still waiting for it...
+[task1_fsm_node-30] [INFO] [1776278447.229701690] [task1_fsm_node]: [WAIT_EXPLORE_LITE] ExploreLite subscriber 'explore_node' not detected yet, still waiting for it...
+[task1_fsm_node-30] [INFO] [1776278447.729740175] [task1_fsm_node]: [WAIT_EXPLORE_LITE] ExploreLite subscriber 'explore_node' not detected yet, still waiting for it...
+[planner_server-22] [INFO] [1776278448.218094967] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 137 X 122 at 0.050000 m/pix
+[task1_fsm_node-30] [INFO] [1776278448.229540847] [task1_fsm_node]: [WAIT_EXPLORE_LITE] ExploreLite subscriber 'explore_node' not detected yet, still waiting for it...
+[rviz2-28] [INFO] [1776278448.251289922] [rviz2]: Trying to create a map of size 137 x 122 using 1 swatches
+[task1_fsm_node-30] [INFO] [1776278448.732360010] [task1_fsm_node]: [WAIT_EXPLORE_LITE] ExploreLite subscriber 'explore_node' not detected yet, still waiting for it...
+[task1_fsm_node-30] [INFO] [1776278449.229609923] [task1_fsm_node]: [WAIT_EXPLORE_LITE] ExploreLite subscriber 'explore_node' not detected yet, still waiting for it...
+[task1_fsm_node-30] [INFO] [1776278449.729525353] [task1_fsm_node]: [WAIT_EXPLORE_LITE] ExploreLite subscriber 'explore_node' not detected yet, still waiting for it...
+[explore-29] [INFO] [1776278449.753178151] [explore_node]: Waiting to connect to move_base nav2 server
+[explore-29] [INFO] [1776278449.753572207] [explore_node]: Connected to move_base nav2 server
+[explore-29] [INFO] [1776278449.753587703] [explore_node]: Getting initial pose of the robot
+[task1_fsm_node-30] [INFO] [1776278450.229641544] [task1_fsm_node]: [WAIT_EXPLORE_LITE] Found subscriber (out of 1) on 'explore/resume' -> name: explore_node, namespace: /, type: std_msgs/msg/Bool
+[task1_fsm_node-30] [INFO] [1776278450.229864522] [task1_fsm_node]: ExploreLite detected as ready: subscriber 'explore_node' detected on 'explore/resume'.
+[explore-29] [INFO] [1776278450.729248715] [explore_node]: Exploration stopped.
+[task1_fsm_node-30] [INFO] [1776278450.729461559] [task1_fsm_node]: [PAUSE_EXPLORE_LITE] Published False on 'explore/resume'. ExploreLite should pause (and will be assumed to be paused).
+[task1_fsm_node-30] [INFO] [1776278451.229658136] [task1_fsm_node]: [TUCK_ARM] Sending goal to TiagoArm action server...
+[task1_fsm_node-30] [INFO] [1776278451.231352988] [task1_fsm_node]: [TUCK_ARM] Goal accepted.
+[tiago_arm_node-31] [INFO] [1776278451.232510470] [tiago_arm_node]: Received new TiagoArm goal.
+[tiago_arm_node-31] [INFO] [1776278451.234287268] [tiago_arm_node]: Planning & waiting for execution by MoveIt2 of the motion to the specified joint configuration: [0.0, 2.478368, -1.343904, 0.506145, 1.972222, -1.745329, 1.396263, 0.226893]
+[task1_fsm_node-30] [INFO] [1776278451.234737608] [task1_fsm_node]: [TUCK_ARM] Feedback: planning
+[move_group-15] [INFO] [1776278451.235092725] [moveit_move_group_default_capabilities.plan_service_capability]: Received new planning service request...
+[move_group-15] [INFO] [1776278451.235297289] [moveit_ros.fix_start_state_bounds]: Starting state is just outside bounds (joint 'torso_lift_joint'). Assuming within bounds.
+[move_group-15] [WARN] [1776278451.235892223] [moveit_kinematic_constraints.kinematic_constraints]: Joint arm_6_joint is constrained to be above the maximum bounds. Assuming maximum bounds instead.
+[move_group-15] [WARN] [1776278451.235936380] [moveit_kinematic_constraints.kinematic_constraints]: Joint arm_6_joint is constrained to be above the maximum bounds. Assuming maximum bounds instead.
+[move_group-15] [INFO] [1776278451.236160858] [moveit.ompl_planning.model_based_planning_context]: Planner configuration 'arm_torso[RRTConnectkConfigDefault]' will use planner 'geometric::RRTConnect'. Additional configuration parameters will be set when the planner is constructed.
+[move_group-15] [WARN] [1776278451.299621672] [moveit_trajectory_processing.time_optimal_trajectory_generation]: Joint acceleration limits are not defined. Using the default 1 rad/s^2. You can define acceleration limits in the URDF or joint_limits.yaml.
+[move_group-15] [INFO] [1776278451.305816819] [moveit.ros_planning.planning_pipeline]: Planning adapters have added states at index positions: [ 0 ]
+[move_group-15] [INFO] [1776278451.336375758] [moveit_move_group_default_capabilities.execute_trajectory_action_capability]: Received goal request
+[move_group-15] [INFO] [1776278451.336594158] [moveit_move_group_default_capabilities.execute_trajectory_action_capability]: Execution request received
+[task1_fsm_node-30] [INFO] [1776278451.336711775] [task1_fsm_node]: [TUCK_ARM] Feedback: executing
+[move_group-15] [INFO] [1776278451.337249040] [moveit_ros.trajectory_execution_manager]: Validating trajectory with allowed_start_tolerance 0.01
+[move_group-15] [INFO] [1776278451.337342484] [moveit_ros.trajectory_execution_manager]: Starting trajectory execution ...
+[move_group-15] [INFO] [1776278451.337612386] [moveit.simple_controller_manager.follow_joint_trajectory_controller_handle]: sending trajectory to /arm_controller
+[gzserver-1] [INFO] [1776278451.338705964] [arm_controller]: Received new action goal
+[gzserver-1] [INFO] [1776278451.338849832] [arm_controller]: Accepted new action goal
+[move_group-15] [INFO] [1776278451.339249604] [moveit.simple_controller_manager.follow_joint_trajectory_controller_handle]: /arm_controller started execution
+[move_group-15] [INFO] [1776278451.339265555] [moveit.simple_controller_manager.follow_joint_trajectory_controller_handle]: Goal request accepted!
+[move_group-15] [INFO] [1776278451.339454145] [moveit.simple_controller_manager.follow_joint_trajectory_controller_handle]: sending trajectory to /torso_controller
+[gzserver-1] [INFO] [1776278451.341958767] [torso_controller]: Received new action goal
+[gzserver-1] [INFO] [1776278451.341994210] [torso_controller]: Accepted new action goal
+[move_group-15] [INFO] [1776278451.342098380] [moveit.simple_controller_manager.follow_joint_trajectory_controller_handle]: /torso_controller started execution
+[move_group-15] [INFO] [1776278451.342107854] [moveit.simple_controller_manager.follow_joint_trajectory_controller_handle]: Goal request accepted!
+[rviz2-28] [INFO] [1776278454.409509951] [rviz]: Message Filter dropping message: frame 'base_laser_link' at time 189.393 for reason 'the timestamp on the message is earlier than all the data in the transform cache'
+[gzserver-1] [INFO] [1776278457.215245631] [arm_controller]: Goal reached, success!
+[gzserver-1] [INFO] [1776278457.215358564] [torso_controller]: Goal reached, success!
+[move_group-15] [INFO] [1776278457.242251459] [moveit.simple_controller_manager.follow_joint_trajectory_controller_handle]: Controller '/arm_controller' successfully finished
+[move_group-15] [INFO] [1776278457.242680962] [moveit.simple_controller_manager.follow_joint_trajectory_controller_handle]: Controller '/torso_controller' successfully finished
+[move_group-15] [INFO] [1776278457.246203632] [moveit_ros.trajectory_execution_manager]: Completed trajectory execution with status SUCCEEDED ...
+[move_group-15] [INFO] [1776278457.246320998] [moveit_move_group_default_capabilities.execute_trajectory_action_capability]: Execution completed: SUCCEEDED
+[tiago_arm_node-31] [INFO] [1776278457.248539145] [tiago_arm_node]: Motion completed successfully.
+[task1_fsm_node-30] [INFO] [1776278457.248681968] [task1_fsm_node]: [TUCK_ARM] Feedback: completed
+[task1_fsm_node-30] [INFO] [1776278457.249591540] [task1_fsm_node]: [TUCK_ARM] Success: Motion completed successfully.
+[task1_fsm_node-30] [INFO] [1776278457.729458903] [task1_fsm_node]: [WAIT_ARM_TUCKED] Arm motion completed.
+[explore-29] [INFO] [1776278458.229224622] [explore_node]: Exploration resuming.
+[task1_fsm_node-30] [INFO] [1776278458.229452051] [task1_fsm_node]: [RESUME_EXPLORE_LITE] Published True on 'explore/resume'. ExploreLite should resume (note that ExploreLite may be very slow in resuming due to how it's internally implemented).
+[task1_fsm_node-30] [INFO] [1776278458.729482995] [task1_fsm_node]: FSM timer cancelled temporarily. Ready to implement next state.
+

@@ -1,0 +1,74 @@
+NOTE SUI PARAMETRI NAV2 MODIFICATI PER TENERE TIAGO PIÙ LONTANO DAGLI OSTACOLI
+
+File di riferimento usato nel progetto:
+tiago_ws/src/pal_navigation_cfg_public/pal_navigation_cfg_params/params/tiago_nav2.yaml
+
+Contesto importante:
+Questo è il file Nav2 realmente usato nel Task 1, perché nel launch PAL viene risolto robot_name = tiago e quindi viene caricato tiago_nav2.yaml.
+
+PARAMETRI RILEVANTI
+
+1) robot_radius
+Significato:
+Rappresenta il raggio del robot nella costmap, cioè la dimensione della “piattaforma virtuale” usata dalla navigazione per ragionare sugli ingombri.
+
+Effetto pratico:
+Se aumentato, la navigazione considera Tiago più “grande” e quindi tende a tenersi più lontano dagli ostacoli.
+
+Nel nostro tuning:
+Lo abbiamo lasciato uguale al valore originale.
+
+2) inflation_radius
+Significato:
+Rappresenta quanto gli ostacoli vengono “gonfiati” nella costmap. Non cambia la dimensione fisica del robot, ma allarga la fascia di costo attorno agli ostacoli.
+
+Effetto pratico:
+Se aumentato, il planner vede una zona più ampia attorno agli ostacoli come costosa o da evitare.
+
+Nel nostro tuning:
+Lo abbiamo modificato da 0.55 a 0.75.
+
+3) cost_scaling_factor
+Significato:
+Controlla come decresce il costo allontanandosi dagli ostacoli nella zona di inflation.
+
+Effetto pratico:
+Influenza quanto il planner “odia” stare vicino agli ostacoli. Non definisce da solo la distanza minima, ma cambia il profilo del costo nella fascia gonfiata.
+
+Nel nostro tuning:
+Lo abbiamo lasciato uguale al valore originale.
+
+PERCHÉ QUESTI PARAMETRI VANNO MODIFICATI “DOPPI”
+
+Nel file tiago_nav2.yaml questi parametri rilevanti compaiono in due sezioni diverse:
+
+- global_costmap -> global_costmap -> ros__parameters
+- local_costmap -> local_costmap -> ros__parameters
+
+Questo succede perché Nav2 usa due costmap diverse:
+
+1. global_costmap
+Serve per il planning globale del percorso, cioè per decidere una traiettoria generale verso il goal.
+
+2. local_costmap
+Serve per il controllo locale e per l’evitamento ostacoli vicino al robot durante il moto.
+
+Per questo motivo, se si vuole un comportamento coerente, i parametri che governano spazio attorno agli ostacoli e ingombro virtuale del robot vanno verificati o modificati in entrambe.
+
+Nel nostro caso, il cambiamento che ha fatto davvero la differenza è stato:
+- inflation_radius modificato in entrambi i punti del file, non in uno solo.
+
+STATO FINALE DEL TUNING ATTUALE
+
+Attualmente abbiamo lasciato due parametri invariati e ne abbiamo cambiato uno:
+
+- robot_radius: lasciato uguale
+- cost_scaling_factor: lasciato uguale
+- inflation_radius: modificato a 0.75
+
+Risultato osservato:
+Il cambiamento si vede chiaramente nella costmap e il comportamento pratico del robot è migliorato, cioè Tiago si mantiene più lontano dagli ostacoli rispetto a prima.
+
+Nota pratica:
+Se in futuro si volesse modificare di nuovo questo comportamento, il primo parametro che ha già dimostrato effetto utile è inflation_radius, ma sempre in entrambe le sezioni costmap del file.
+
