@@ -1,0 +1,23 @@
+
+si potrbbero aggiungere tutti i counter timers come configurabili da config E aggiorngerci un commento (nel code e nella futura wiki) che OVVIAMENTE non sono esatti ma controllati a cascata dalle call a makePlan
+valutare se rendere same_goal non hard coded ma configurabile
+controllare meglio la saturazione dei conuter guard (anche se li ho sempre usati e oramai mi sono abituato)(se si una un intero abbstanza significativo il problema non si pone)
+
+HO GIA SISTEMATO la partenza autoatica: non farla; si parte aundo c'è un true nel topic explore/resume
+ALLA FINE HO RIEORIENTATO prima del nav a init MA POI non ho fatto nessun retry dello stesso PERO HO CONTROLLATO ESITO e ho AGGIORNATO LO STATO di conseguenza ESTENDENDOLO rispetto quello canonico di ExploreLite
+
+PositionGoalChecker per evitare le rotazioni finali (sistemare il dondolio finale molto fastidioso )(non è una moditica di ExploreLite, o meglio, è una modifica che non vorrei implementare in ExploreLite ma forzare a farlo esternamente, mi sembra piu razionale cosi O NO GIOVANE PADAWAN??
+modificare il planner in uno che fa percorso mega super lontani dagli ostacoli è alrra cosa che magari va fatto ESTERNAMENTE ma la futura wiki di ExploreVins potrebbe contenerla come nota d'uso
+esportare ExploreLite solo il mio nodo e cose affiini (senza altra roba strana) e farlo mio? oppure adattare il file explore.cpp (e OVVIAMENTE i correlati, header, XML, CMake, bla bla, pacchetto messaggi...) e clonare TUTTA ExploreLite originale restante (secondo me questa seconda è la scelt apiu elegante, dai, se faccio un buon lavoro ai morsetti, il resto potrebbe essre QUASI lasciato uugale, attenzione pero HO CAMBIATO L'AVVIO AUTOMATICO e questo potrebbe esssere un forte cambio che rompe il resto del pacchetto, fore bisognarebbe rendere la cosa configurabile da launcher E POI di default lasciare il (MERDOSO) riavvio automatico
+
+ogni tanto ExploreLite non parte e non aggancia proprio (FSM rimane ferma in eterno in WAIT)(è proprio nel comportamento canoicio di ExploreLite di base... programmato con i piedi :D)
+COME IN ORIGINALE il nodo nel costrutture aspetta dei server servizi/action che se non arrivano fanni si che il nodo non parta MAI. per ora aderiti a tale comortamento canonico. potenzialmente cambiare
+potrebbe essere problema legato a init mantenuto originale che crea client versio server action/server senza timeout guard (la FSM rimane bloccata perche non vede il nodo di EL collegarsi al topic explore resume, se la sottoscrizione al nodo viene fatta dopo la creazione dei cleint allora è confermato che le due problmeatiche qui dette sono correlate, altrimenti sono distente e bisogna gestire ambedue)
+
+la oscillazione finale la si potrebbe fare andando a generare un pose finale che sia allineato con l'arrivo lato ExplorLite? Si, si potrebbe, ma mi fa cagare come soluzione, preferisco sopra
+
+aggiungere nie parametri la possibilita di abilitare/disabilitare il nuovo FENOMENALE comportamento e poi, soprattutto... ci basimao sul fatto che ci sia possibilita di SPIN del robot: verifichiamo e, se cosi non è: rollback my padawan alla versione "originale "(in realtà comunque migliroata... hanno fatto un lavoro da culo) di explorelite
+
+NOTA POI CHE LATO NON EXPLORE LITE (dentro FSM) il sistema di esplorazione potrebbe essere assai migliorato: se la mappa prodotta fa merda (possibile, i sensori di tiago sono implementati con il buco del culo), rifarla (oppure provare a sistemare i sensori a monte, ma forse questa seconda strada è un poco troppo lenta)
+
+studiare come le modifiche fatte si comportano quando il pacchetto viene usato per il caso MULTI ROBOT, come gia accenttato sopra (riguarda qeusto la parte rimanente del pacchetto)
