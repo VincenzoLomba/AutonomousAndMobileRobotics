@@ -41,11 +41,13 @@
 #include <explore/costmap_client.h>
 #include <explore/frontier_search.h>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <nav_msgs/msg/path.hpp>
 #include <tf2_ros/transform_listener.hpp>
 
 #include <chrono>
 #include <cmath>
 #include <explore_lite_msgs/msg/explore_status.hpp>
+#include <action_msgs/srv/cancel_goal.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/bool.hpp>
@@ -53,7 +55,9 @@
 #include <string>
 #include <visualization_msgs/msg/marker_array.hpp>
 
+#include "nav2_msgs/action/compute_path_to_pose.hpp"
 #include "nav2_msgs/action/navigate_to_pose.hpp"
+#include "nav2_msgs/action/spin.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 
 using namespace std::placeholders;
@@ -83,6 +87,10 @@ public:
 
   using NavigationGoalHandle =
       rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>;
+  using ComputePathGoalHandle =
+      rclcpp_action::ClientGoalHandle<nav2_msgs::action::ComputePathToPose>;
+  using SpinGoalHandle =
+      rclcpp_action::ClientGoalHandle<nav2_msgs::action::Spin>;
 
 private:
   /**
@@ -90,18 +98,83 @@ private:
    */
   void makePlan();
 
-  // /**
-  //  * @brief  Publish a frontiers as markers
-  //  */
+  // ---------------------------------------------------------------------------
+  // Exploration pre-rotation state machine
+  // ---------------------------------------------------------------------------
+  // States:
+  //   IDLE                      - no sequence in progress
+  //   NAV_ACTIVE                - NavigateToPose is running toward a frontier
+  //   CANCEL_REQUESTED          - async_cancel_all_goals() sent, awaiting ack
+  //   WAITING_NAV_TERMINATION   - cancel ack received, awaiting nav result callback
+  //   PRE_ROTATION_PATH_REQUESTED - ComputePathToPose sent, target LOCKED
+  //   SPIN_ACTIVE               - Nav2 Spin behavior running, target LOCKED
+  //
+  // Target is LOCKED from PRE_ROTATION_PATH_REQUESTED onward: the heading
+  // computed by ComputePathToPose must remain coherent with the NavigateToPose
+  // goal that follows the Spin.
+  // ---------------------------------------------------------------------------
+  enum class CustomSequenceState
+  {
+    IDLE,
+    NAV_ACTIVE,
+    CANCEL_REQUESTED,
+    WAITING_NAV_TERMINATION,
+    PRE_ROTATION_PATH_REQUESTED,
+    SPIN_ACTIVE,
+  };
+
+  // Exploration pre-rotation sequence
+  void sendNavigateToPoseGoal(const geometry_msgs::msg::Point& target_position);
+  void beginCustomPreRotationSequence(const geometry_msgs::msg::Point& target_position);
+  void requestPathAndMaybePreRotate(const geometry_msgs::msg::Point& target_position);
+  void handleCancelAllGoalsResponse(
+      rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::CancelResponse::SharedPtr response,
+      uint64_t sequence_id);
+  void tryAdvancePendingSequenceAfterNavTermination();
+  void fallbackToCanonicalNavigate(const char* error_message);
+  void checkCustomSequenceWatchdogs();
+  void handleComputePathResult(
+      const ComputePathGoalHandle::WrappedResult& result,
+      const geometry_msgs::msg::Point& target_position);
+  void handleSpinResult(const SpinGoalHandle::WrappedResult& result,
+                        const geometry_msgs::msg::Point& target_position);
+  bool tryExtractInitialPathHeading(const nav_msgs::msg::Path& path,
+                                    double& heading) const;
+
+  // Return-to-init pre-rotation sequence (separate from exploration state machine)
+  void beginReturnToInitSequence();
+  void handleReturnComputePathResult(const ComputePathGoalHandle::WrappedResult& result);
+  void handleReturnSpinResult(const SpinGoalHandle::WrappedResult& result);
+
+  // ---------------------------------------------------------------------------
+  // State machine members
+  // ---------------------------------------------------------------------------
+  bool nav_active_ = false;
+  bool cancel_ack_received_ = false;
+  uint64_t current_nav_generation_ = 0;
+  uint64_t active_custom_sequence_id_ = 0;
+  uint64_t current_spin_generation_ = 0;
+  uint64_t current_compute_path_generation_ = 0;
+  CustomSequenceState custom_sequence_state_ = CustomSequenceState::IDLE;
+  geometry_msgs::msg::Point pending_target_position_{};
+  bool pending_target_valid_ = false;
+  rclcpp::Time cancel_request_start_time_;
+  rclcpp::Time nav_termination_wait_start_time_;
+  rclcpp::Time spin_start_time_;
+  rclcpp::Time compute_path_request_start_time_;
+  double cancel_request_timeout_sec_ = 5.0;
+  double nav_termination_timeout_sec_ = 5.0;
+  double spin_watchdog_timeout_sec_ = 25.0;
+  double compute_path_timeout_sec_ = 5.0;
+
+  // ---------------------------------------------------------------------------
+  // Visualization
+  // ---------------------------------------------------------------------------
   void visualizeFrontiers(
       const std::vector<frontier_exploration::Frontier>& frontiers);
 
   bool goalOnBlacklist(const geometry_msgs::msg::Point& goal);
 
-  NavigationGoalHandle::SharedPtr navigation_goal_handle_;
-  // void
-  // goal_response_callback(std::shared_future<NavigationGoalHandle::SharedPtr>
-  // future);
   void reachedGoal(const NavigationGoalHandle::WrappedResult& result,
                    const geometry_msgs::msg::Point& frontier_goal);
 
@@ -109,8 +182,8 @@ private:
       marker_array_publisher_;
 
   /**
-    * @brief Publisher for exploration status updates (see ExploreStatus.msg for status values)
-    */
+   * @brief Publisher for exploration status updates (see ExploreStatus.msg for status values)
+   */
   rclcpp::Publisher<explore_lite_msgs::msg::ExploreStatus>::SharedPtr status_pub_;
 
   rclcpp::Logger logger_;
@@ -120,9 +193,11 @@ private:
   Costmap2DClient costmap_client_;
   rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SharedPtr
       move_base_client_;
+  rclcpp_action::Client<nav2_msgs::action::ComputePathToPose>::SharedPtr
+      compute_path_client_;
+  rclcpp_action::Client<nav2_msgs::action::Spin>::SharedPtr spin_client_;
   frontier_exploration::FrontierSearch search_;
   rclcpp::TimerBase::SharedPtr exploring_timer_;
-  // rclcpp::TimerBase::SharedPtr oneshot_;
 
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr resume_subscription_;
   void resumeCallback(const std_msgs::msg::Bool::SharedPtr msg);
@@ -134,16 +209,26 @@ private:
   size_t last_markers_count_;
 
   geometry_msgs::msg::Pose initial_pose_;
-  void returnToInitialPose(void);
+  void returnToInitialPose();
 
   // parameters
   double planner_frequency_;
   double potential_scale_, orientation_scale_, gain_scale_;
   double progress_timeout_;
+  double min_prerotation_angle_;
   bool visualize_;
   bool return_to_init_;
   std::string robot_base_frame_;
   bool resuming_ = false;
+  bool finished_exploring_ = false;
+  // True after the very first resume() call. Used to publish EXPLORATION_STARTED
+  // exactly once (on first start) instead of EXPLORATION_IN_PROGRESS.
+  bool has_ever_started_ = false;
+  // Generation counter for the return-to-init NavigateToPose goal.
+  // Incremented before each async_send_goal in returnToInitialPose() and
+  // in resume() when finished_exploring_ is true, so that result callbacks
+  // from a return NavigateToPose cancelled by resume() are silently ignored.
+  uint64_t return_nav_generation_ = 0;
 };
 }  // namespace explore
 
