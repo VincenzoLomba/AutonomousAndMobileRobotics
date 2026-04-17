@@ -26,3 +26,5 @@ IMPORTANTE: esternamente a ExploreLite, se non si fosse gia capito, il buin vecc
 
 MAGARI rendere i tempi dei watchDog modificabili (mi sa che è una nota di nuova implementazione che mi era già venuta come idea e avevo gia scritto)
 inoltre, i watchdogs vanno con makePlan, quindi magari si potrebbe cambiare nome (timers -> makePlanTimers)
+
+IMPORTANTE: in una guida futura di explore prudent bisognerebbe indicare esplicitamente quali sono tutti i casi in cui il Explore Lite base chiama il metodo make-plan
