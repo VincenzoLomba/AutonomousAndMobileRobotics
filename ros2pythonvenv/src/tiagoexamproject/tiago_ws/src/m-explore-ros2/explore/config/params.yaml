@@ -5,15 +5,10 @@
     costmap_topic: map
     costmap_updates_topic: map_updates
     visualize: true
-    planner_frequency: 0.10 # 0.15
-    progress_timeout: 60.0 # 30.0
+    planner_frequency: 0.15
+    progress_timeout: 30.0
     potential_scale: 3.0
     orientation_scale: 0.0
     gain_scale: 1.0
     transform_tolerance: 0.3
-    min_frontier_size: 1.0 # 0.75
-    # Minimum absolute rotation angle (radians) required to trigger the pre-rotation Spin
-    # before a NavigateToPose goal. Applied symmetrically: if |computed_angle| < threshold,
-    # the Spin is skipped and the robot navigates directly. Default: ~10 degrees (0.1745 rad),
-    # meaning a 20-degree symmetric window around the current heading triggers no spin.
-    min_prerotation_angle: 0.1745
+    min_frontier_size: 0.75

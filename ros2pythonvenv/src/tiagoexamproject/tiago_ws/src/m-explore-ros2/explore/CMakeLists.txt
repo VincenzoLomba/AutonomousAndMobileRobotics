@@ -26,26 +26,37 @@ elseif("$ENV{ROS_DISTRO}" STREQUAL "dashing")
   message(STATUS "Build for ROS2 dashing")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDASHING")
 else()
-  message(STATUS "Build for ROS2: " "$ENV{ROS_DISTRO}")
+  message(STATUS "BuilD for ROS2: " "$ENV{ROS_DISTRO}")
 endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(action_msgs REQUIRED)
-find_package(angles REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(map_msgs REQUIRED)
-find_package(nav2_costmap_2d REQUIRED)
-find_package(nav2_msgs REQUIRED)
-find_package(nav_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
-find_package(tf2_ros REQUIRED)
+find_package(nav2_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(map_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(nav2_costmap_2d REQUIRED)
 find_package(explore_lite_msgs REQUIRED)
+
+set(DEPENDENCIES
+  rclcpp
+  std_msgs
+  sensor_msgs
+  tf2
+  tf2_ros
+  nav2_msgs
+  nav_msgs
+  map_msgs
+  nav2_costmap_2d
+  visualization_msgs
+)
 
 include_directories(
     include
@@ -77,7 +88,6 @@ target_include_directories(explore PUBLIC
   $<INSTALL_INTERFACE:include>)
 
 target_link_libraries(explore PUBLIC
-  ${action_msgs_TARGETS}
   ${explore_lite_msgs_TARGETS}
   ${geometry_msgs_TARGETS}
   ${map_msgs_TARGETS}
@@ -85,11 +95,9 @@ target_link_libraries(explore PUBLIC
   ${nav_msgs_TARGETS}
   ${std_msgs_TARGETS}
   ${visualization_msgs_TARGETS}
-  angles::angles
   nav2_costmap_2d::filters
   rclcpp::rclcpp
   tf2::tf2
-  tf2_geometry_msgs::tf2_geometry_msgs
   tf2_ros::tf2_ros
 )
 
@@ -119,8 +127,6 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_dependencies(
-  action_msgs
-  angles
   explore_lite_msgs
   geometry_msgs
   map_msgs
@@ -130,7 +136,6 @@ ament_export_dependencies(
   rclcpp
   std_msgs
   tf2
-  tf2_geometry_msgs
   tf2_ros
   visualization_msgs
 )
