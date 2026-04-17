@@ -23,3 +23,6 @@ NOTA POI CHE LATO NON EXPLORE LITE (dentro FSM) il sistema di esplorazione potre
 studiare come le modifiche fatte si comportano quando il pacchetto viene usato per il caso MULTI ROBOT, come gia accenttato sopra (riguarda qeusto la parte rimanente del pacchetto)
 
 IMPORTANTE: esternamente a ExploreLite, se non si fosse gia capito, il buin vecchio Nav2 (maledetto) pare usare Tiago come un veicolo com sterzo (e anche uno sterzo che è vincolato a essere bello largo) quasi senza capacità di ruotare aul posto. cercare di INDAGARE QUESTO COMPORTAMENTO 
+
+MAGARI rendere i tempi dei watchDog modificabili (mi sa che è una nota di nuova implementazione che mi era già venuta come idea e avevo gia scritto)
+inoltre, i watchdogs vanno con makePlan, quindi magari si potrebbe cambiare nome (timers -> makePlanTimers)
