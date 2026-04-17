@@ -9,6 +9,7 @@ from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
+from tiago_exam_tasks.nodes import nodesParameters
 
 def generate_launch_description():
 
@@ -42,6 +43,11 @@ def generate_launch_description():
     declareLaunchArgumentTiagoSpawnCoordinateZ = DeclareLaunchArgument(
         tiagoSpawnCoordinateZArgumentLabel,
         default_value = '0.0'
+    )
+    # This is the period of the Task1 FSM timer
+    declareLaunchArgumentFSMtimerPeriod = DeclareLaunchArgument(
+        nodesParameters.task1FSMtimerPeriodParameterName,
+        default_value = '1.0'
     )
 
     # Using "IncludeLaunchDescription" to include another launch file within this one.
@@ -130,25 +136,28 @@ def generate_launch_description():
                 'explore.launch.py'
             )
         ),
-        launch_arguments={
+        launch_arguments = {
             'use_sim_time': 'True'
         }.items()
     )
 
     # Using "Node" to include within this launch file the Node that implements the FSM that implements the logic that executes the Task1
     task1FSMNodeCMD = Node(
-        package='tiago_exam_tasks',
-        executable='task1_fsm_node',
-        name='task1_fsm_node',
-        output='screen' # This makes the node's log messages appear in the terminal, which can be useful for debugging and monitoring
+        package = 'tiago_exam_tasks',
+        executable = 'task1_fsm_node',
+        name = 'task1_fsm_node',
+        output = 'screen', # This makes the node's log messages appear in the terminal, which can be useful for debugging and monitoring
+        parameters = [
+            {nodesParameters.task1FSMtimerPeriodParameterName: LaunchConfiguration(nodesParameters.task1FSMtimerPeriodParameterName) }
+        ]
     )
 
     # Using "Node" to include within this launch file the Node that exposes the Action Server to control and move the Tiago's arm
     tiagoArmNodeCMD = Node(
-        package='tiago_exam_tasks',
-        executable='tiago_arm_node',
-        name='tiago_arm_node',
-        output='screen' # This makes the node's log messages appear in the terminal, which can be useful for debugging and monitoring
+        package = 'tiago_exam_tasks',
+        executable = 'tiago_arm_node',
+        name = 'tiago_arm_node',
+        output = 'screen' # This makes the node's log messages appear in the terminal, which can be useful for debugging and monitoring
     )
     
     ld = LaunchDescription()
@@ -157,6 +166,7 @@ def generate_launch_description():
     ld.add_action(declareLaunchArgumentTiagoSpawnCoordinateX)
     ld.add_action(declareLaunchArgumentTiagoSpawnCoordinateY)
     ld.add_action(declareLaunchArgumentTiagoSpawnCoordinateZ)
+    ld.add_action(declareLaunchArgumentFSMtimerPeriod)
     ld.add_action(tiagoExamCMD)
     ld.add_action(tiagoNavBringupCMD)
     ld.add_action(exploreLiteCMD)

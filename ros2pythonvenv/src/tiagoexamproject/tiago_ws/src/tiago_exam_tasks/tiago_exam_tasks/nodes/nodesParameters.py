@@ -2,20 +2,10 @@
 # This file contains some parameters that are gonna be used in developing the nodes of the Project.
 # BE AWARE: these parameters exist only to make development easier!
 
+task1FSMNodeName = "task1_fsm_node"
+task1FSMtimerPeriodParameterName = "fsm_timer_period"
 tiagoArmActionName = "tiago_arm_action"
 
-"""
-HOME_JOINT_POSITIONS = [
-    0.096,
-    2.460914,
-    -0.767945,
-    0.837758,
-    2.181662,
-    -0.942478,
-    0.069813,
-    -1.047198,
-]
-"""
 HOME_JOINT_POSITIONS = [
     0.0,       # torso_lift_joint   0.0m
     2.478368,  # arm_1_joint        142°
