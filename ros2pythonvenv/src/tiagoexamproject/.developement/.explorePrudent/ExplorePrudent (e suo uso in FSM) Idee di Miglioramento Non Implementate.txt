@@ -21,3 +21,5 @@ aggiungere nie parametri la possibilita di abilitare/disabilitare il nuovo FENOM
 NOTA POI CHE LATO NON EXPLORE LITE (dentro FSM) il sistema di esplorazione potrebbe essere assai migliorato: se la mappa prodotta fa merda (possibile, i sensori di tiago sono implementati con il buco del culo), rifarla (oppure provare a sistemare i sensori a monte, ma forse questa seconda strada è un poco troppo lenta)
 
 studiare come le modifiche fatte si comportano quando il pacchetto viene usato per il caso MULTI ROBOT, come gia accenttato sopra (riguarda qeusto la parte rimanente del pacchetto)
+
+IMPORTANTE: esternamente a ExploreLite, se non si fosse gia capito, il buin vecchio Nav2 (maledetto) pare usare Tiago come un veicolo com sterzo (e anche uno sterzo che è vincolato a essere bello largo) quasi senza capacità di ruotare aul posto. cercare di INDAGARE QUESTO COMPORTAMENTO 
