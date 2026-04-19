@@ -166,6 +166,12 @@ private:
   double nav_termination_timeout_sec_ = 5.0;
   double spin_watchdog_timeout_sec_ = 25.0;
   double compute_path_timeout_sec_ = 5.0;
+  // Spin retry state: reset at the start of each new pre-rotation sequence.
+  // current_spin_retry_count_ counts how many spins have been completed in
+  // the current sequence. last_computed_heading_ stores the path heading from
+  // the most recent ComputePath, used to detect post-spin costmap drift.
+  int    current_spin_retry_count_ = 0;
+  double last_computed_heading_ = 0.0;
 
   // ---------------------------------------------------------------------------
   // Visualization
@@ -216,6 +222,8 @@ private:
   double potential_scale_, orientation_scale_, gain_scale_;
   double progress_timeout_;
   double min_prerotation_angle_;
+  double post_spin_heading_tolerance_;
+  int    max_spin_retries_;
   bool visualize_;
   bool return_to_init_;
   std::string robot_base_frame_;

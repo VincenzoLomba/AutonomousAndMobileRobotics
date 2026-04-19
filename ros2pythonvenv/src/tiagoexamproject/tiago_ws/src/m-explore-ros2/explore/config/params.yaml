@@ -17,3 +17,17 @@
     # the Spin is skipped and the robot navigates directly. Default: ~10 degrees (0.1745 rad),
     # meaning a 20-degree symmetric window around the current heading triggers no spin.
     min_prerotation_angle: 0.1745
+    # After a pre-rotation Spin completes, ExploreLite re-requests the global path to check
+    # whether the costmap changed significantly during the spin (e.g. the laser revealed new
+    # obstacles while the robot was rotating). If the new path heading differs from the heading
+    # used to launch the spin by more than this threshold, an additional corrective spin is
+    # performed (subject to max_spin_retries). Default: ~20 degrees (0.3490 rad).
+    post_spin_heading_tolerance: 0.3490
+    # Maximum number of Spin attempts allowed per pre-rotation sequence (including the first).
+    # When set to 1, the behavior is identical to the original implementation: one spin is
+    # performed and NavigateToPose follows immediately, with no post-spin heading recheck.
+    # When set to 2 or more, ExploreLite will re-request the global path after each spin and
+    # perform an additional corrective spin if the heading drifted beyond post_spin_heading_tolerance,
+    # up to this many total spin attempts. If all attempts are exhausted, NavigateToPose is sent
+    # using the alignment achieved so far (canonical fallback). Default: 1 (current behavior).
+    max_spin_retries: 1

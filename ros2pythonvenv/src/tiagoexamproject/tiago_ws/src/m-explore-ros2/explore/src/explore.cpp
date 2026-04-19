@@ -75,6 +75,8 @@ Explore::Explore()
   this->declare_parameter<double>("min_frontier_size", 0.5);
   this->declare_parameter<bool>("return_to_init", false);
   this->declare_parameter<double>("min_prerotation_angle", 0.1745);
+  this->declare_parameter<double>("post_spin_heading_tolerance", 0.3490);
+  this->declare_parameter<int>("max_spin_retries", 1);
 
   this->get_parameter("planner_frequency", planner_frequency_);
   this->get_parameter("progress_timeout", timeout);
@@ -86,6 +88,8 @@ Explore::Explore()
   this->get_parameter("return_to_init", return_to_init_);
   this->get_parameter("robot_base_frame", robot_base_frame_);
   this->get_parameter("min_prerotation_angle", min_prerotation_angle_);
+  this->get_parameter("post_spin_heading_tolerance", post_spin_heading_tolerance_);
+  this->get_parameter("max_spin_retries", max_spin_retries_);
 
   progress_timeout_ = timeout;
   move_base_client_ =
@@ -414,6 +418,9 @@ void Explore::beginCustomPreRotationSequence(
   cancel_request_start_time_ = this->now();
   const uint64_t sequence_id = ++active_custom_sequence_id_;
   custom_sequence_state_ = CustomSequenceState::CANCEL_REQUESTED;
+  // Reset spin retry state for this new sequence.
+  current_spin_retry_count_ = 0;
+  last_computed_heading_ = 0.0;
 
   RCLCPP_DEBUG(logger_,
                "Starting a new custom pre-rotation sequence. All active ExploreLite "
@@ -524,9 +531,9 @@ void Explore::handleComputePathResult(
     return;
   }
 
-  double desired_heading = 0.0;
+  double new_heading = 0.0;
   if (result.result->path.poses.empty() ||
-      !tryExtractInitialPathHeading(result.result->path, desired_heading)) {
+      !tryExtractInitialPathHeading(result.result->path, new_heading)) {
     RCLCPP_ERROR(
         logger_,
         "Pre-rotation helper path request succeeded but did not provide a usable global path "
@@ -541,9 +548,53 @@ void Explore::handleComputePathResult(
     return;
   }
 
+  // ---------------------------------------------------------------------------
+  // Post-spin recheck: compare the newly computed heading with the heading that
+  // was used to launch the previous Spin. If the costmap changed significantly
+  // during the spin (e.g. the laser revealed new obstacles while the robot
+  // rotated in place), the global planner may produce a path that diverges from
+  // the direction the robot just aligned to — which is exactly the condition
+  // that causes the robot to deviate on departure and risk collisions.
+  //
+  // This block runs only when current_spin_retry_count_ > 0, i.e. at least one
+  // spin has already been executed in this sequence (recheck path).
+  // ---------------------------------------------------------------------------
+  if (current_spin_retry_count_ > 0) {
+    const double heading_diff = std::abs(
+        angles::shortest_angular_distance(last_computed_heading_, new_heading));
+
+    if (heading_diff <= post_spin_heading_tolerance_) {
+      // Heading is stable: the costmap did not drift enough to require re-alignment.
+      // Proceed directly with NavigateToPose.
+      RCLCPP_INFO(logger_,
+                  "Post-spin heading recheck (spin %d/%d): heading change = %.4f rad (%.2f deg) "
+                  "is within tolerance = %.4f rad (%.2f deg). "
+                  "Alignment is stable. Proceeding with NavigateToPose.",
+                  current_spin_retry_count_, max_spin_retries_,
+                  heading_diff, heading_diff * 180.0 / M_PI,
+                  post_spin_heading_tolerance_, post_spin_heading_tolerance_ * 180.0 / M_PI);
+      custom_sequence_state_ = CustomSequenceState::IDLE;
+      pending_target_valid_ = false;
+      sendNavigateToPoseGoal(target_position);
+      return;
+    }
+
+    // Heading drifted beyond tolerance: re-spin is warranted.
+    RCLCPP_INFO(logger_,
+                "Post-spin heading recheck (spin %d/%d): heading changed by %.4f rad (%.2f deg), "
+                "exceeding tolerance = %.4f rad (%.2f deg). "
+                "Will perform an additional alignment spin.",
+                current_spin_retry_count_, max_spin_retries_,
+                heading_diff, heading_diff * 180.0 / M_PI,
+                post_spin_heading_tolerance_, post_spin_heading_tolerance_ * 180.0 / M_PI);
+  }
+
+  // Store the current heading as the reference for the next potential recheck.
+  last_computed_heading_ = new_heading;
+
   const auto robot_pose = costmap_client_.getRobotPose();
   const double current_yaw = tf2::getYaw(robot_pose.orientation);
-  const double relative_spin = angles::shortest_angular_distance(current_yaw, desired_heading);
+  const double relative_spin = angles::shortest_angular_distance(current_yaw, new_heading);
 
   // Skip spin if the rotation magnitude (in either direction) is below the
   // configured threshold. The check is on the absolute value so the threshold
@@ -584,8 +635,9 @@ void Explore::handleComputePathResult(
 
   RCLCPP_INFO(logger_,
               "Launching Nav2 Spin behavior for custom pre-rotation before NavigateToPose. "
-              "Requested relative spin: %.4f rad (%.2f deg)",
-              relative_spin, relative_spin * 180.0 / M_PI);
+              "Requested relative spin: %.4f rad (%.2f deg)%s",
+              relative_spin, relative_spin * 180.0 / M_PI,
+              current_spin_retry_count_ > 0 ? " [retry alignment]" : "");
   spin_start_time_ = this->now();
   custom_sequence_state_ = CustomSequenceState::SPIN_ACTIVE;
   spin_client_->async_send_goal(spin_goal, send_goal_options);
@@ -594,10 +646,8 @@ void Explore::handleComputePathResult(
 void Explore::handleSpinResult(const SpinGoalHandle::WrappedResult& result,
                                const geometry_msgs::msg::Point& target_position)
 {
-  custom_sequence_state_ = CustomSequenceState::IDLE;
-  pending_target_valid_ = false;
-
   if (result.code != rclcpp_action::ResultCode::SUCCEEDED) {
+    // Spin failed: fall back to canonical NavigateToPose, same as before.
     RCLCPP_ERROR(
         logger_,
         "Custom pre-rotation via Nav2 Spin did not complete successfully. ExploreLite will now "
@@ -605,14 +655,39 @@ void Explore::handleSpinResult(const SpinGoalHandle::WrappedResult& result,
         "NavigateToPose goal without any further custom interception, and Nav2 plus the existing "
         "ExploreLite logic will handle planning, replanning, recovery, timeouts, and any eventual "
         "frontier blacklisting exactly as in the unmodified package.");
-  } else {
-    RCLCPP_INFO(
-        logger_,
-        "Custom pre-rotation via Nav2 Spin completed successfully. ExploreLite will now send "
-        "the canonical NavigateToPose goal.");
+    custom_sequence_state_ = CustomSequenceState::IDLE;
+    pending_target_valid_ = false;
+    sendNavigateToPoseGoal(target_position);
+    return;
   }
 
-  sendNavigateToPoseGoal(target_position);
+  ++current_spin_retry_count_;
+
+  if (current_spin_retry_count_ < max_spin_retries_) {
+    // Retries are still available. Re-request the global path to check whether
+    // the costmap changed significantly during the spin (e.g. new obstacles
+    // revealed by the laser while the robot was rotating). If the new path
+    // heading differs from the one used to launch this spin by more than
+    // post_spin_heading_tolerance_, handleComputePathResult will launch an
+    // additional corrective spin. Otherwise it will proceed with NavigateToPose.
+    RCLCPP_INFO(logger_,
+                "Custom pre-rotation via Nav2 Spin completed (spin %d of max %d). "
+                "Re-requesting global path to verify heading stability after spin.",
+                current_spin_retry_count_, max_spin_retries_);
+    // State returns to PRE_ROTATION_PATH_REQUESTED; target remains locked.
+    requestPathAndMaybePreRotate(target_position);
+  } else {
+    // All allowed spin attempts have been used. Proceed with NavigateToPose
+    // using the alignment achieved so far (canonical fallback from this point).
+    RCLCPP_INFO(
+        logger_,
+        "Custom pre-rotation via Nav2 Spin completed successfully "
+        "(spin %d of max %d, retries exhausted). Proceeding with NavigateToPose.",
+        current_spin_retry_count_, max_spin_retries_);
+    custom_sequence_state_ = CustomSequenceState::IDLE;
+    pending_target_valid_ = false;
+    sendNavigateToPoseGoal(target_position);
+  }
 }
 
 // -----------------------------------------------------------------------------

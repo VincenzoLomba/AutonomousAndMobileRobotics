@@ -14,3 +14,7 @@ explore_node:
     # Minimum absolute rotation angle (radians) required to trigger the pre-rotation Spin.
     # Applied symmetrically. Default: ~10 degrees (0.1745 rad).
     min_prerotation_angle: 0.1745
+    # Post-spin heading recheck tolerance. See params.yaml for full description.
+    post_spin_heading_tolerance: 0.3490
+    # Maximum spin attempts per pre-rotation sequence. 1 = current behavior (no recheck).
+    max_spin_retries: 1
