@@ -131,14 +131,16 @@ class Task1FSMNode(Node):
         msg = Bool()
         msg.data = True
         self.exploreLiteExploreResumeTopicPublisher.publish(msg)
-        self.get_logger().info("[START_EXPLORE_LITE] Published True on 'explore/resume'. Waiting for ExploreLite to actually enter exploration.")
+        self.get_logger().info("[START_EXPLORE_LITE] Published True on 'explore/resume', now waiting for ExploreLite to actually starting exploration...")
         self.currentFSMstate = Task1FSMState.WAIT_EXPLORATION_START
 
     def handle_waitExplorationStart(self):
         if self.exploreLiteStatus == ExploreStatus.EXPLORATION_STARTED or self.exploreLiteStatus == ExploreStatus.EXPLORATION_IN_PROGRESS:
             self.get_logger().info(f"[WAIT_EXPLORATION_START] ExploreLite reported status '{self.exploreLiteStatus}', thus assuming exploration has started and passing to wait for its completion...")
             self.currentFSMstate = Task1FSMState.WAIT_EXPLORATION_COMPLETE
-        else: self.get_logger().info(f"[WAIT_EXPLORATION_START] Waiting for ExploreLite to start exploration... Current status: {self.exploreLiteStatus}")
+        else:
+            self.get_logger().info(f"[WAIT_EXPLORATION_START] Waiting for ExploreLite to start exploration... Current status: {self.exploreLiteStatus}")
+            # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
 
     def handle_waitExplorationComplete(self):
         # Temporary stop point until the next FSM state is implemented
