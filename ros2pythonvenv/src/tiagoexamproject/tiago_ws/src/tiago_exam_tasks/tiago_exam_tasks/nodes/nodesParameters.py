@@ -2,8 +2,20 @@
 # This file contains some parameters that are gonna be used in developing the nodes of the Project.
 # BE AWARE: these parameters exist only to make development easier!
 
+exploreLiteExploreResumeTopicLabel = "explore/resume"
+exploreLiteStatusTopicLabel = "explore/status"
+exploreLiteNodeName = "explore_node"
+
 task1FSMNodeName = "task1_fsm_node"
-task1FSMtimerPeriodParameterName = "fsm_timer_period"
+
+nav2SaveMapServiceName = "/map_saver/save_map"
+nav2MapTopic = "map"
+mapSaveFullPathParameterName = "map_path_full"
+mapSaveFullPathParameterDefaultValue = "/tmp/map"
+
+fsmTimerPeriodParameterName = "fsm_timer_period"
+fsmTimerPeriodParameterDefaultValue = 0.5
+
 tiagoArmActionName = "tiago_arm_action"
 
 HOME_JOINT_POSITIONS = [

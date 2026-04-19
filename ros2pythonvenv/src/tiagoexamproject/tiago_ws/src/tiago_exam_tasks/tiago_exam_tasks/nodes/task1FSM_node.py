@@ -9,6 +9,9 @@ from tiago_exam_interfaces.action import TiagoArm
 from explore_lite_msgs.msg import ExploreStatus
 from enum import Enum
 from . import nodesParameters
+from nav2_msgs.srv import SaveMap
+from rclpy.parameter import Parameter
+import os
 
 class Task1FSMState(Enum):
     TUCK_ARM = 1
@@ -17,6 +20,9 @@ class Task1FSMState(Enum):
     START_EXPLORE_LITE = 4
     WAIT_EXPLORATION_START = 5
     WAIT_EXPLORATION_COMPLETE = 6
+    SAVE_MAP = 7
+    WAIT_SAVE_MAP = 8
+    FINAL = 9
 
 class Task1FSMNode(Node):
 
@@ -24,24 +30,39 @@ class Task1FSMNode(Node):
 
         super().__init__(nodesParameters.task1FSMNodeName)
         self.get_logger().info("Starting task1_fsm_node initialization...")
-        self.exploreLiteExploreResumeTopicLabel = "explore/resume"
-        self.exploreLiteStatusTopicLabel = "explore/status"
-        self.exploreLiteNodeName = "explore_node"
+        self.exploreLiteExploreResumeTopicLabel = nodesParameters.exploreLiteExploreResumeTopicLabel
+        self.exploreLiteStatusTopicLabel = nodesParameters.exploreLiteStatusTopicLabel
+        self.exploreLiteNodeName = nodesParameters.exploreLiteNodeName
         self.armTuckGoalSent = False
         self.armTuckGoalDone = False
         self.exploreLiteStatus = None
+        self.mapSaveDone = False
+        self.mapSaveSucceeded = False
+        self.shouldShutdown = False
 
         self.exploreLiteExploreResumeTopicPublisher = self.create_publisher(Bool, self.exploreLiteExploreResumeTopicLabel, 10) # remark: 10 is the length of this publisher queue, i.e. the maximum number of messages that can be buffered before being sent out (if the subscriber is not receiving & processing them fast enough)
         self.exploreLiteStatusSubscription = self.create_subscription(ExploreStatus, self.exploreLiteStatusTopicLabel, self.exploreLiteStatusCallback, 10) # remark: same as in the above line
-        self.tiagoArmActionClient = ActionClient(self, TiagoArm, nodesParameters.tiagoArmActionName)
+        self.tiagoArmActionClient = ActionClient(self, TiagoArm, nodesParameters.tiagoArmActionName) # Action Client
+        self.saveMapClient = self.create_client(SaveMap, nodesParameters.nav2SaveMapServiceName) # Service Client
 
         self.currentFSMstate = Task1FSMState.TUCK_ARM
-        fsmTimerPeriodDefaultValue = 1.0
-        self.declare_parameter(nodesParameters.task1FSMtimerPeriodParameterName, fsmTimerPeriodDefaultValue)
-        fsmTimerPeriod = float(self.get_parameter(nodesParameters.task1FSMtimerPeriodParameterName).value)
-        if fsmTimerPeriod <= 0.0:
-            self.get_logger().warn(f"Invalid FSM timer period ({fsmTimerPeriod}), falling back to {fsmTimerPeriodDefaultValue} secs.")
+
+        mapSaveFullPathDefaultValue = nodesParameters.mapSaveFullPathParameterDefaultValue
+        self.declare_parameter(nodesParameters.mapSaveFullPathParameterName, Parameter.Type.STRING)
+        self.savedMapPath = self.get_parameter(nodesParameters.mapSaveFullPathParameterName).value
+        if self.savedMapPath is None or str(self.savedMapPath).strip() == "":
+            self.get_logger().warn(f"None or empty {nodesParameters.mapSaveFullPathParameterName} parameter, falling back to default value '{mapSaveFullPathDefaultValue}'.")
+            self.savedMapPath = mapSaveFullPathDefaultValue
+        else: self.savedMapPath = str(self.savedMapPath).strip()
+
+        fsmTimerPeriodDefaultValue = nodesParameters.fsmTimerPeriodParameterDefaultValue
+        self.declare_parameter(nodesParameters.fsmTimerPeriodParameterName, Parameter.Type.DOUBLE)
+        fsmTimerPeriod = self.get_parameter(nodesParameters.fsmTimerPeriodParameterName).value
+        if fsmTimerPeriod is None or float(fsmTimerPeriod) <= 0.0:
+            self.get_logger().warn(f"Invalid FSM timer period ({fsmTimerPeriod}), falling back to default value {fsmTimerPeriodDefaultValue} secs.")
             fsmTimerPeriod = fsmTimerPeriodDefaultValue
+        else: fsmTimerPeriod = float(fsmTimerPeriod)
+
         self.FSMtimer = self.create_timer(fsmTimerPeriod, self.stepUpFSM) # A timer created like that (alias with self.create_timer) is gonna be spun as soon as this node is spun via rclpy.spin(); also remeber that a ROS2 timer always waits for the end of the previous callback execution before triggering the next one
         self.get_logger().info(f"Task1 FSM node initialized. Initial state: {self.currentFSMstate.name}.")
 
@@ -54,6 +75,9 @@ class Task1FSMNode(Node):
         elif self.currentFSMstate == Task1FSMState.START_EXPLORE_LITE: self.handle_startExploreLite()
         elif self.currentFSMstate == Task1FSMState.WAIT_EXPLORATION_START: self.handle_waitExplorationStart()
         elif self.currentFSMstate == Task1FSMState.WAIT_EXPLORATION_COMPLETE: self.handle_waitExplorationComplete()
+        elif self.currentFSMstate == Task1FSMState.SAVE_MAP: self.handle_saveMap()
+        elif self.currentFSMstate == Task1FSMState.WAIT_SAVE_MAP: self.handle_waitSaveMap()
+        elif self.currentFSMstate == Task1FSMState.FINAL: self.handle_final()
         else: self.get_logger().error(f"Encountered an unknown FSM state: {self.currentFSMstate}")
 
     def handle_tuckArm(self):
@@ -139,22 +163,68 @@ class Task1FSMNode(Node):
             self.get_logger().info(f"[WAIT_EXPLORATION_START] ExploreLite reported status '{self.exploreLiteStatus}', thus assuming exploration has started and passing to wait for its completion...")
             self.currentFSMstate = Task1FSMState.WAIT_EXPLORATION_COMPLETE
         else:
-            self.get_logger().info(f"[WAIT_EXPLORATION_START] Waiting for ExploreLite to start exploration... Current status: {self.exploreLiteStatus}")
+            self.get_logger().info(f"[WAIT_EXPLORATION_START] Waiting for ExploreLite to start exploration... Current ExploreLite status: {self.exploreLiteStatus}")
             # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
 
     def handle_waitExplorationComplete(self):
-        # Temporary stop point until the next FSM state is implemented
+        if self.exploreLiteStatus == ExploreStatus.EXPLORATION_COMPLETE or self.exploreLiteStatus == ExploreStatus.RETURNED_TO_ORIGIN:
+            self.get_logger().info("[WAIT_EXPLORATION_COMPLETE] ExploreLite reported a completed exploration, proceeding to map saving.")
+            self.currentFSMstate = Task1FSMState.SAVE_MAP
+        elif self.exploreLiteStatus == ExploreStatus.RETURN_TO_ORIGIN_FAILED:
+            self.get_logger().warn("[WAIT_EXPLORATION_COMPLETE] ExploreLite reported a completed exploration followed by a return to origin failed, proceeding to map saving anyway.")
+            self.currentFSMstate = Task1FSMState.SAVE_MAP
+        else:
+            pass
+            # self.get_logger().info(f"[WAIT_EXPLORATION_COMPLETE] Waiting for exploration to be completed... Current ExploreLite status: {self.exploreLiteStatus}")
+
+    def handle_saveMap(self):
+        self.get_logger().info("[SAVE_MAP] Saving map...")
+        if not self.saveMapClient.wait_for_service(timeout_sec = 1.0):
+            self.get_logger().info(f"[SAVE_MAP] Waiting for {nodesParameters.nav2SaveMapServiceName} Service...")
+            return
+        self.mapSaveDone = False
+        self.mapSaveSucceeded = False
+        savedMapDir = os.path.dirname(self.savedMapPath)
+        if savedMapDir: os.makedirs(savedMapDir, exist_ok=True)
+        req = SaveMap.Request()
+        req.map_topic = nodesParameters.nav2MapTopic
+        req.map_url = self.savedMapPath
+        req.image_format = "pgm"
+        req.map_mode = "trinary" # cells are divided in free/empty/unknown
+        req.free_thresh = 0.25
+        req.occupied_thresh = 0.65
+        saveMapFuture = self.saveMapClient.call_async(req)
+        saveMapFuture.add_done_callback(self.saveMapCallback)
+        self.currentFSMstate = Task1FSMState.WAIT_SAVE_MAP
+
+    def saveMapCallback(self, future):
+        response = future.result() # TODO: insert this line within a try-except block and manage possible exceptions in a proper way
+        self.mapSaveDone = True
+        if response.result: self.mapSaveSucceeded = True
+        else:
+            self.get_logger().error("[SAVE_MAP] SaveMap Service failed and returned False as a result.")
+            self.mapSaveSucceeded = False
+    
+    def handle_waitSaveMap(self):
+        if self.mapSaveDone:
+            if self.mapSaveSucceeded:
+                self.get_logger().info("[WAIT_SAVE_MAP] Map saving completed successfully!")
+                self.currentFSMstate = Task1FSMState.FINAL
+            else:
+                self.get_logger().warn("[WAIT_SAVE_MAP] Map saving failed. Retrying...")
+                self.currentFSMstate = Task1FSMState.SAVE_MAP
+    
+    def handle_final(self):
+        self.get_logger().info("[FINAL] Task1 FSM Node completed all its steps successfully! Now shutting down the node...")
         self.FSMtimer.cancel()
-        self.get_logger().info(
-            "FSM timer cancelled temporarily. Ready to implement next state."
-        )
+        self.shouldShutdown = True
 
 def main(args = None):
     node = None
     try:
         rclpy.init(args = args)
         node = Task1FSMNode()
-        rclpy.spin(node)
+        while rclpy.ok() and not node.shouldShutdown: rclpy.spin_once(node, timeout_sec = 0.1) # spin_once() waits the indicated time and then spins (IF present, otherwise it continues) the single first available callback, then returns 
     except KeyboardInterrupt:
         if node is not None: node.get_logger().info("KeyboardInterrupt received, shutting down task1_fsm_node...")
     finally:

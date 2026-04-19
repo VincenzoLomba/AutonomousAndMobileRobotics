@@ -24,7 +24,7 @@ def generate_launch_description():
     tiagoSpawnTimeoutArgumentLabel = 'tiagoSpawnTimeout'
     declareLaunchArgumentTiagoSpawnTimeout = DeclareLaunchArgument(
         tiagoSpawnTimeoutArgumentLabel,
-        default_value = '30.0'
+        default_value = '60.0'
     )
     # This is the X coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0).
     tiagoSpawnCoordinateXArgumentLabel = 'tiagoSpawnCoordinateX'
@@ -46,9 +46,15 @@ def generate_launch_description():
     )
     # This is the period of the Task1 FSM timer
     declareLaunchArgumentFSMtimerPeriod = DeclareLaunchArgument(
-        nodesParameters.task1FSMtimerPeriodParameterName,
-        default_value = '1.0'
+        nodesParameters.fsmTimerPeriodParameterName,
+        default_value = str(nodesParameters.fsmTimerPeriodParameterDefaultValue)
     )
+    # This is the FULL path where the produced map (after the exploration) will be saved
+    declareLaunchArgumentSavedMapPath = DeclareLaunchArgument(
+        nodesParameters.mapSaveFullPathParameterName,
+        default_value = nodesParameters.mapSaveFullPathParameterDefaultValue
+    )
+
 
     # Using "IncludeLaunchDescription" to include another launch file within this one.
     # Specifically, the launch file related to starting up the Tiago simulation, that performs the following operations:
@@ -148,7 +154,8 @@ def generate_launch_description():
         name = 'task1_fsm_node',
         output = 'screen', # This makes the node's log messages appear in the terminal, which can be useful for debugging and monitoring
         parameters = [
-            {nodesParameters.task1FSMtimerPeriodParameterName: LaunchConfiguration(nodesParameters.task1FSMtimerPeriodParameterName) }
+            {nodesParameters.fsmTimerPeriodParameterName: LaunchConfiguration(nodesParameters.fsmTimerPeriodParameterName)},
+            {nodesParameters.mapSaveFullPathParameterName: LaunchConfiguration(nodesParameters.mapSaveFullPathParameterName)}
         ]
     )
 
@@ -167,6 +174,7 @@ def generate_launch_description():
     ld.add_action(declareLaunchArgumentTiagoSpawnCoordinateY)
     ld.add_action(declareLaunchArgumentTiagoSpawnCoordinateZ)
     ld.add_action(declareLaunchArgumentFSMtimerPeriod)
+    ld.add_action(declareLaunchArgumentSavedMapPath)
     ld.add_action(tiagoExamCMD)
     ld.add_action(tiagoNavBringupCMD)
     ld.add_action(exploreLiteCMD)
