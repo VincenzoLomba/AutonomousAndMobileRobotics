@@ -28,3 +28,5 @@ MAGARI rendere i tempi dei watchDog modificabili (mi sa che è una nota di nuova
 inoltre, i watchdogs vanno con makePlan, quindi magari si potrebbe cambiare nome (timers -> makePlanTimers)
 
 IMPORTANTE: in una guida futura di explore prudent bisognerebbe indicare esplicitamente quali sono tutti i casi in cui il Explore Lite base chiama il metodo make-plan
+
+migliorare il comportamento ereditato dalla versione originale e fare in modo che la verifica di un progresso non effettivamente fatto entro il time out non usi direttamente main distance perché questo può creare falsi negativi (farsi blacklist ing) in caso di de-routing è molto lunghi
