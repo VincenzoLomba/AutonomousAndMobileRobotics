@@ -77,6 +77,16 @@ Explore::Explore()
   this->declare_parameter<double>("min_prerotation_angle", 0.1745);
   this->declare_parameter<double>("post_spin_heading_tolerance", 0.3490);
   this->declare_parameter<int>("max_spin_retries", 1);
+  // Watchdog timeouts for each phase of the pre-rotation custom sequence.
+  // All values are in seconds. See params.yaml for full documentation and
+  // inter-parameter constraints.
+  this->declare_parameter<double>("cancel_request_timeout", 5.0);
+  this->declare_parameter<double>("nav_termination_timeout", 5.0);
+  this->declare_parameter<double>("compute_path_timeout", 5.0);
+  this->declare_parameter<double>("spin_watchdog_timeout", 25.0);
+  // Time budget (seconds) granted to Nav2's Spin behavior for each pre-rotation.
+  // INVARIANT (enforced below): spin_watchdog_timeout >= spin_time_allowance.
+  this->declare_parameter<double>("spin_time_allowance", 20.0);
 
   this->get_parameter("planner_frequency", planner_frequency_);
   this->get_parameter("progress_timeout", timeout);
@@ -90,8 +100,37 @@ Explore::Explore()
   this->get_parameter("min_prerotation_angle", min_prerotation_angle_);
   this->get_parameter("post_spin_heading_tolerance", post_spin_heading_tolerance_);
   this->get_parameter("max_spin_retries", max_spin_retries_);
+  this->get_parameter("cancel_request_timeout", cancel_request_timeout_sec_);
+  this->get_parameter("nav_termination_timeout", nav_termination_timeout_sec_);
+  this->get_parameter("compute_path_timeout", compute_path_timeout_sec_);
+  this->get_parameter("spin_watchdog_timeout", spin_watchdog_timeout_sec_);
+  this->get_parameter("spin_time_allowance", spin_time_allowance_sec_);
 
   progress_timeout_ = timeout;
+
+  // MOD 2 — Enforce the invariant: spin_watchdog_timeout >= spin_time_allowance.
+  //
+  // If violated, the ExploreLite watchdog would fire while Nav2's Spin behavior
+  // is still legitimately executing and publishing cmd_vel. The overlap window
+  // between the watchdog firing and Nav2 stopping is bounded by Nav2's
+  // behavior_server cycle period (1 / cycle_frequency). Because cycle_frequency
+  // is an externally configurable parameter (default 10 Hz → 100 ms, but can be
+  // as low as 1 Hz → 1 s or lower), this window is not bounded to a fixed small
+  // value. Relying on numeric defaults is therefore insufficient: the invariant
+  // must be guaranteed structurally via this runtime check.
+  if (spin_watchdog_timeout_sec_ < spin_time_allowance_sec_) {
+    RCLCPP_WARN(
+        logger_,
+        "spin_watchdog_timeout (%.2fs) is less than spin_time_allowance (%.2fs). "
+        "This would cause the ExploreLite watchdog to fire while Nav2 Spin is still "
+        "legitimately running, risking concurrent cmd_vel commands from both the Spin "
+        "behavior and the NavigateToPose controller. "
+        "Adjusting spin_watchdog_timeout to spin_time_allowance = %.2fs.",
+        spin_watchdog_timeout_sec_,
+        spin_time_allowance_sec_,
+        spin_time_allowance_sec_);
+    spin_watchdog_timeout_sec_ = spin_time_allowance_sec_;
+  }
   move_base_client_ =
       rclcpp_action::create_client<nav2_msgs::action::NavigateToPose>(
           this, ACTION_NAME);
@@ -306,6 +345,38 @@ void Explore::makePlan()
     last_progress_ = this->now();
     prev_distance_ = frontier->min_distance;
   }
+
+  // MOD 4 — Freeze the progress timer during intentional non-navigation states.
+  //
+  // The progress_timeout mechanism was designed for the original ExploreLite
+  // behaviour where the robot always navigates directly toward the frontier:
+  // if min_distance does not decrease for progress_timeout seconds, the robot
+  // is genuinely stuck and the frontier should be blacklisted.
+  //
+  // The V5 pre-rotation sequence introduces four states in which the robot is
+  // stationary or spinning in place by design, NOT because it is stuck:
+  //   CANCEL_REQUESTED          — waiting for Nav2 to acknowledge the cancel
+  //   WAITING_NAV_TERMINATION   — waiting for the previous nav result callback
+  //   PRE_ROTATION_PATH_REQUESTED — waiting for ComputePathToPose response
+  //   SPIN_ACTIVE               — Nav2 Spin behavior running
+  //
+  // All four watchdog timeouts that bound these states are user-configurable
+  // parameters and may be set to values that, individually or collectively,
+  // exceed progress_timeout. Assuming "with current defaults this cannot
+  // happen" is therefore insufficient: the invariant must hold for any valid
+  // parameter combination. Freezing last_progress_ during these states ensures
+  // the blacklist timer never fires while the robot is intentionally paused.
+  //
+  // IDLE and NAV_ACTIVE are deliberately excluded:
+  //   IDLE      — no sequence of ours is active; the robot may be stopped for
+  //               unknown external reasons, and the original timer must apply.
+  //   NAV_ACTIVE — the robot is navigating toward the frontier; this is
+  //               exactly the phase progress_timeout is designed to monitor.
+  if (custom_sequence_state_ != CustomSequenceState::IDLE &&
+      custom_sequence_state_ != CustomSequenceState::NAV_ACTIVE) {
+    last_progress_ = this->now();
+  }
+
   // black list if we've made no progress for a long time
   if ((this->now() - last_progress_ >
       tf2::durationFromSec(progress_timeout_)) && !resuming_) {
@@ -614,8 +685,11 @@ void Explore::handleComputePathResult(
 
   auto spin_goal = nav2_msgs::action::Spin::Goal();
   spin_goal.target_yaw = static_cast<float>(relative_spin);
-  spin_goal.time_allowance.sec = 20;
-  spin_goal.time_allowance.nanosec = 0;
+  spin_goal.time_allowance.sec =
+      static_cast<int32_t>(std::floor(spin_time_allowance_sec_));
+  spin_goal.time_allowance.nanosec =
+      static_cast<uint32_t>((spin_time_allowance_sec_ -
+                             std::floor(spin_time_allowance_sec_)) * 1e9);
 
   const uint64_t spin_generation = ++current_spin_generation_;
   auto send_goal_options =
@@ -730,6 +804,24 @@ void Explore::checkCustomSequenceWatchdogs()
 
   if (custom_sequence_state_ == CustomSequenceState::SPIN_ACTIVE &&
       (now - spin_start_time_ > tf2::durationFromSec(spin_watchdog_timeout_sec_))) {
+    // MOD 3 — Cancel the in-flight Spin on Nav2's behavior_server before falling back.
+    //
+    // fallbackToCanonicalNavigate() will invalidate our result callback via
+    // ++current_spin_generation_, but that only prevents ExploreLite from acting
+    // on the callback — it does NOT stop the physical spin on Nav2. If
+    // behavior_server's cycle_frequency is low (e.g. 1 Hz), Nav2 may continue
+    // publishing cmd_vel for up to one full cycle period after NavigateToPose has
+    // already been sent. This fire-and-forget cancel ensures Nav2 stops publishing
+    // spin cmd_vel as soon as it receives the request, regardless of cycle_frequency.
+    //
+    // The cancel response is intentionally not registered: Nav2 will report
+    // CANCELED or ERROR_GOAL_TERMINATED (if already done), either of which is
+    // harmless. The result callback, if it arrives, will be dropped due to the
+    // generation mismatch set by fallbackToCanonicalNavigate().
+    //
+    // This call is placed ONLY in this watchdog branch — it is the sole caller of
+    // fallbackToCanonicalNavigate() where a Spin is physically active on Nav2.
+    spin_client_->async_cancel_all_goals();
     fallbackToCanonicalNavigate(
         "The custom pre-rotation sequence watchdog detected that Nav2 Spin has exceeded the "
         "local waiting budget before its result callback returned. ExploreLite will now "
@@ -995,8 +1087,11 @@ void Explore::handleReturnComputePathResult(
 
   auto spin_goal = nav2_msgs::action::Spin::Goal();
   spin_goal.target_yaw = static_cast<float>(relative_spin);
-  spin_goal.time_allowance.sec = 20;
-  spin_goal.time_allowance.nanosec = 0;
+  spin_goal.time_allowance.sec =
+      static_cast<int32_t>(std::floor(spin_time_allowance_sec_));
+  spin_goal.time_allowance.nanosec =
+      static_cast<uint32_t>((spin_time_allowance_sec_ -
+                             std::floor(spin_time_allowance_sec_)) * 1e9);
 
   // Increment spin generation counter before sending.
   const uint64_t spin_gen = ++current_spin_generation_;

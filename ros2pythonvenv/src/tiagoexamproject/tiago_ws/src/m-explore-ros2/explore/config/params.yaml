@@ -1,33 +1,136 @@
 /**:
   ros__parameters:
+
+    # ---------------------------------------------------------------------------
+    # Robot and map frame configuration
+    # ---------------------------------------------------------------------------
+
     robot_base_frame: base_link
+
+    # Enable automatic return to the starting pose when exploration completes.
     return_to_init: true
+
+    # Topic names for the occupancy grid and incremental updates.
     costmap_topic: map
     costmap_updates_topic: map_updates
+
+    # Publish frontier markers to RViz for visual debugging.
     visualize: true
-    planner_frequency: 0.10 # 0.15
-    progress_timeout: 60.0 # 30.0
+
+    # ---------------------------------------------------------------------------
+    # Frontier search parameters
+    # ---------------------------------------------------------------------------
+
+    # Weight applied to frontier distance in the cost function:
+    #   cost = potential_scale * min_distance * resolution
+    #          - gain_scale * frontier_size * resolution
+    # Lower cost = preferred frontier. Increase to favour nearer frontiers.
     potential_scale: 3.0
+
+    # Weight for orientation alignment (currently unused in the cost function;
+    # kept at 0.0 for compatibility).
     orientation_scale: 0.0
+
+    # Weight applied to frontier size. Increase to favour larger (more
+    # informative) frontiers even at greater distance.
     gain_scale: 1.0
+
+    # Transform tolerance (seconds) for TF lookups.
     transform_tolerance: 0.3
+
+    # Minimum frontier arc length (metres) to be considered for navigation.
+    # Smaller frontiers are discarded as noise.
     min_frontier_size: 1.0 # 0.75
-    # Minimum absolute rotation angle (radians) required to trigger the pre-rotation Spin
-    # before a NavigateToPose goal. Applied symmetrically: if |computed_angle| < threshold,
-    # the Spin is skipped and the robot navigates directly. Default: ~10 degrees (0.1745 rad),
-    # meaning a 20-degree symmetric window around the current heading triggers no spin.
+
+    # ---------------------------------------------------------------------------
+    # Exploration timing
+    # ---------------------------------------------------------------------------
+
+    # Rate (Hz) at which makePlan() is called. This is also the rate at which
+    # all internal watchdog timeouts are checked — a lower frequency means
+    # watchdog timeouts fire later than their nominal value.
+    # Effective watchdog granularity: ± (1 / planner_frequency) seconds.
+    planner_frequency: 0.10 # 0.15
+
+    # Time (seconds) without measurable progress toward the current frontier
+    # before that frontier is blacklisted and the next one is attempted.
+    # "Progress" means either: the target frontier changed, OR the Euclidean
+    # distance from the robot to the nearest frontier cell decreased.
+    #
+    # NOTE: This timer is frozen automatically while the robot is in any
+    # intentional non-navigation state of the pre-rotation sequence
+    # (CANCEL_REQUESTED, WAITING_NAV_TERMINATION, PRE_ROTATION_PATH_REQUESTED,
+    # SPIN_ACTIVE). It therefore reflects only time spent actually navigating
+    # or genuinely stuck, never time spent in pre-rotation housekeeping.
+    progress_timeout: 60.0 # 30.0
+
+    # ---------------------------------------------------------------------------
+    # Pre-rotation sequence parameters
+    # ---------------------------------------------------------------------------
+    # Before each NavigateToPose goal, ExploreLite optionally requests a
+    # ComputePathToPose to extract the initial heading of the global path, then
+    # commands a Nav2 Spin behavior to align the robot to that heading. This
+    # reduces the wide-arc departure behaviour caused by heading misalignment.
+
+    # Minimum rotation magnitude (radians) required to trigger a pre-rotation
+    # Spin. The check is symmetric: if |computed_angle| < threshold the spin is
+    # skipped and NavigateToPose is sent directly. Default ≈ 10 degrees.
     min_prerotation_angle: 0.1745
-    # After a pre-rotation Spin completes, ExploreLite re-requests the global path to check
-    # whether the costmap changed significantly during the spin (e.g. the laser revealed new
-    # obstacles while the robot was rotating). If the new path heading differs from the heading
-    # used to launch the spin by more than this threshold, an additional corrective spin is
-    # performed (subject to max_spin_retries). Default: ~20 degrees (0.3490 rad).
+
+    # After each Spin completes, ExploreLite re-requests ComputePathToPose to
+    # check whether the global plan changed while the robot was rotating (e.g.
+    # because new obstacles were revealed by the laser during the spin). If the
+    # new heading differs from the previous one by more than this threshold, an
+    # additional corrective Spin is performed, subject to max_spin_retries.
+    # Default ≈ 20 degrees.
     post_spin_heading_tolerance: 0.3490
-    # Maximum number of Spin attempts allowed per pre-rotation sequence (including the first).
-    # When set to 1, the behavior is identical to the original implementation: one spin is
-    # performed and NavigateToPose follows immediately, with no post-spin heading recheck.
-    # When set to 2 or more, ExploreLite will re-request the global path after each spin and
-    # perform an additional corrective spin if the heading drifted beyond post_spin_heading_tolerance,
-    # up to this many total spin attempts. If all attempts are exhausted, NavigateToPose is sent
-    # using the alignment achieved so far (canonical fallback). Default: 1 (current behavior).
+
+    # Maximum total number of Spin attempts per pre-rotation sequence (including
+    # the first). When set to 1 (default), the behaviour is identical to the
+    # original implementation: one spin, no heading recheck. When set to 2 or
+    # more, up to (max_spin_retries - 1) corrective spins may follow.
     max_spin_retries: 1
+
+    # ---------------------------------------------------------------------------
+    # Watchdog timeouts for the pre-rotation state machine
+    # ---------------------------------------------------------------------------
+    # Each phase of the pre-rotation sequence has an independent watchdog.
+    # If the expected event (cancel acknowledgement, nav termination, path
+    # result, spin result) does not arrive within the timeout, ExploreLite falls
+    # back to canonical NavigateToPose without any pre-rotation.
+    #
+    # All timeouts are in seconds. Because watchdogs are checked inside
+    # makePlan(), the effective firing granularity is ± (1 / planner_frequency).
+    # Example: with planner_frequency = 0.10 Hz, a 5 s timeout may fire anywhere
+    # between 5 s and 15 s after the triggering event.
+    #
+    # REQUIRED INVARIANT: spin_watchdog_timeout >= spin_time_allowance
+    #   If violated, the ExploreLite watchdog would fire while Nav2 Spin is
+    #   still legitimately publishing cmd_vel, causing NavigateToPose to start
+    #   concurrently. The overlap window is bounded by behavior_server's
+    #   cycle_frequency (configurable externally, default 10 Hz → 100 ms but
+    #   can be as low as 1 Hz → 1 s). The invariant is enforced at startup with
+    #   an automatic correction and a WARN log if violated.
+
+    # Time (seconds) to wait for Nav2 to acknowledge async_cancel_all_goals().
+    cancel_request_timeout: 5.0
+
+    # Time (seconds) to wait for the previous NavigateToPose result callback
+    # after the cancel has been acknowledged.
+    nav_termination_timeout: 5.0
+
+    # Time (seconds) to wait for ComputePathToPose to return a result before
+    # falling back to canonical NavigateToPose.
+    compute_path_timeout: 5.0
+
+    # Time (seconds) to wait for Nav2 Spin to complete before falling back.
+    # MUST be >= spin_time_allowance (see invariant note above).
+    # Recommended: spin_time_allowance + 5.0 s to absorb system load jitter.
+    spin_watchdog_timeout: 25.0
+
+    # Time budget (seconds) passed to Nav2's Spin behavior as time_allowance.
+    # Nav2 will abort the spin with TIMEOUT if it is not completed within this
+    # duration. Applied to both exploration pre-rotation spins and the
+    # return-to-init pre-rotation spin.
+    # MUST be <= spin_watchdog_timeout (see invariant note above).
+    spin_time_allowance: 20.0

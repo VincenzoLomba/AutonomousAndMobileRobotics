@@ -11,7 +11,7 @@ task1FSMNodeName = "task1_fsm_node"
 nav2SaveMapServiceName = "/map_saver/save_map"
 nav2MapTopic = "map"
 mapSaveFullPathParameterName = "map_path_full"
-mapSaveFullPathParameterDefaultValue = "/tmp/map"
+mapSaveFullPathParameterDefaultValue = "" # "/tmp/map"
 
 fsmTimerPeriodParameterName = "fsm_timer_period"
 fsmTimerPeriodParameterDefaultValue = 0.5

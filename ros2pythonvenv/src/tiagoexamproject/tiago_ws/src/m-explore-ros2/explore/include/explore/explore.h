@@ -162,10 +162,17 @@ private:
   rclcpp::Time nav_termination_wait_start_time_;
   rclcpp::Time spin_start_time_;
   rclcpp::Time compute_path_request_start_time_;
-  double cancel_request_timeout_sec_ = 5.0;
-  double nav_termination_timeout_sec_ = 5.0;
-  double spin_watchdog_timeout_sec_ = 25.0;
-  double compute_path_timeout_sec_ = 5.0;
+  // All timeout values below are loaded from YAML parameters in the constructor.
+  // See params.yaml for documentation and inter-parameter constraints.
+  double cancel_request_timeout_sec_;
+  double nav_termination_timeout_sec_;
+  double spin_watchdog_timeout_sec_;
+  double compute_path_timeout_sec_;
+  // Maximum time (seconds) granted to Nav2's Spin behavior to complete a
+  // pre-rotation. Passed as time_allowance to both exploration spins and the
+  // return-to-init spin. INVARIANT: spin_watchdog_timeout_sec_ >= spin_time_allowance_sec_
+  // (enforced and auto-corrected in the constructor with a WARN log).
+  double spin_time_allowance_sec_;
   // Spin retry state: reset at the start of each new pre-rotation sequence.
   // current_spin_retry_count_ counts how many spins have been completed in
   // the current sequence. last_computed_heading_ stores the path heading from
