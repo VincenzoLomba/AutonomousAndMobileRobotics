@@ -226,7 +226,7 @@ def main(args = None):
         node = Task1FSMNode()
         while rclpy.ok() and not node.shouldShutdown: rclpy.spin_once(node, timeout_sec = 0.1) # spin_once() waits the indicated time and then spins (IF present, otherwise it continues) the single first available callback, then returns 
     except KeyboardInterrupt:
-        if node is not None: node.get_logger().info("KeyboardInterrupt received, shutting down task1_fsm_node...")
+        if node is not None: node.get_logger().info(f"KeyboardInterrupt received, shutting down {nodesParameters.task1FSMNodeName}...")
     finally:
         if node is not None: node.destroy_node()
         if rclpy.ok(): rclpy.shutdown()

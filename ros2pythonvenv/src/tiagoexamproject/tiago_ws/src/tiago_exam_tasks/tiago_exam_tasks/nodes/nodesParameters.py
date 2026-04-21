@@ -2,11 +2,14 @@
 # This file contains some parameters that are gonna be used in developing the nodes of the Project.
 # BE AWARE: these parameters exist only to make development easier!
 
+gazeboWorldName = "group7"
+
+exploreLiteNodeName = "explore_node"
 exploreLiteExploreResumeTopicLabel = "explore/resume"
 exploreLiteStatusTopicLabel = "explore/status"
-exploreLiteNodeName = "explore_node"
 
 task1FSMNodeName = "task1_fsm_node"
+task2FSMNodeName = "task2_fsm_node"
 
 nav2SaveMapServiceName = "/map_saver/save_map"
 nav2MapTopic = "map"

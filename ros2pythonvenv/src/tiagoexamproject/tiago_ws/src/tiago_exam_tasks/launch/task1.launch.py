@@ -18,7 +18,7 @@ def generate_launch_description():
     worldNameArgumentLabel = 'world_name'
     declareLaunchArgumentWorldName = DeclareLaunchArgument(
         worldNameArgumentLabel,
-        default_value = 'example'
+        default_value = nodesParameters.gazeboWorldName
     )
     # This is the maximum time the Tiago spawner waits before successfully spawning the robot.
     tiagoSpawnTimeoutArgumentLabel = 'tiagoSpawnTimeout'
