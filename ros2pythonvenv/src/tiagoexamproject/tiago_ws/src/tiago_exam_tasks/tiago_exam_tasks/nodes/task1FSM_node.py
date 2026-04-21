@@ -29,20 +29,24 @@ class Task1FSMNode(Node):
     def __init__(self):
 
         super().__init__(nodesParameters.task1FSMNodeName)
-        self.get_logger().info("Starting task1_fsm_node initialization...")
+        self.get_logger().info(f"Starting {nodesParameters.task1FSMNodeName} initialization...")
         self.exploreLiteExploreResumeTopicLabel = nodesParameters.exploreLiteExploreResumeTopicLabel
         self.exploreLiteStatusTopicLabel = nodesParameters.exploreLiteStatusTopicLabel
         self.exploreLiteNodeName = nodesParameters.exploreLiteNodeName
-        self.armTuckGoalSent = False
         self.armTuckGoalDone = False
+        self.armTuckGoalSucceeded = False
         self.exploreLiteStatus = None
         self.mapSaveDone = False
         self.mapSaveSucceeded = False
         self.shouldShutdown = False
 
+        # Create the publisher for the explore/resume topic to be able to start/pause the autonomous exploration managed by the ExploreLite Node
         self.exploreLiteExploreResumeTopicPublisher = self.create_publisher(Bool, self.exploreLiteExploreResumeTopicLabel, 10) # remark: 10 is the length of this publisher queue, i.e. the maximum number of messages that can be buffered before being sent out (if the subscriber is not receiving & processing them fast enough)
-        self.exploreLiteStatusSubscription = self.create_subscription(ExploreStatus, self.exploreLiteStatusTopicLabel, self.exploreLiteStatusCallback, 10) # remark: same as in the above line
+        # Subscribe to the explore/status topic to get the current status of the ExploreLite Node (i.e. understand the state of the autonomous exploration)
+        self.exploreLiteStatusSubscription = self.create_subscription(ExploreStatus, self.exploreLiteStatusTopicLabel, self.exploreLiteStatusCallback, 10) # remark: same as above
+        # Initialize the Action Client for the TiagoArm Action Server (exposed by the TiagoArm Node) to be able to send goal for the arm motion
         self.tiagoArmActionClient = ActionClient(self, TiagoArm, nodesParameters.tiagoArmActionName) # Action Client
+        # Initialize the Service Client for the SaveMap Service (exposed by the Nav2 Map Saver Node) to be able to send requests for saving the final generated map
         self.saveMapClient = self.create_client(SaveMap, nodesParameters.nav2SaveMapServiceName) # Service Client
 
         self.currentFSMstate = Task1FSMState.TUCK_ARM
@@ -81,21 +85,20 @@ class Task1FSMNode(Node):
         else: self.get_logger().error(f"Encountered an unknown FSM state: {self.currentFSMstate}")
 
     def handle_tuckArm(self):
-        if not self.tiagoArmActionClient.wait_for_server(timeout_sec = 0.5): # Waiting for the Action Server (exposed by the TiagoArm Node) to be online...
-                                                                             # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
+        if not self.tiagoArmActionClient.server_is_ready(): # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
             self.get_logger().info("[TUCK_ARM] Waiting for TiagoArm Action Server...")
             return
-        if not self.armTuckGoalSent:
-            self.get_logger().info("[TUCK_ARM] Sending goal to TiagoArm Action Server...")
-            goalMsg = TiagoArm.Goal()
-            goalMsg.joint_positions = nodesParameters.HOME_JOINT_POSITIONS
-            sendGoalFuture = self.tiagoArmActionClient.send_goal_async(
-                goalMsg,
-                feedback_callback = self.armFeedbackCallback
-            )
-            sendGoalFuture.add_done_callback(self.armGoalResponseCallback)
-            self.armTuckGoalSent = True
-            self.currentFSMstate = Task1FSMState.WAIT_ARM_TUCKED
+        self.get_logger().info("[TUCK_ARM] Sending goal to TiagoArm Action Server...")
+        goalMsg = TiagoArm.Goal()
+        goalMsg.joint_positions = nodesParameters.HOME_JOINT_POSITIONS
+        self.armTuckGoalDone = False
+        self.armTuckGoalSucceeded = False
+        sendGoalFuture = self.tiagoArmActionClient.send_goal_async(
+            goalMsg,
+            feedback_callback = self.armFeedbackCallback
+        )
+        sendGoalFuture.add_done_callback(self.armGoalResponseCallback)
+        self.currentFSMstate = Task1FSMState.WAIT_ARM_TUCKED
 
     def armFeedbackCallback(self, feedback_msg):
         feedback = feedback_msg.feedback
@@ -105,7 +108,8 @@ class Task1FSMNode(Node):
         goalHandle = future.result() # TODO: insert this line within a try-except block and manage possible exceptions in a proper way
         if not goalHandle.accepted:
             self.get_logger().error("[TUCK_ARM] Goal rejected by TiagoArm Action Server.")
-            self.armTuckGoalSent = False
+            self.armTuckGoalDone = True
+            self.armTuckGoalSucceeded = False
             return
         self.get_logger().info("[TUCK_ARM] Goal accepted by TiagoArm Action Server.")
         getResultFuture = goalHandle.get_result_async()
@@ -116,18 +120,21 @@ class Task1FSMNode(Node):
         if result.success:
             self.get_logger().info(f"[TUCK_ARM] Success: {result.message}")
             self.armTuckGoalDone = True
-            self.armTuckGoalSent = False
+            self.armTuckGoalSucceeded = True
         else:
             self.get_logger().error(f"[TUCK_ARM] Failed: {result.message}")
-            self.armTuckGoalSent = False
+            self.armTuckGoalDone = True
+            self.armTuckGoalSucceeded = False
 
     def handle_waitArmTucked(self):
+        self.get_logger().info("[WAIT_ARM_TUCKED] Waiting for arm to be tucked...")
         if self.armTuckGoalDone:
-            self.get_logger().info("[WAIT_ARM_TUCKED] Arm motion completed.")
-            self.currentFSMstate = Task1FSMState.WAIT_FOR_EXPLORE_LITE
-        elif not self.armTuckGoalSent:
-            self.get_logger().warn("[WAIT_ARM_TUCKED] Arm goal failed or was rejected by TiagoArm Action Server. Retrying...")
-            self.currentFSMstate = Task1FSMState.TUCK_ARM
+            if self.armTuckGoalSucceeded:
+                self.get_logger().info("[WAIT_ARM_TUCKED] Arm motion completed.")
+                self.currentFSMstate = Task1FSMState.WAIT_FOR_EXPLORE_LITE
+            else:
+                self.get_logger().warn("[WAIT_ARM_TUCKED] Arm goal failed or was rejected by TiagoArm Action Server. Retrying...")
+                self.currentFSMstate = Task1FSMState.TUCK_ARM
 
     def isExploreLiteReady(self) -> bool:
         exploreResumeTopicSubscriptionsInfo = self.get_subscriptions_info_by_topic(self.exploreLiteExploreResumeTopicLabel)
@@ -167,6 +174,7 @@ class Task1FSMNode(Node):
             # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
 
     def handle_waitExplorationComplete(self):
+        # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
         if self.exploreLiteStatus == ExploreStatus.EXPLORATION_COMPLETE or self.exploreLiteStatus == ExploreStatus.RETURNED_TO_ORIGIN:
             self.get_logger().info("[WAIT_EXPLORATION_COMPLETE] ExploreLite reported a completed exploration, proceeding to map saving.")
             self.currentFSMstate = Task1FSMState.SAVE_MAP
@@ -174,16 +182,15 @@ class Task1FSMNode(Node):
             self.get_logger().warn("[WAIT_EXPLORATION_COMPLETE] ExploreLite reported a completed exploration followed by a return to origin failed, proceeding to map saving anyway.")
             self.currentFSMstate = Task1FSMState.SAVE_MAP
         else:
-            pass
+            # Avoid an excessive amount of log messages during the exploration!
             # self.get_logger().info(f"[WAIT_EXPLORATION_COMPLETE] Waiting for exploration to be completed... Current ExploreLite status: {self.exploreLiteStatus}")
+            pass
 
     def handle_saveMap(self):
         self.get_logger().info("[SAVE_MAP] Saving map...")
-        if not self.saveMapClient.wait_for_service(timeout_sec = 1.0):
+        if not self.saveMapClient.service_is_ready(): # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
             self.get_logger().info(f"[SAVE_MAP] Waiting for {nodesParameters.nav2SaveMapServiceName} Service...")
             return
-        self.mapSaveDone = False
-        self.mapSaveSucceeded = False
         savedMapDir = os.path.dirname(self.savedMapPath)
         if savedMapDir: os.makedirs(savedMapDir, exist_ok=True)
         req = SaveMap.Request()
@@ -193,6 +200,8 @@ class Task1FSMNode(Node):
         req.map_mode = "trinary" # cells are divided in free/empty/unknown
         req.free_thresh = 0.25
         req.occupied_thresh = 0.65
+        self.mapSaveDone = False
+        self.mapSaveSucceeded = False
         saveMapFuture = self.saveMapClient.call_async(req)
         saveMapFuture.add_done_callback(self.saveMapCallback)
         self.currentFSMstate = Task1FSMState.WAIT_SAVE_MAP
@@ -206,6 +215,7 @@ class Task1FSMNode(Node):
             self.mapSaveSucceeded = False
     
     def handle_waitSaveMap(self):
+        self.get_logger().info("[WAIT_SAVE_MAP] Waiting for map saving to be completed...")
         if self.mapSaveDone:
             if self.mapSaveSucceeded:
                 self.get_logger().info("[WAIT_SAVE_MAP] Map saving completed successfully!")
@@ -224,7 +234,7 @@ def main(args = None):
     try:
         rclpy.init(args = args)
         node = Task1FSMNode()
-        while rclpy.ok() and not node.shouldShutdown: rclpy.spin_once(node, timeout_sec = 0.1) # spin_once() waits the indicated time and then spins (IF present, otherwise it continues) the single first available callback, then returns 
+        while rclpy.ok() and not node.shouldShutdown: rclpy.spin_once(node, timeout_sec = 0.1) # spin_once() spins (IF present, otherwise it waits once the indicated time) the single first available callback, then immediatly returns 
     except KeyboardInterrupt:
         if node is not None: node.get_logger().info(f"KeyboardInterrupt received, shutting down {nodesParameters.task1FSMNodeName}...")
     finally:
