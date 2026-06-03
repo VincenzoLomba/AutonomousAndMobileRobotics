@@ -1,0 +1,143 @@
+# This Python file defines a ROS2 Humble Node which exposes an Action Server to be used to control the Tiago's gripper.
+
+from rclpy.node import Node
+from rclpy.action import ActionServer
+from tiago_exam_interfaces.action import TiagoGripper
+from rclpy.callback_groups import ReentrantCallbackGroup
+from pymoveit2 import GripperInterface
+import rclpy
+from threading import Thread
+from . import nodesParameters
+
+# TODO: manage the possibility (unwanted, but possible) of receiving a new goal while one is already being executed
+
+# Gripper parameters
+GRIPPER_JOINT_NAMES = [
+    "gripper_left_finger_joint",
+    "gripper_right_finger_joint",
+]
+
+OPEN_GRIPPER_POSITIONS = [0.04, 0.04]  # One value for each Tiago gripper joint, 4cm each.
+CLOSED_GRIPPER_POSITIONS = [0.03, 0.03]
+
+# Name of the MoveIt planning group that contains the gripper joints.
+GRIPPER_GROUP_NAME = "gripper"
+
+# ROS2 action used to command the gripper fingers.
+GRIPPER_COMMAND_ACTION_NAME = "gripper_controller/joint_trajectory"
+
+
+class TiagoGripperNode(Node):
+
+    def __init__(self):
+
+        super().__init__('tiago_gripper_node')
+        self.get_logger().info("Starting tiago_gripper_node initialization...")
+
+        # ReentrantCallbackGroup allows callbacks associated with the same node/group to be executed without strict mutual exclusion, which is useful here because
+        # indeed within this node the action server and the internal ROS interfaces used by GripperInterface may need to make progress concurrently.
+        # This choice only becomes truly meaningful when the node is spun by a MultiThreadedExecutor (i.e. with more than one worker thread);
+        # indeed, with a single-threaded executor, callbacks are still processed one at a time.
+        self.callback_group = ReentrantCallbackGroup()
+
+        # Create gripper interface. This does not require a full MoveIt2 arm interface: it commands the gripper trajectory controller.
+        self.gripper = GripperInterface(
+            node=self,
+            gripper_joint_names=GRIPPER_JOINT_NAMES,
+            open_gripper_joint_positions=OPEN_GRIPPER_POSITIONS,
+            closed_gripper_joint_positions=CLOSED_GRIPPER_POSITIONS,
+            gripper_group_name=GRIPPER_GROUP_NAME,
+            callback_group=self.callback_group,
+            gripper_command_action_name=GRIPPER_COMMAND_ACTION_NAME,
+        )
+        self.get_logger().info("Gripper interface successfully created.")
+
+        # Initializing the Action Server for controlling the Tiago's gripper that this Node is gonna expose.
+        self.actionServer = ActionServer(
+            self,
+            TiagoGripper,
+            nodesParameters.tiagoGripperActionName,
+            execute_callback=self.actionServerExecuteCallback,
+            callback_group=self.callback_group,
+        )
+        self.get_logger().info(f"TiagoGripper Action Server is ready on action name '{nodesParameters.tiagoGripperActionName}'.")
+
+    def actionServerExecuteCallback(self, goal_handle):
+
+        self.get_logger().info("Received new TiagoGripper goal.")
+        feedbackMessage = TiagoGripper.Feedback()
+        result = TiagoGripper.Result()
+
+        try:
+            openCommand = bool(goal_handle.request.open)
+            commandLabel = "open" if openCommand else "close"
+
+            self.get_logger().info(f"Planning & waiting for execution of gripper command: {commandLabel}.")
+            feedbackMessage.current_state = "planning"
+            goal_handle.publish_feedback(feedbackMessage)
+
+            if openCommand:
+                self.gripper.open()
+            else:
+                self.gripper.close()
+
+            feedbackMessage.current_state = "executing"
+            goal_handle.publish_feedback(feedbackMessage)
+            execution_result = self.gripper.wait_until_executed()
+
+            if execution_result is False:
+                msg = f"Gripper {commandLabel} execution failed."
+                self.get_logger().error(msg)
+                feedbackMessage.current_state = "failed"
+                goal_handle.publish_feedback(feedbackMessage)
+                goal_handle.abort()
+                result.success = False
+                result.message = msg
+                return result
+
+            feedbackMessage.current_state = "completed"
+            goal_handle.publish_feedback(feedbackMessage)
+            goal_handle.succeed()
+            result.success = True
+            result.message = f"Gripper {commandLabel} completed successfully."
+            self.get_logger().info(result.message)
+            return result
+
+        except Exception as exc:
+            msg = f"Exception while executing TiagoGripper action: {exc}"
+            self.get_logger().error(msg)
+            feedbackMessage.current_state = "exception"
+            goal_handle.publish_feedback(feedbackMessage)
+            goal_handle.abort()
+            result.success = False
+            result.message = msg
+            return result
+
+
+def main(args=None):
+
+    rclpy.init(args=args)
+    node = TiagoGripperNode()
+
+    executor = rclpy.executors.MultiThreadedExecutor(num_threads=2)  # Create a ROS2 executor that can run callbacks in parallel using 2 worker threads.
+                                                                     # This is required because GripperInterface uses callbacks/action clients internally.
+    executor.add_node(node)  # Register this very TiagoGripperNode with the executor so that all its subscriptions,
+                             # timers, services and action clients become active and start receiving events and callbacks.
+    spin_thread = Thread(target=executor.spin, daemon=True, args=())  # Create a new Python thread that will run executor.spin().
+                                                                      # Note that executor.spin() is a blocking call.
+                                                                      # Running spin() in a separate thread allows the main thread to continue executing the remaining code.
+    spin_thread.start()  # From this point, ROS2 is actively processing callbacks in the background.
+
+    node.get_logger().info("TiagoGripper node now spinning with MultiThreadedExecutor.")
+
+    try:
+        spin_thread.join()
+    except KeyboardInterrupt:
+        node.get_logger().info("KeyboardInterrupt received, shutting down TiagoGripper node...")
+    finally:
+        executor.shutdown()
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == "__main__": main()

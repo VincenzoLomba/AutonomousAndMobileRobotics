@@ -1154,7 +1154,7 @@
         <collision name='Wall_24_Collision'>
           <geometry>
             <box>
-              <size>6 0.15 2.5</size>
+              <size>5 0.15 2.5</size>
             </box>
           </geometry>
           <pose>0 0 1.25 0 -0 0</pose>
@@ -1176,7 +1176,7 @@
           <pose>0 0 1.25 0 -0 0</pose>
           <geometry>
             <box>
-              <size>6 0.15 2.5</size>
+              <size>5 0.15 2.5</size>
             </box>
           </geometry>
           <material>
@@ -1190,7 +1190,7 @@
             <layer>0</layer>
           </meta>
         </visual>
-        <pose>0 -4.0 0 0 -0 1.5709</pose>
+        <pose>0 -4.5 0 0 -0 1.5709</pose>
         <self_collide>0</self_collide>
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
@@ -1199,7 +1199,7 @@
         <collision name='Wall_30_Collision'>
           <geometry>
             <box>
-              <size>2.0 0.15 2.5</size>
+              <size>3.0 0.15 2.5</size>
             </box>
           </geometry>
           <pose>0 0 1.25 0 -0 0</pose>
@@ -1221,7 +1221,7 @@
           <pose>0 0 1.25 0 -0 0</pose>
           <geometry>
             <box>
-              <size>2.0 0.15 2.5</size>
+              <size>3.0 0.15 2.5</size>
             </box>
           </geometry>
           <material>
@@ -1235,7 +1235,7 @@
             <layer>0</layer>
           </meta>
         </visual>
-        <pose>3.5 0.0 0 0 -0 0</pose>
+        <pose>3.0 0.0 0 0 -0 0</pose>
         <self_collide>0</self_collide>
         <enable_wind>0</enable_wind>
         <kinematic>0</kinematic>
@@ -1358,13 +1358,13 @@
 
     <include>
       <uri>model://env_exam_pick_surface</uri>
-      <pose>-0.8 -4.2 0.15 0 0 1.5709</pose>
+      <pose>-3 -3 0.15 0 0 -1.5709</pose>
       <static>1</static>
     </include>
 
     <include>
       <uri>model://env_exam_place_surface</uri>
-      <pose>2.5 -9 0.15 0 0 0</pose>
+      <pose>0.0 -7 0.15 0 0 -1.5709</pose>
       <static>1</static>
     </include>
 
@@ -1377,18 +1377,18 @@
 
     <include>
       <uri>model://env_exam_cylinder2</uri>
-      <pose>2.7 -6.4 0.1 0 0 0</pose>
+      <pose>2.7 -6.0 0.1 0 0 0</pose>
       <static>1</static>
     </include>
 
     <include>
       <uri>model://aruco_cube_exam_id63</uri>
-      <pose>-0.9 -4.2 1.0 0 0 0</pose>
+      <pose>-2.9 -2.9 1.0 0 0 0</pose>
       <static>0</static>
     </include>
     <include>
       <uri>model://aruco_cube_exam_id582</uri>
-      <pose>-1.0 -4.4 1.0 0 0 0</pose>
+      <pose>-2.8 -3.2 1.0 0 0 0</pose>
       <static>0</static>
     </include>
 
@@ -1416,6 +1416,6 @@
       <static>0</static>
     </include>
 
-  <plugin name = "gazebo_link_attacher" filename ="libgazebo_link_attacher.so"/>
+
   </world>
 </sdf>
