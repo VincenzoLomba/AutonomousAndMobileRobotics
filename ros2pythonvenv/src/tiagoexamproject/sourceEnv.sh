@@ -28,4 +28,5 @@ export LC_NUMERIC=en_US.UTF-8                       # Setting eng locals: this i
 
 source /home/vincenzo/Documenti/AMR/ros2pythonvenv/bin/activate # Activating the Python environment
 cd /home/vincenzo/Documenti/AMR/ros2pythonvenv/src  # Moving to the workspaces folder
+# export PYTHONPATH=/home/vincenzo/Documenti/AMR/ros2pythonvenv/lib/python3.10/site-packages:$PYTHONPATH
 

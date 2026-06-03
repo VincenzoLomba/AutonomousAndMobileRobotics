@@ -11,6 +11,8 @@
   <depend>tiago_exam_interfaces</depend>
   <depend>pymoveit2</depend>
 
+  <exec_depend>linkattacher_msgs</exec_depend>
+  
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>

@@ -1,0 +1,16 @@
+# Goal
+# True opens the gripper, False closes it.
+bool open
+
+# Optional Gazebo LinkAttacher target.
+# Used when open == False to attach the object after the physical gripper close.
+# Used when open == True only as a fallback if no object is currently remembered as attached.
+string object_model_name
+string object_link_name
+---
+# Result
+bool success
+string message
+---
+# Feedback
+string current_state

@@ -1,0 +1,39 @@
+collision_monitor:                                        # Nome del nodo ROS 2 a cui si applicano questi parametri
+  ros__parameters:                                        # Sezione standard dei parametri ROS 2
+
+    enabled: true                                         # Abilita globalmente il collision monitor
+    base_frame_id: "base_link"                            # Frame solidale al robot usato come riferimento locale
+    odom_frame_id: "odom"                                 # Frame odometrico usato per trasformazioni e movimento nel piano
+    cmd_vel_in_topic: "cmd_vel_unsafe"                    # Topic dei comandi velocità in ingresso, non ancora filtrati
+    cmd_vel_out_topic: "cmd_vel_safe"                     # Topic dei comandi velocità in uscita, filtrati dal monitor
+    transform_tolerance: 0.5                              # Tolleranza massima accettata sulle trasformazioni TF
+    source_timeout: 1.0                                   # Tempo massimo senza nuovi dati dalla/dalle sorgente/i prima di considerarla/e scaduta/e
+    stop_pub_timeout: 0.5                                 # Tempo per cui viene continuato a pubblicare lo stop in assenza di nuovi comandi
+    enable_stamped_cmd_vel: false                         # Indica che il cmd_vel usa Twist e non TwistStamped
+
+    polygons: ["PolygonStop"]                             # Elenco delle zone di controllo definite in questo file
+
+    #PolygonStop:                                          # Nome della zona di sicurezza
+    #  type: "circle"                                      # Forma della zona: cerchio
+    #  radius: 0.40                                        # Raggio del cerchio in metri
+    #  action_type: "stop"                                 # Azione da eseguire se viene rilevato un ostacolo nella zona: stop completo
+    #  min_points: 3                                       # Numero minimo di punti sensore dentro la zona per attivare l'azione
+    #  visualize: true                                     # Abilita la pubblicazione della zona per visualizzazione/debug
+    #  polygon_pub_topic: "polygon_stop"                   # Topic su cui viene pubblicata la rappresentazione della zona
+    #  enabled: false                                       # Abilita questa specifica zona
+    
+    PolygonStop:                                          # Nome della zona di sicurezza
+      type: "polygon"                                     # Forma della zona: poligono
+      points: [0.0, 0.15, 0.40, 0.15, 0.40, -0.15, 0.0, -0.15]  # Rettangolo frontale: 40 cm in avanti, 30 cm di larghezza
+      action_type: "stop"                                 # Azione da eseguire se viene rilevato un ostacolo nella zona: stop completo
+      min_points: 2                                       # Numero minimo di punti sensore dentro la zona per attivare l'azione
+      visualize: true                                     # Abilita la pubblicazione della zona per visualizzazione/debug
+      polygon_pub_topic: "polygon_stop"                   # Topic su cui viene pubblicata la rappresentazione della zona
+      enabled: false                                      # Abilita questa specifica zona
+
+    observation_sources: ["scan"]                         # Elenco delle sorgenti sensoriali usate per rilevare ostacoli
+
+    scan:                                                 # Nome logico della sorgente sensoriale
+      type: "scan"                                        # Tipo di dato atteso dalla sorgente: LaserScan
+      topic: "/scan_raw"                                  # Topic ROS da cui leggere le scansioni laser
+      enabled: true                                       # Abilita questa sorgente sensoriale

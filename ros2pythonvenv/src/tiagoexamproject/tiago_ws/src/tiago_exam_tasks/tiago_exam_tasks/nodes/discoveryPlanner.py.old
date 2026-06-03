@@ -1,0 +1,807 @@
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Union, Optional
+
+import matplotlib.pyplot as plt
+import numpy as np
+import yaml
+from PIL import Image
+from scipy import ndimage
+from skimage.morphology import skeletonize
+
+
+def _neighbors8(y: int, x: int, shape: tuple[int, int]) -> list[tuple[int, int]]:
+    out = []
+    h, w = shape
+    for dy in (-1, 0, 1):
+        for dx in (-1, 0, 1):
+            if dy == 0 and dx == 0:
+                continue
+            ny, nx = y + dy, x + dx
+            if 0 <= ny < h and 0 <= nx < w:
+                out.append((ny, nx))
+    return out
+
+
+def _load_map(yaml_path: Union[str, Path], image_path: Optional[Union[str, Path]] = None):
+    yaml_path = Path(yaml_path)
+    with open(yaml_path, "r", encoding="utf-8") as f:
+        meta = yaml.safe_load(f)
+
+    if image_path is None:
+        image_path = yaml_path.parent / meta["image"]
+    else:
+        image_path = Path(image_path)
+
+    img = np.array(Image.open(image_path))
+    return meta, img
+
+
+def _build_green_space(
+    img: np.ndarray,
+    resolution_m: float,
+    robot_radius_m: float,
+    occupied_value: int,
+    unknown_value: int,
+    free_value: int,
+):
+    occupied = img == occupied_value
+    unknown = img == unknown_value
+    free = img == free_value
+    non_traversable = occupied | unknown
+
+    clearance_px = ndimage.distance_transform_edt(~non_traversable)
+    clearance_m = clearance_px * resolution_m
+    green = free & (clearance_m >= robot_radius_m)
+
+    semantic = np.zeros((*img.shape, 3), dtype=float)
+    semantic[unknown] = [0.65, 0.65, 0.65]
+    semantic[free] = [1.0, 1.0, 1.0]
+    semantic[occupied] = [0.0, 0.0, 0.0]
+    overlay = semantic.copy()
+    overlay[green] = [0.88, 1.0, 0.88]
+
+    return green, clearance_m, overlay
+
+
+def _skeleton_and_degrees(green: np.ndarray):
+    skel = skeletonize(green)
+    kernel = np.ones((3, 3), dtype=int)
+    kernel[1, 1] = 0
+    degree = ndimage.convolve(skel.astype(int), kernel, mode="constant", cval=0)
+
+    endpoints = skel & (degree == 1)
+    junctions = skel & (degree >= 3)
+    special = endpoints | junctions
+    chain_pixels = skel & (~special)
+    labels, num = ndimage.label(chain_pixels, structure=np.ones((3, 3), dtype=int))
+    return skel, degree, endpoints, junctions, labels, num
+
+
+def _trace_refined_endpoint(
+    start: tuple[int, int],
+    skel: np.ndarray,
+    degree: np.ndarray,
+    clearance_m: np.ndarray,
+    threshold_m: float,
+) -> tuple[int, int]:
+    current = start
+    prev = None
+
+    while True:
+        cy, cx = current
+
+        if clearance_m[cy, cx] >= threshold_m:
+            return current
+
+        nbrs = [(ny, nx) for (ny, nx) in _neighbors8(cy, cx, skel.shape) if skel[ny, nx]]
+        if prev is not None:
+            nbrs = [p for p in nbrs if p != prev]
+
+        if len(nbrs) == 0:
+            return current
+
+        if len(nbrs) > 1:
+            return current
+
+        nxt = nbrs[0]
+        ny, nx = nxt
+
+        if degree[ny, nx] != 2:
+            return current
+
+        prev = current
+        current = nxt
+
+
+def _label_junction_areas(junctions: np.ndarray) -> tuple[np.ndarray, int]:
+    return ndimage.label(junctions, structure=np.ones((3, 3), dtype=int))
+
+
+def _associate_refined_endpoint_to_junction_area(
+    point: tuple[int, int],
+    skel: np.ndarray,
+    degree: np.ndarray,
+    junction_labels: np.ndarray,
+) -> int:
+    y, x = point
+    labels_found = set()
+    for ny, nx in _neighbors8(y, x, skel.shape):
+        if skel[ny, nx] and degree[ny, nx] >= 3:
+            lbl = int(junction_labels[ny, nx])
+            if lbl > 0:
+                labels_found.add(lbl)
+
+    if len(labels_found) == 1:
+        return next(iter(labels_found))
+    return 0
+
+
+def _merge_refined_endpoints_by_junction_area(
+    refined_coords: list[tuple[int, int]],
+    clearance_m: np.ndarray,
+    skel: np.ndarray,
+    degree: np.ndarray,
+    junction_labels: np.ndarray,
+) -> tuple[list[tuple[int, int]], dict[int, list[tuple[int, int]]]]:
+    grouped: dict[int, list[tuple[int, int]]] = {}
+    independent: list[tuple[int, int]] = []
+
+    for pt in refined_coords:
+        jlbl = _associate_refined_endpoint_to_junction_area(
+            point=pt,
+            skel=skel,
+            degree=degree,
+            junction_labels=junction_labels,
+        )
+        if jlbl == 0:
+            independent.append(pt)
+        else:
+            grouped.setdefault(jlbl, []).append(pt)
+
+    merged_coords = independent.copy()
+
+    for jlbl, pts in grouped.items():
+        best = max(pts, key=lambda p: float(clearance_m[p[0], p[1]]))
+        merged_coords.append(best)
+
+    return merged_coords, grouped
+
+
+def show_refined_endpoints(
+    yaml_path: Union[str, Path],
+    image_path: Optional[Union[str, Path]] = None,
+    clearance_percent: float = 50.0,
+    robot_radius_m: float = 0.29,
+    occupied_value: int = 0,
+    unknown_value: int = 205,
+    free_value: int = 254,
+) -> None:
+    """
+    Visualize the thinning skeleton branches and refined endpoints,
+    with merge-by-junction-area enabled.
+    """
+    meta, img = _load_map(yaml_path, image_path)
+    resolution_m = float(meta["resolution"])
+
+    green, clearance_m, overlay = _build_green_space(
+        img=img,
+        resolution_m=resolution_m,
+        robot_radius_m=robot_radius_m,
+        occupied_value=occupied_value,
+        unknown_value=unknown_value,
+        free_value=free_value,
+    )
+
+    skel, degree, endpoints, junctions, labels, num = _skeleton_and_degrees(green)
+    junction_labels, num_junction_areas = _label_junction_areas(junctions)
+
+    skel_clearances = clearance_m[skel]
+    min_clear = float(np.min(skel_clearances))
+    max_clear = float(np.max(skel_clearances))
+    p = float(clearance_percent) / 100.0
+    threshold_m = min_clear + p * (max_clear - min_clear)
+
+    endpoint_coords = list(zip(*np.nonzero(endpoints)))
+    refined_coords = []
+    for ep in endpoint_coords:
+        refined_coords.append(
+            _trace_refined_endpoint(
+                start=ep,
+                skel=skel,
+                degree=degree,
+                clearance_m=clearance_m,
+                threshold_m=threshold_m,
+            )
+        )
+
+    merged_coords, grouped = _merge_refined_endpoints_by_junction_area(
+        refined_coords=refined_coords,
+        clearance_m=clearance_m,
+        skel=skel,
+        degree=degree,
+        junction_labels=junction_labels,
+    )
+
+    refined_mask = np.zeros_like(skel, dtype=bool)
+    for y, x in refined_coords:
+        refined_mask[y, x] = True
+
+    merged_mask = np.zeros_like(skel, dtype=bool)
+    for y, x in merged_coords:
+        merged_mask[y, x] = True
+
+    plt.figure(figsize=(8, 8))
+    plt.imshow(overlay, origin="lower")
+
+    if num > 0:
+        ys, xs = np.nonzero(labels > 0)
+        vals = labels[ys, xs]
+        plt.scatter(xs, ys, c=vals, s=8, cmap="tab20", label="visual branches")
+
+    ys_e, xs_e = np.nonzero(endpoints)
+    ys_j, xs_j = np.nonzero(junctions)
+    ys_r, xs_r = np.nonzero(refined_mask)
+    ys_m, xs_m = np.nonzero(merged_mask)
+
+    if len(xs_e):
+        plt.scatter(xs_e, ys_e, s=18, marker="o",
+                    facecolors="none", edgecolors="black", linewidths=1.0,
+                    label="original endpoints")
+
+    if len(xs_j):
+        plt.scatter(xs_j, ys_j, s=30, marker="s",
+                    facecolors="yellow", edgecolors="black", linewidths=0.8,
+                    label="junctions")
+
+    if len(xs_r):
+        plt.scatter(xs_r, ys_r, s=30, marker="D",
+                    facecolors="none", edgecolors="red", linewidths=1.0,
+                    label="refined endpoints (pre-merge)")
+
+    if len(xs_m):
+        plt.scatter(xs_m, ys_m, s=48, marker="D",
+                    facecolors="red", edgecolors="white", linewidths=0.7,
+                    label="merged refined endpoints")
+
+    plt.title(
+        "Skeleton branches with refined endpoints + junction-area merge\n"
+        f"clearance threshold = {clearance_percent:.1f}%  ->  {threshold_m:.3f} m"
+    )
+    plt.xlabel("pixel x")
+    plt.ylabel("pixel y")
+    plt.legend(loc="upper right")
+    plt.tight_layout()
+    plt.show()
+
+    print("---- Summary ----")
+    print(f"Original endpoints: {len(endpoint_coords)}")
+    print(f"Refined endpoints before merge: {len(refined_coords)}")
+    print(f"Junction areas: {num_junction_areas}")
+    print(f"Refined endpoints after merge: {len(merged_coords)}")
+    if grouped:
+        print("Merged groups by junction area:")
+        for jlbl, pts in sorted(grouped.items()):
+            kept = max(pts, key=lambda p: float(clearance_m[p[0], p[1]]))
+            print(f"  Junction area {jlbl}: {len(pts)} candidates -> kept {kept}")
+    else:
+        print("No refined endpoints were merged by junction area.")
+
+
+# =============================================================================
+# NEW ADDITIONS
+# Note: show_refined_endpoints above had its clearance_percent default updated
+# from 20.0 to 50.0 to align with the policy README. Everything else above is
+# the original unmodified code.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Coordinate conversion utilities
+# -----------------------------------------------------------------------------
+
+def _pixel_to_map(
+    row: int,
+    col: int,
+    origin_x: float,
+    origin_y: float,
+    resolution: float,
+    height: int,
+) -> tuple[float, float]:
+    """
+    Convert a skeleton pixel (row, col) to map-frame metric coordinates (x, y).
+
+    ROS2 map_server convention (confirmed in nav2 map_io.cpp source):
+    - 'origin' in the YAML is the 2D pose of the lower-left corner of the
+      image in the 'map' frame.
+    - map_server flips the PGM vertically before building the OccupancyGrid,
+      so that row 0 of the grid corresponds to the BOTTOM of the image
+      (lowest y in map frame).
+    - We load the PGM directly with PIL, where row 0 is the TOP of the image
+      (highest y in map frame), so the vertical flip must be applied here too.
+
+    Derivation (two steps):
+
+    Step 1 — official Nav2 mapToWorld formula (costmap_2d.cpp / costmap_2d.py):
+        wx = origin_x + (mx + 0.5) * resolution
+        wy = origin_y + (my + 0.5) * resolution
+      where (mx, my) are OccupancyGrid cell indices with my=0 at the BOTTOM
+      (y increasing upward), and +0.5 places the coordinate at the cell center.
+
+    Step 2 — vertical flip between PIL image and OccupancyGrid (map_io.cpp):
+        my = (height - 1) - row_PIL
+      PIL row 0 is the top of the image; OccupancyGrid row 0 is the bottom.
+
+    Substituting Step 2 into Step 1:
+        wy = origin_y + ((height - 1 - row) + 0.5) * resolution
+           = origin_y + (height - 0.5 - row) * resolution
+
+    Sanity check (cell centers):
+        row = height-1  (bottom of PGM)  →  wy = origin_y + 0.5*resolution  ✓ (centre of bottom cell)
+        row = 0         (top of PGM)     →  wy = origin_y + (height-0.5)*resolution  ✓ (centre of top cell)
+    """
+    map_x = origin_x + (col + 0.5) * resolution
+    map_y = origin_y + (height - 0.5 - row) * resolution
+    return float(map_x), float(map_y)
+
+
+def _map_to_pixel(
+    map_x: float,
+    map_y: float,
+    origin_x: float,
+    origin_y: float,
+    resolution: float,
+    height: int,
+) -> tuple[int, int]:
+    """
+    Inverse of _pixel_to_map.  Converts map-frame (x, y) → pixel (row, col).
+    Useful for projecting the robot spawn position into pixel space.
+
+    Inverting:
+        wx = origin_x + (col + 0.5) * resolution  →  col = (wx - origin_x) / resolution - 0.5
+        wy = origin_y + (height - 0.5 - row) * resolution  →  row = height - 0.5 - (wy - origin_y) / resolution
+    """
+    col = int(round((map_x - origin_x) / resolution - 0.5))
+    row = int(round(height - 0.5 - (map_y - origin_y) / resolution))
+    return row, col
+
+
+# -----------------------------------------------------------------------------
+# Nearest-neighbour ordering
+# -----------------------------------------------------------------------------
+
+def _nearest_neighbor_order(
+    keypoints_xy: list[tuple[float, float]],
+    start_xy: tuple[float, float],
+) -> list[int]:
+    """
+    Greedy nearest-neighbour traversal in map-frame Euclidean distance.
+
+    Starting from start_xy (robot spawn), always picks the closest not-yet-visited
+    keypoint.  Returns a list of indices into keypoints_xy.
+
+    Note: squared distance is used for comparison (avoids sqrt, same ordering).
+    """
+    remaining = list(range(len(keypoints_xy)))
+    order: list[int] = []
+    current = start_xy
+
+    while remaining:
+        kps = [keypoints_xy[i] for i in remaining]
+        sq_dists = [
+            (kp[0] - current[0]) ** 2 + (kp[1] - current[1]) ** 2
+            for kp in kps
+        ]
+        best_local = int(np.argmin(sq_dists))
+        chosen = remaining.pop(best_local)
+        order.append(chosen)
+        current = keypoints_xy[chosen]
+
+    return order
+
+
+# -----------------------------------------------------------------------------
+# Nav2 NavigateToPose goal builder
+# -----------------------------------------------------------------------------
+
+def _build_nav_goals(ordered_keypoints_xy: list[tuple[float, float]]) -> list:
+    """
+    Build a list of nav2_msgs.action.NavigateToPose.Goal objects,
+    one per keypoint, in the same order as ordered_keypoints_xy.
+
+    Orientation strategy: identity quaternion (x=0, y=0, z=0, w=1),
+    consistent with explore.cpp (sendNavigateToPoseGoal).
+    This sets yaw=0 (robot facing map +X / east) as the goal orientation.
+    Nav2's SimpleGoalChecker enforces it within yaw_goal_tolerance (default
+    0.25 rad). See inline comment on the Quaternion field for full details.
+
+    Header stamp: left at zero (default).  Nav2 interprets a zero stamp as
+    "use the latest available TF", which is correct for pre-computed goals
+    that are not tied to a specific ROS time.
+
+    Returns [] silently if ROS2 packages are not available (e.g. offline
+    analysis without workspace sourced), so that ordered_keypoints remains
+    usable regardless of the environment.
+    """
+    try:
+        from nav2_msgs.action import NavigateToPose
+        from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion
+        from std_msgs.msg import Header
+    except ImportError:
+        # ROS2 packages not available (e.g. offline analysis without workspace sourced).
+        # Return an empty list rather than crashing: ordered_keypoints is still usable.
+        return []
+
+    goals = []
+    for x, y in ordered_keypoints_xy:
+        goal = NavigateToPose.Goal()
+        goal.pose = PoseStamped(
+            header=Header(frame_id="map"),  # stamp=0 → Nav2 uses latest TF
+            pose=Pose(
+                position=Point(x=float(x), y=float(y), z=0.0),
+                # Identity quaternion → yaw = 0 (robot facing map +X axis / east).
+                # Nav2's SimpleGoalChecker enforces this orientation within
+                # yaw_goal_tolerance (default 0.25 rad). Consistent with the
+                # approach used in explore.cpp (sendNavigateToPoseGoal).
+                orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0),
+            ),
+        )
+        goals.append(goal)
+    return goals
+
+
+# -----------------------------------------------------------------------------
+# Discovery plots (saved to disk, non-blocking)
+# -----------------------------------------------------------------------------
+
+def _save_discovery_plots(
+    yaml_path: Union[str, Path],
+    img: np.ndarray,
+    overlay: np.ndarray,
+    endpoints: np.ndarray,
+    junctions: np.ndarray,
+    labels: np.ndarray,
+    num: int,
+    merged_coords: list[tuple[int, int]],
+    order: list[int],
+    robot_xy_map: tuple[float, float],
+    origin_x: float,
+    origin_y: float,
+    resolution_m: float,
+    height: int,
+    clearance_percent: float,
+    threshold_m: float,
+) -> Path:
+    """
+    Save 6 discovery plots to <map_dir>/discoveryPlots/{1..6}.png.
+
+    No window is shown on screen (non-blocking).  The output directory is
+    created automatically if it does not exist.
+
+    Plots saved:
+        1.png — original map (raw PGM)
+        2.png — green space + robot spawn position
+        3.png — skeleton branches + junction areas only (no endpoints/keypoints)
+        4.png — green space + skeleton (branches / endpoints / junctions)
+        5.png — merged refined keypoints overlaid on the map + skeleton (unordered)
+        6.png — same keypoints numbered in nearest-neighbour visit order + skeleton
+
+    All plots use origin="upper" (row 0 at top) so they match the orientation
+    of the PGM as seen in a standard image viewer.
+
+    Returns
+    -------
+    Path
+        The output directory (discoveryPlots/).
+    """
+    out_dir = Path(yaml_path).parent / "discoveryPlots"
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Robot spawn in pixel space (for scatter overlay)
+    row_r, col_r = _map_to_pixel(
+        robot_xy_map[0], robot_xy_map[1],
+        origin_x, origin_y, resolution_m, height,
+    )
+
+    # Keypoints in pixel space, already in visit order
+    ordered_pixel: list[tuple[int, int]] = [merged_coords[i] for i in order]
+
+    def _finish(fig_id: int) -> None:
+        """Tight-layout, save, close — never show."""
+        plt.tight_layout()
+        plt.savefig(out_dir / f"{fig_id}.png", dpi=150, bbox_inches="tight")
+        plt.close()
+
+    # ── 1. Original map ────────────────────────────────────────────────────────
+    plt.figure(figsize=(8, 8))
+    plt.imshow(img, cmap="gray", origin="upper")
+    plt.title("1 — Original map (raw PGM)")
+    plt.axis("off")
+    _finish(1)
+
+    # ── 2. Green space + robot spawn ───────────────────────────────────────────
+    plt.figure(figsize=(8, 8))
+    plt.imshow(overlay, origin="upper")
+    plt.scatter(
+        [col_r], [row_r],
+        s=150, marker="x", c="red", linewidths=2.5,
+        label=f"robot spawn  ({robot_xy_map[0]:.2f}, {robot_xy_map[1]:.2f}) m",
+        zorder=5,
+    )
+    plt.title("2 — Green space + robot spawn")
+    plt.legend(loc="upper right", fontsize=8)
+    plt.axis("off")
+    _finish(2)
+
+    # ── 3. Skeleton branches + junction areas only ──────────────────────────
+    junction_labels, num_junction_areas = _label_junction_areas(junctions)
+
+    plt.figure(figsize=(8, 8))
+    plt.imshow(overlay, origin="upper")
+
+    if num > 0:
+        ys_b, xs_b = np.nonzero(labels > 0)
+        vals_b = labels[ys_b, xs_b]
+        plt.scatter(xs_b, ys_b, c=vals_b, s=6, cmap="tab20", label="branches")
+
+    if num_junction_areas > 0:
+        ys_ja, xs_ja = np.nonzero(junction_labels > 0)
+        vals_ja = junction_labels[ys_ja, xs_ja]
+        plt.scatter(
+            xs_ja, ys_ja, c=vals_ja, s=30, marker="s", cmap="Set1",
+            edgecolors="black", linewidths=0.5,
+            label=f"junction areas ({num_junction_areas})",
+            zorder=5,
+        )
+
+    plt.title("3 — Skeleton branches + junction areas only")
+    plt.legend(loc="upper right", fontsize=7)
+    plt.axis("off")
+    _finish(3)
+
+    # ── 4. Green space + skeleton (branches / endpoints / junctions) ───────────
+    plt.figure(figsize=(8, 8))
+    plt.imshow(overlay, origin="upper")
+    if num > 0:
+        ys_b, xs_b = np.nonzero(labels > 0)
+        vals_b = labels[ys_b, xs_b]
+        plt.scatter(xs_b, ys_b, c=vals_b, s=6, cmap="tab20", label="branches")
+    ys_e, xs_e = np.nonzero(endpoints)
+    ys_j, xs_j = np.nonzero(junctions)
+    if len(xs_e):
+        plt.scatter(
+            xs_e, ys_e, s=20, marker="o",
+            facecolors="none", edgecolors="black", linewidths=1.0,
+            label="original endpoints",
+        )
+    if len(xs_j):
+        plt.scatter(
+            xs_j, ys_j, s=28, marker="s",
+            facecolors="yellow", edgecolors="black", linewidths=0.8,
+            label="junctions",
+        )
+    plt.title(
+        f"4 — Skeleton  "
+        f"(clearance threshold {clearance_percent:.0f}% → {threshold_m:.3f} m)"
+    )
+    plt.legend(loc="upper right", fontsize=7)
+    plt.axis("off")
+    _finish(4)
+
+    # ── 5. Merged refined keypoints (unordered) + skeleton ─────────────────────
+    plt.figure(figsize=(8, 8))
+    plt.imshow(overlay, origin="upper")
+    if num > 0:
+        ys_b, xs_b = np.nonzero(labels > 0)
+        vals_b = labels[ys_b, xs_b]
+        plt.scatter(xs_b, ys_b, c=vals_b, s=5, cmap="tab20", alpha=0.55, label="skeleton")
+    if merged_coords:
+        ys_m = [p[0] for p in merged_coords]
+        xs_m = [p[1] for p in merged_coords]
+        plt.scatter(
+            xs_m, ys_m, s=60, marker="D",
+            facecolors="red", edgecolors="white", linewidths=0.8,
+            label=f"keypoints  ({len(merged_coords)} total)",
+            zorder=6,
+        )
+    plt.title("5 — Merged refined keypoints + skeleton (post-backtracking)")
+    plt.legend(loc="upper right", fontsize=8)
+    plt.axis("off")
+    _finish(5)
+
+    # ── 6. Keypoints numbered in visit order + skeleton ────────────────────────
+    plt.figure(figsize=(8, 8))
+    plt.imshow(overlay, origin="upper")
+    if num > 0:
+        ys_b, xs_b = np.nonzero(labels > 0)
+        vals_b = labels[ys_b, xs_b]
+        plt.scatter(xs_b, ys_b, c=vals_b, s=5, cmap="tab20", alpha=0.55, label="skeleton")
+    for visit_idx, (row_k, col_k) in enumerate(ordered_pixel, start=1):
+        plt.scatter(
+            [col_k], [row_k], s=60, marker="D",
+            facecolors="red", edgecolors="white", linewidths=0.8,
+            zorder=6,
+        )
+        plt.text(
+            col_k + 4, row_k + 4, str(visit_idx),
+            fontsize=7, color="red", fontweight="bold",
+            ha="left", va="top",
+        )
+    plt.scatter(
+        [col_r], [row_r], s=150, marker="x", c="blue", linewidths=2.5,
+        label="robot spawn", zorder=7,
+    )
+    plt.title("6 — Keypoints in nearest-neighbour visit order + skeleton")
+    plt.legend(loc="upper right", fontsize=8)
+    plt.axis("off")
+    _finish(6)
+
+    return out_dir
+
+
+# -----------------------------------------------------------------------------
+# Main public API
+# -----------------------------------------------------------------------------
+
+def compute_ordered_keypoints(
+    yaml_path: Union[str, Path],
+    robot_xy_map: tuple[float, float],
+    image_path: Optional[Union[str, Path]] = None,
+    clearance_percent: float = 50.0,
+    robot_radius_m: float = 0.29,
+    occupied_value: int = 0,
+    unknown_value: int = 205,
+    free_value: int = 254,
+    visualize: bool = False,
+) -> tuple[list[tuple[float, float]], list]:
+    """
+    Full pipeline: map file → skeleton → refined endpoints → keypoints.
+
+    Parameters
+    ----------
+    yaml_path : str or Path
+        Path to the ROS2 map YAML file (as produced by map_saver).
+    robot_xy_map : (float, float)
+        Robot spawn position (x, y) in the 'map' frame, in metres.
+        Use the same values you pass to the Task 1 launcher / Nav2 initial pose.
+    image_path : str or Path, optional
+        Override the PGM path. Defaults to the path read from the YAML.
+    clearance_percent : float
+        Backtracking threshold as a percentage of the [min, max] clearance
+        range measured on skeleton pixels. Default 50 % (matches policy README).
+    robot_radius_m : float
+        Robot inflation radius for green-space computation, in metres.
+    occupied_value : int
+        Pixel value for occupied cells in the PGM (default 0).
+    unknown_value : int
+        Pixel value for unknown cells in the PGM (default 205).
+    free_value : int
+        Pixel value for free cells in the PGM (default 254).
+    visualize : bool
+        If True, saves 6 debug plots to <map_dir>/discoveryPlots/{1..6}.png
+        using already-computed pipeline data (no recomputation).
+        No window is shown on screen.
+
+    Returns
+    -------
+    keypoints : list of (float, float)
+        Keypoints in map-frame metric coordinates (x, y), not ordered here.
+        Path-aware ordering is intentionally delegated to the ROS2 FSM.
+    nav_goals : list of NavigateToPose.Goal
+        Parallel list of Nav2 action goals, one per keypoint, ready to be
+        sent via an action client.  Returns [] if ROS2 workspace is not sourced.
+    """
+
+    # ── 1. Load map ────────────────────────────────────────────────────────────
+    meta, img = _load_map(yaml_path, image_path)
+    resolution_m = float(meta["resolution"])
+    origin = meta["origin"]   # [origin_x, origin_y, origin_yaw]
+    origin_x = float(origin[0])
+    origin_y = float(origin[1])
+    height = img.shape[0]
+
+    # ── 2. Green space ─────────────────────────────────────────────────────────
+    green, clearance_m, overlay = _build_green_space(
+        img=img,
+        resolution_m=resolution_m,
+        robot_radius_m=robot_radius_m,
+        occupied_value=occupied_value,
+        unknown_value=unknown_value,
+        free_value=free_value,
+    )
+
+    # ── 3. Skeleton + degree map ───────────────────────────────────────────────
+    skel, degree, endpoints, junctions, labels, num = _skeleton_and_degrees(green)
+
+    # Guard: degenerate map with no skeleton at all.
+    if not skel.any():
+        return [], []
+
+    junction_labels, _num_junctions = _label_junction_areas(junctions)
+
+    # ── 4. Clearance threshold ─────────────────────────────────────────────────
+    skel_clearances = clearance_m[skel]
+    min_clear = float(np.min(skel_clearances))
+    max_clear = float(np.max(skel_clearances))
+    threshold_m = min_clear + (clearance_percent / 100.0) * (max_clear - min_clear)
+
+    # ── 5. Refined endpoints ───────────────────────────────────────────────────
+    endpoint_coords = list(zip(*np.nonzero(endpoints)))
+    if not endpoint_coords:
+        return [], []
+
+    refined_coords = [
+        _trace_refined_endpoint(ep, skel, degree, clearance_m, threshold_m)
+        for ep in endpoint_coords
+    ]
+
+    # ── 6. Merge by junction area ──────────────────────────────────────────────
+    merged_coords, _grouped = _merge_refined_endpoints_by_junction_area(
+        refined_coords=refined_coords,
+        clearance_m=clearance_m,
+        skel=skel,
+        degree=degree,
+        junction_labels=junction_labels,
+    )
+
+    # ── 7. Pixel → map-frame coordinates ──────────────────────────────────────
+    #
+    # Convention (see _pixel_to_map docstring):
+    #   map_x = origin_x + (col + 0.5) * resolution
+    #   map_y = origin_y + (height - 0.5 - row) * resolution
+    #
+    # +0.5 → cell center (consistent with Nav2 costmap_2d mapToWorld).
+    # (height - 0.5 - row) → vertical flip PIL→OccupancyGrid + center offset.
+    keypoints_xy: list[tuple[float, float]] = [
+        _pixel_to_map(row, col, origin_x, origin_y, resolution_m, height)
+        for row, col in merged_coords
+    ]
+
+    # ── 8. Nearest-neighbour ordering from robot spawn ─────────────────────────
+    # Kept for debug visualisation only. The returned keypoints/goals are NOT
+    # ordered here anymore: path-aware ordering will be performed later by the
+    # ROS2 FSM using Nav2 ComputePathToPose.
+    order = _nearest_neighbor_order(keypoints_xy, robot_xy_map)
+    ordered_keypoints = [keypoints_xy[i] for i in order]
+
+    # ── 9. Build Nav2 goals ────────────────────────────────────────────────────
+    # Goals are built in the same un-ordered order as keypoints_xy.
+    nav_goals = _build_nav_goals(keypoints_xy)
+
+    # ── 10. Optional debug visualisation ──────────────────────────────────────
+    if visualize:
+        plots_dir = _save_discovery_plots(
+            yaml_path=yaml_path,
+            img=img,
+            overlay=overlay,
+            endpoints=endpoints,
+            junctions=junctions,
+            labels=labels,
+            num=num,
+            merged_coords=merged_coords,
+            order=order,
+            robot_xy_map=robot_xy_map,
+            origin_x=origin_x,
+            origin_y=origin_y,
+            resolution_m=resolution_m,
+            height=height,
+            clearance_percent=clearance_percent,
+            threshold_m=threshold_m,
+        )
+        print(f"Discovery plots saved to: {plots_dir}")
+
+    return keypoints_xy, nav_goals
+
+
+if __name__ == "__main__":
+    # Example usage of the main public API.
+    # Replace yaml_path and robot_xy_map with your actual values.
+    keypoints, goals = compute_ordered_keypoints(
+        yaml_path="/mnt/data/map_1776672604.yaml",
+        robot_xy_map=(0.0, 0.0),   # robot spawn in map frame (metres)
+        clearance_percent=50.0,
+        visualize=True,            # saves discoveryPlots/1..5.png next to the YAML
+    )
+    print(f"Ordered keypoints ({len(keypoints)}):")
+    for i, (x, y) in enumerate(keypoints, start=1):
+        print(f"  {i:2d}  x={x:.3f} m  y={y:.3f} m")

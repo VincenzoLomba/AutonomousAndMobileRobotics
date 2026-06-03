@@ -34,7 +34,10 @@ def loc_and_nav(context, *args, **kwargs):
 
     world_name = LaunchConfiguration("world_name").perform(context)
 
-    
+    cmd_vel_smoothed_remap_topic = LaunchConfiguration(
+        "cmd_vel_smoothed_remap_topic"
+    ).perform(context).strip()
+
     pmb2_maps = get_package_share_directory("pmb2_maps")
 
     nav2_bringup_pkg = os.path.join(
@@ -72,6 +75,13 @@ def loc_and_nav(context, *args, **kwargs):
 
     cmd_vel_remap = SetRemap(src="cmd_vel", dst="nav_vel")
 
+    cmd_vel_smoothed_remap = None
+    if cmd_vel_smoothed_remap_topic != "":
+        cmd_vel_smoothed_remap = SetRemap(
+            src="cmd_vel_smoothed",
+            dst=cmd_vel_smoothed_remap_topic
+        )
+
     nav2_bringup_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             [nav2_bringup_pkg, "/navigation_launch.py"]
@@ -89,13 +99,21 @@ def loc_and_nav(context, *args, **kwargs):
         condition=IfCondition(LaunchConfiguration("rviz")),
     )
 
-    return [
+    actions = [
         localization_launch,
         slam_toolbox_launch,
         cmd_vel_remap,
+    ]
+
+    if cmd_vel_smoothed_remap is not None:
+        actions.append(cmd_vel_smoothed_remap)
+
+    actions.extend([
         nav2_bringup_launch,
         rviz_launch,
-    ]
+    ])
+
+    return actions
 
 
 def generate_launch_description():
@@ -115,11 +133,18 @@ def generate_launch_description():
         description="Open RViz2 along with the Navigation",
     )
 
+    declare_cmd_vel_smoothed_remap_topic_arg = DeclareLaunchArgument(
+        "cmd_vel_smoothed_remap_topic",
+        default_value="",
+        description="Optional remap target for cmd_vel_smoothed. If empty, no remap is applied."
+    )
+
     loc_and_nav_launch = OpaqueFunction(function=loc_and_nav)
 
     # Create the launch description and populate
     ld = LaunchDescription()
 
+    ld.add_action(declare_cmd_vel_smoothed_remap_topic_arg)
     ld.add_action(declare_slam_cmd)
     ld.add_action(get_robot_name())
     ld.add_action(declare_map_cmd)

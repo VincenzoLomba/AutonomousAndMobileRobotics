@@ -47,6 +47,9 @@ fi
 cd "$CURRENT_DIR" || return 1
 
 # -------- Done --------
-fastrosEcho INFO "Environment ready! All sourced correctly ✅"
+fastrosEcho INFO "All done ✅ You're now ready to play with Tiago!"
+fastrosEcho LINK "If you want to get access to Tiago camera, issue command: " "ros2 run rqt_image_view rqt_image_view"
+fastrosEcho LINK "If you want to manually regulate all Tiago joints, issue command: " "ros2 run rqt_joint_trajectory_controller rqt_joint_trajectory_controller"
+fastrosEcho LINK "If you want to start MoveIt! for Tiago on RViz, issue command: " "ros2 launch tiago_moveit_config moveit_rviz.launch.py"
 echo ""
 

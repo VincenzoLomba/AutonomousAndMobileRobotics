@@ -1,5 +1,5 @@
 
-# This is the launch file for Project Task1: autonomous exploration and mapping
+# This is the launch file for Project Task3: sequential cubes transportation from pick to place locations
 
 # Necessary imports
 import os
@@ -45,17 +45,17 @@ def generate_launch_description():
         tiagoSpawnCoordinateZArgumentLabel,
         default_value = '0.0'
     )
-    # This is the period of the Task1 FSM timer
+    # This is the period of the Task3 FSM timer
     declareLaunchArgumentFSMtimerPeriod = DeclareLaunchArgument(
         nodesParameters.fsmTimerPeriodParameterName,
         default_value = str(nodesParameters.fsmTimerPeriodParameterDefaultValue)
     )
-    # This is the path where the produced map (after the exploration) will be saved
+    # This is the path where the mmap to be used is gonna be stored
     declareLaunchArgumentSavedMapPath = DeclareLaunchArgument(
         nodesParameters.mapSavePathParameterName,
         default_value = nodesParameters.mapSavePathParameterDefaultValue
     )
-    # This is the name of the map file (without the path) that will be saved (after the exploration)
+    # This is the name of the map file (without the path) that is gonna be used
     declareLaunchArgumentSavedMapName = DeclareLaunchArgument(
         nodesParameters.mapSaveNameParameterName,
         default_value = nodesParameters.mapSaveNameParameterDefaultValue
@@ -132,43 +132,11 @@ def generate_launch_description():
         ]),
         launch_arguments={
             'is_public_sim': 'False',
-            'slam': 'True',
-            'rviz': 'True'
+            'slam': 'False',
+            'rviz': 'True',
+            'map_path': LaunchConfiguration(nodesParameters.mapSavePathParameterName),
+            'cmd_vel_smoothed_remap_topic': 'cmd_vel_unsafe'
         }.items()
-    )
-    
-    # Again, using "IncludeLaunchDescription" to include another launch file within this one.
-    # Specifically, the launch file related to the ExploreLite package, located in m-explore-ros2/explore[-lite]/launch/explore.launch.py:
-    exploreLiteCMD = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(
-                get_package_share_directory('explore_lite'),
-                'launch',
-                'explore.launch.py'
-            )
-        ),
-        launch_arguments = {
-            'use_sim_time': 'True'
-        }.items()
-    )
-
-    # Using "Node" to include within this launch file the Node that implements the FSM that implements the logic that executes the Task1
-    task1FSMNodeCMD= TimerAction(
-        period = nodesParameters.task1FSMlaunchDelay,
-        actions= [
-            Node(
-                package = 'tiago_exam_tasks',
-                executable = 'task1_fsm_node',
-                name = 'task1_fsm_node',
-                output = 'screen', # This makes the node's log messages appear in the terminal, which can be useful for debugging and monitoring
-                parameters = [
-                    {'use_sim_time': True},
-                    {nodesParameters.fsmTimerPeriodParameterName: LaunchConfiguration(nodesParameters.fsmTimerPeriodParameterName)},
-                    {nodesParameters.mapSavePathParameterName: LaunchConfiguration(nodesParameters.mapSavePathParameterName)},
-                    {nodesParameters.mapSaveNameParameterName: LaunchConfiguration(nodesParameters.mapSaveNameParameterName)}
-                ]
-            )
-        ]
     )
 
     # Using "Node" to include within this launch file the Node that exposes the Action Server to control and move the Tiago's arm
@@ -179,6 +147,111 @@ def generate_launch_description():
         output = 'screen', # This makes the node's log messages appear in the terminal, which can be useful for debugging and monitoring
         parameters=[
             {'use_sim_time': True}
+        ]
+    )
+
+    tiagoGripperNodeCMD = Node(
+        package = 'tiago_exam_tasks',
+        executable = 'tiago_gripper_node',
+        name = 'tiago_gripper_node',
+        output = 'screen', # This makes the node's log messages appear in the terminal, which can be useful for debugging and monitoring
+        parameters=[
+            {'use_sim_time': True}
+        ]
+    )
+
+    # This is a LifecycleNode NEEDS TO BE putted up!!!!
+    collisionMonitorCMD = Node(
+        package='nav2_collision_monitor',
+        executable='collision_monitor',
+        name='collision_monitor',
+        output='screen',
+        remappings=[
+            ('cmd_vel_safe', 'cmd_vel')
+        ],
+        parameters=[
+            {'use_sim_time': True},
+            os.path.join(
+                get_package_share_directory('tiago_exam_tasks'),
+                'config',
+                'collision_monitor.yaml'
+            )
+        ]
+    )
+
+    # This puts it up!!!! (altrimentiresta in unconfigured o inactive)
+    collisionMonitorLifecycleManagerCMD = Node(
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='lifecycle_manager_collision_monitor',
+        output='screen',
+        parameters=[{
+            'use_sim_time': True,
+            'autostart': True,
+            'node_names': ['collision_monitor'],
+            'bond_timeout': 0.0
+        }]
+    )
+
+    cube63ArucoNodeCMD = Node(
+        package='aruco_ros',
+        executable="single",
+        namespace='aruco_cube_63',
+        name='single',
+        remappings=[
+            ("/camera_info", "/head_front_camera/rgb/camera_info"),
+            ("/image", "/head_front_camera/rgb/image_raw"),
+        ],
+        parameters=[{
+            "use_sim_time": True,
+            "image_is_rectified": True,
+            "marker_size": 0.07,
+            "marker_id": 63,
+            "reference_frame": "map",
+            "camera_frame": "head_front_camera_rgb_optical_frame",
+            "marker_frame": "aruco_marker_frame_63",
+            "corner_refinement": "LINES",
+        }]
+    )
+
+    cube582ArucoNodeCMD = Node(
+        package='aruco_ros',
+        executable="single",
+        namespace='aruco_cube_582',
+        name='single',
+        remappings=[
+            ("/camera_info", "/head_front_camera/rgb/camera_info"),
+            ("/image", "/head_front_camera/rgb/image_raw"),
+        ],
+        parameters=[{
+            "use_sim_time": True,
+            "image_is_rectified": True,
+            "marker_size": 0.07,
+            "marker_id": 582,
+            "reference_frame": "map",
+            "camera_frame": "head_front_camera_rgb_optical_frame",
+            "marker_frame": "aruco_marker_frame_582",
+            "corner_refinement": "LINES",
+        }]
+    )
+
+    # Using "Node" to include within this launch file the Node that implements the FSM that implements the logic that executes the Task3
+    # Wrapping it within a "TimerAction" to delay its start of some pre-choosen seconds
+    task3FSMNodeCMDdelayed = TimerAction(
+        period = nodesParameters.task3FSMlaunchDelay,
+        actions= [
+            Node(
+                package = 'tiago_exam_tasks',
+                executable = 'task3_fsm_node',
+                name = 'task3_fsm_node',
+                output = 'screen', # This makes the node's log messages appear in the terminal, which can be useful for debugging and monitoring
+                parameters = [
+                    {'use_sim_time': True},
+                    {nodesParameters.fsmTimerPeriodParameterName: LaunchConfiguration(nodesParameters.fsmTimerPeriodParameterName)},
+                    {nodesParameters.mapSavePathParameterName: LaunchConfiguration(nodesParameters.mapSavePathParameterName)},
+                    {nodesParameters.mapSaveNameParameterName: LaunchConfiguration(nodesParameters.mapSaveNameParameterName)}
+                ]
+            )
         ]
     )
     
@@ -193,7 +266,11 @@ def generate_launch_description():
     ld.add_action(declareLaunchArgumentSavedMapName)
     ld.add_action(tiagoExamCMD)
     ld.add_action(tiagoNavBringupCMD)
-    ld.add_action(exploreLiteCMD)
-    ld.add_action(task1FSMNodeCMD)
     ld.add_action(tiagoArmNodeCMD)
+    ld.add_action(tiagoGripperNodeCMD)
+    ld.add_action(collisionMonitorCMD)
+    ld.add_action(collisionMonitorLifecycleManagerCMD)
+    ld.add_action(cube63ArucoNodeCMD)
+    ld.add_action(cube582ArucoNodeCMD)
+    ld.add_action(task3FSMNodeCMDdelayed)
     return ld

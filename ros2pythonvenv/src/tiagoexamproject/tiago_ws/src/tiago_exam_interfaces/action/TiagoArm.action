@@ -1,4 +1,6 @@
 float64[] joint_positions
+float64[] position_obj
+float64[] quat_xyzw_obj
 ---
 bool success
 string message
