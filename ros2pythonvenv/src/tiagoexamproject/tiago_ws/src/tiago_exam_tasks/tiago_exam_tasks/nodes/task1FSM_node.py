@@ -16,13 +16,12 @@ import os
 class Task1FSMState(Enum):
     TUCK_ARM = 1
     WAIT_ARM_TUCKED = 2
-    WAIT_FOR_EXPLORE_LITE = 3
-    START_EXPLORE_LITE = 4
-    WAIT_EXPLORATION_START = 5
-    WAIT_EXPLORATION_COMPLETE = 6
-    SAVE_MAP = 7
-    WAIT_SAVE_MAP = 8
-    FINAL = 9
+    START_EXPLORE_LITE = 3
+    WAIT_EXPLORATION_START = 4
+    WAIT_EXPLORATION_COMPLETE = 5
+    SAVE_MAP = 6
+    WAIT_SAVE_MAP = 7
+    FINAL = 8
 
 class Task1FSMNode(Node):
 
@@ -51,13 +50,21 @@ class Task1FSMNode(Node):
 
         self.currentFSMstate = Task1FSMState.TUCK_ARM
 
-        mapSaveFullPathDefaultValue = nodesParameters.mapSaveFullPathParameterDefaultValue
-        self.declare_parameter(nodesParameters.mapSaveFullPathParameterName, Parameter.Type.STRING)
-        self.savedMapPath = self.get_parameter(nodesParameters.mapSaveFullPathParameterName).value
+        mapSavePathDefaultValue = nodesParameters.mapSavePathParameterDefaultValue
+        self.declare_parameter(nodesParameters.mapSavePathParameterName, Parameter.Type.STRING)
+        self.savedMapPath = self.get_parameter(nodesParameters.mapSavePathParameterName).value
         if self.savedMapPath is None or str(self.savedMapPath).strip() == "":
-            self.get_logger().warn(f"None or empty {nodesParameters.mapSaveFullPathParameterName} parameter, falling back to default value '{mapSaveFullPathDefaultValue}'.")
-            self.savedMapPath = mapSaveFullPathDefaultValue
+            self.get_logger().warn(f"None, empty or invalid {nodesParameters.mapSavePathParameterName} parameter, falling back to default value '{mapSavePathDefaultValue}'.")
+            self.savedMapPath = mapSavePathDefaultValue
         else: self.savedMapPath = str(self.savedMapPath).strip()
+
+        mapSaveNameDefaultValue = nodesParameters.mapSaveNameParameterDefaultValue
+        self.declare_parameter(nodesParameters.mapSaveNameParameterName, Parameter.Type.STRING)
+        self.savedMapName = self.get_parameter(nodesParameters.mapSaveNameParameterName).value
+        if self.savedMapName is None or str(self.savedMapName).strip() == "":
+            self.get_logger().warn(f"None or empty {nodesParameters.mapSaveNameParameterName} parameter, falling back to default value '{mapSaveNameDefaultValue}'.")
+            self.savedMapName = mapSaveNameDefaultValue
+        else: self.savedMapName = str(self.savedMapName).strip()
 
         fsmTimerPeriodDefaultValue = nodesParameters.fsmTimerPeriodParameterDefaultValue
         self.declare_parameter(nodesParameters.fsmTimerPeriodParameterName, Parameter.Type.DOUBLE)
@@ -75,7 +82,6 @@ class Task1FSMNode(Node):
     def stepUpFSM(self):
         if self.currentFSMstate == Task1FSMState.TUCK_ARM: self.handle_tuckArm()
         elif self.currentFSMstate == Task1FSMState.WAIT_ARM_TUCKED: self.handle_waitArmTucked()
-        elif self.currentFSMstate == Task1FSMState.WAIT_FOR_EXPLORE_LITE: self.handle_waitForExploreLite()
         elif self.currentFSMstate == Task1FSMState.START_EXPLORE_LITE: self.handle_startExploreLite()
         elif self.currentFSMstate == Task1FSMState.WAIT_EXPLORATION_START: self.handle_waitExplorationStart()
         elif self.currentFSMstate == Task1FSMState.WAIT_EXPLORATION_COMPLETE: self.handle_waitExplorationComplete()
@@ -85,7 +91,7 @@ class Task1FSMNode(Node):
         else: self.get_logger().error(f"Encountered an unknown FSM state: {self.currentFSMstate}")
 
     def handle_tuckArm(self):
-        if not self.tiagoArmActionClient.server_is_ready(): # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
+        if not self.tiagoArmActionClient.server_is_ready():
             self.get_logger().info("[TUCK_ARM] Waiting for TiagoArm Action Server...")
             return
         self.get_logger().info("[TUCK_ARM] Sending goal to TiagoArm Action Server...")
@@ -128,10 +134,11 @@ class Task1FSMNode(Node):
 
     def handle_waitArmTucked(self):
         self.get_logger().info("[WAIT_ARM_TUCKED] Waiting for arm to be tucked...")
+        # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
         if self.armTuckGoalDone:
             if self.armTuckGoalSucceeded:
                 self.get_logger().info("[WAIT_ARM_TUCKED] Arm motion completed.")
-                self.currentFSMstate = Task1FSMState.WAIT_FOR_EXPLORE_LITE
+                self.currentFSMstate = Task1FSMState.START_EXPLORE_LITE
             else:
                 self.get_logger().warn("[WAIT_ARM_TUCKED] Arm goal failed or was rejected by TiagoArm Action Server. Retrying...")
                 self.currentFSMstate = Task1FSMState.TUCK_ARM
@@ -150,15 +157,12 @@ class Task1FSMNode(Node):
             if endpoint.node_name == self.exploreLiteNodeName: return True
         return False
 
-    def handle_waitForExploreLite(self):
-        if self.isExploreLiteReady():
-            self.get_logger().info(f"ExploreLite detected as ready: subscriber '{self.exploreLiteNodeName}' detected on '{self.exploreLiteExploreResumeTopicLabel}'.")
-            self.currentFSMstate = Task1FSMState.START_EXPLORE_LITE
-        else:
-            self.get_logger().info(f"[WAIT_EXPLORE_LITE] ExploreLite subscriber '{self.exploreLiteNodeName}' not detected yet, still waiting for it...")
-            # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
-
     def handle_startExploreLite(self):
+        if not self.isExploreLiteReady():
+            self.get_logger().info(f"[START_EXPLORE_LITE] ExploreLite subscriber '{self.exploreLiteNodeName}' not detected yet, still waiting for it...")
+            # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
+            return
+        self.get_logger().info(f"[START_EXPLORE_LITE] ExploreLite detected as ready: subscriber '{self.exploreLiteNodeName}' detected on '{self.exploreLiteExploreResumeTopicLabel}'.")
         msg = Bool()
         msg.data = True
         self.exploreLiteExploreResumeTopicPublisher.publish(msg)
@@ -175,7 +179,7 @@ class Task1FSMNode(Node):
 
     def handle_waitExplorationComplete(self):
         # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
-        if self.exploreLiteStatus == ExploreStatus.EXPLORATION_COMPLETE or self.exploreLiteStatus == ExploreStatus.RETURNED_TO_ORIGIN:
+        if self.exploreLiteStatus == ExploreStatus.EXPLORATION_COMPLETE or self.exploreLiteStatus == ExploreStatus.RETURNING_TO_ORIGIN:
             self.get_logger().info("[WAIT_EXPLORATION_COMPLETE] ExploreLite reported a completed exploration, proceeding to map saving.")
             self.currentFSMstate = Task1FSMState.SAVE_MAP
         elif self.exploreLiteStatus == ExploreStatus.RETURN_TO_ORIGIN_FAILED:
@@ -187,15 +191,15 @@ class Task1FSMNode(Node):
             pass
 
     def handle_saveMap(self):
-        self.get_logger().info("[SAVE_MAP] Saving map...")
         if not self.saveMapClient.service_is_ready(): # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
-            self.get_logger().info(f"[SAVE_MAP] Waiting for {nodesParameters.nav2SaveMapServiceName} Service...")
+            self.get_logger().info(f"[SAVE_MAP] Before map saving, waiting for {nodesParameters.nav2SaveMapServiceName} Service...")
             return
-        savedMapDir = os.path.dirname(self.savedMapPath)
-        if savedMapDir: os.makedirs(savedMapDir, exist_ok=True)
+        os.makedirs(self.savedMapPath, exist_ok = True)
+        mapURL = os.path.join(self.savedMapPath, self.savedMapName)
+        self.get_logger().info(f"[SAVE_MAP] Saving map at '{mapURL}'...")
         req = SaveMap.Request()
         req.map_topic = nodesParameters.nav2MapTopic
-        req.map_url = self.savedMapPath
+        req.map_url = mapURL
         req.image_format = "pgm"
         req.map_mode = "trinary" # cells are divided in free/empty/unknown
         req.free_thresh = 0.25

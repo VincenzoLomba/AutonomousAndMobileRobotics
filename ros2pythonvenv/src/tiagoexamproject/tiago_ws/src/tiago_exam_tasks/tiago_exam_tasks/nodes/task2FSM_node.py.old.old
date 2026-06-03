@@ -1,0 +1,1201 @@
+
+# This Python files defines a ROS2 Humble Node which implements the FSM that implements the logic that executes the Task2
+
+import rclpy
+from rclpy.node import Node
+from rclpy.action import ActionClient
+from tiago_exam_interfaces.action import TiagoArm
+from enum import Enum
+from . import nodesParameters
+from rclpy.parameter import Parameter
+from geometry_msgs.msg import PoseWithCovarianceStamped
+from sensor_msgs.msg import JointState
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from std_srvs.srv import Empty
+from nav2_msgs.action import Spin
+from builtin_interfaces.msg import Duration
+from nav2_msgs.action import DriveOnHeading
+from action_msgs.msg import GoalStatus
+from rcl_interfaces.srv import SetParameters, GetParameters
+from rclpy.parameter import Parameter
+import random
+import os
+import math
+from pathlib import Path
+import yaml
+import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image
+from nav2_msgs.action import ComputePathToPose, NavigateToPose
+
+from . import discoveryPlanner
+
+class Task2FSMState(Enum):
+    TUCK_ARM = 1
+    WAIT_ARM_TUCKED = 2
+    TRIGGER_LOCALIZATION_RESTART = 3
+    WAIT_LOCALIZATION_RESTARTED = 4
+    EVALUATING_LOCALIZATION = 5
+    LOCALIZING = 6
+    SET_HEAD_FOR_DISCOVERY = 7
+    WAIT_HEAD_FOR_DISCOVERY = 8
+    DISCOVERING  = 9
+    DISCOVERY_ORDER_PATHS = 10
+    DISCOVERY_WAIT_ORDER_PATH = 11
+    DISCOVERY_COMPUTE_PATH = 12
+    DISCOVERY_WAIT_PATH = 13
+    DISCOVERY_SPIN_TO_PATH_HEADING = 14
+    DISCOVERY_WAIT_SPIN = 15
+    DISCOVERY_NAVIGATE_TO_GOAL = 16
+    DISCOVERY_WAIT_NAVIGATION = 17
+    DISCOVERY_SET_YAW_TOLERANCE = 18
+    DISCOVERY_WAIT_YAW_TOLERANCE_SET = 19
+    DISCOVERY_RESTORE_YAW_TOLERANCE = 20
+    DISCOVERY_WAIT_YAW_TOLERANCE_RESTORED = 21
+    DISCOVERY_FINISHED = 22
+
+class Task2FSMNode(Node):
+
+    def __init__(self):
+
+        super().__init__(nodesParameters.task2FSMNodeName)
+        self.get_logger().info(f"Starting {nodesParameters.task2FSMNodeName} initialization...")
+        self.armTuckGoalDone = False
+        self.armTuckGoalSucceeded = False
+        self.globalLocalizationResetDone = False
+        self.globalLocalizationResetSucceeded = False
+        self.localizationSpinDone = False
+        self.localizationSpinSucceeded = False
+        self.localizationDriveOnHeadingDone = False
+        self.localizationDriveOnHeadingSucceeded = False
+        self.localizationPhase = None
+        self.lastAMCLMsg = None
+        self.localizationMetricsWindowSize = 5
+        self.localizationMetricsHistory = []
+        self.localizationMetricsMinImprovementPercent = 5.0
+        self.localizationMetricsStableAmount = 0
+        self.localizationMetricsStableAmountRequired = 4
+        self.localizationMetricsJumpUpResetPercent = 20
+        self.shouldShutdown = False
+
+        self.latestJointState = None
+        self.headTiltTolerance = 0.02
+
+        self.robot_xy_map = (0.0, 0.0)
+
+        self.RANDOMWALK = False
+
+        self.collisionSent = False
+        self.collisionOkay = False
+        self.collisionAvoidance = False
+
+        self.discoveryGoals = []
+        self.discoveryCurrentGoalIndex = 0
+
+        self.discoveryPathDone = False
+        self.discoveryPathSucceeded = False
+        self.discoveryComputedPath = None
+
+        self.discoverySpinDone = False
+        self.discoverySpinSucceeded = False
+
+        self.discoveryNavDone = False
+        self.discoveryNavSucceeded = False
+
+        self.discoveryCandidateKeypoints = []
+        self.discoveryCandidateGoals = []
+        self.discoveryOrderedKeypoints = []
+        self.discoveryOrderingRemaining = []
+        self.discoveryOrderingEvalCursor = 0
+        self.discoveryOrderingCurrentStartXY = (0.0, 0.0)
+        self.discoveryOrderingBestIndex = None
+        self.discoveryOrderingBestCost = None
+        self.discoveryOrderingCandidateIndex = None
+        self.discoveryOrderingPathDone = False
+        self.discoveryOrderingPathSucceeded = False
+        self.discoveryOrderingPathCost = None
+
+        self.originalYawGoalTolerance = None
+        self.yawGoalToleranceParamName = 'general_goal_checker.yaw_goal_tolerance'
+
+        self.discoveryYawParamDone = False
+        self.discoveryYawParamSucceeded = False
+        self.discoveryRestoreYawDone = False
+        self.discoveryRestoreYawSucceeded = False
+
+        # Initialize the Action Client for the TiagoArm Action Server (exposed by the TiagoArm Node) to be able to send goal for the arm motion
+        self.tiagoArmActionClient = ActionClient(self, TiagoArm, nodesParameters.tiagoArmActionName) # Action Client
+        # Subscribe to the "amcl_pose" topic to get the robot's estimated position (AMCL = Adaptive Monte Carlo Localization) (note that this is a PLANAR localizator)
+        self.AMCLPoseSubscription = self.create_subscription(PoseWithCovarianceStamped, nodesParameters.amclPoseTopic, self.amclCallback, 10) # remark: 10 is the length of this publisher queue, i.e. the maximum number of messages that can be buffered before being sent out (if the subscriber is not receiving & processing them fast enough)
+        self.jointStateSubscription = self.create_subscription(JointState, '/joint_states', self.jointStateCallback, 10)
+        self.headCommandPublisher = self.create_publisher(JointTrajectory, '/head_controller/joint_trajectory', 10)
+        # Initialize the Service Client "reinitialize_global_localization" to be used to reinitialize in a clean way the global autonomous localization processe (that will be later on managed via AMCL)
+        self.reinitializeGlobalLocalizationClient = self.create_client(Empty, nodesParameters.reinitializeGlobalLocalizationServiceName)
+        # Initialize the Action Client for the Spin Action Server provided by the Nav2 Stack
+        self.spinActionClient = ActionClient(self, Spin, nodesParameters.spinActionName)
+        # Initialize the Action Client for the DriveOnHeading Action Server provided by the Nav2 Stack
+        self.driveOnHeadingActionClient = ActionClient(self, DriveOnHeading, nodesParameters.driveOnHeadingActionName)
+        # Initialize the Service Client for enabling/disabling the collision monitor
+        self.collisionMonitorEnabler = self.create_client(SetParameters, '/collision_monitor/set_parameters')
+
+        self.controllerServerGetParametersClient = self.create_client(GetParameters, '/controller_server/get_parameters')
+        self.controllerServerSetParametersClient = self.create_client(SetParameters, '/controller_server/set_parameters')
+
+        self.computePathActionClient = ActionClient(self, ComputePathToPose, 'compute_path_to_pose')
+        self.navigateToPoseActionClient = ActionClient(self, NavigateToPose, 'navigate_to_pose')
+
+        self.currentFSMstate = Task2FSMState.TUCK_ARM
+
+        mapSavePathDefaultValue = nodesParameters.mapSavePathParameterDefaultValue
+        self.declare_parameter(nodesParameters.mapSavePathParameterName, Parameter.Type.STRING)
+        self.savedMapPath = self.get_parameter(nodesParameters.mapSavePathParameterName).value
+        if self.savedMapPath is None or str(self.savedMapPath).strip() == "":
+            self.get_logger().warn(f"None, empty or invalid {nodesParameters.mapSavePathParameterName} parameter, falling back to default value '{mapSavePathDefaultValue}'.")
+            self.savedMapPath = mapSavePathDefaultValue
+        else: self.savedMapPath = str(self.savedMapPath).strip()
+
+        mapSaveNameDefaultValue = nodesParameters.mapSaveNameParameterDefaultValue
+        self.declare_parameter(nodesParameters.mapSaveNameParameterName, Parameter.Type.STRING)
+        self.savedMapName = self.get_parameter(nodesParameters.mapSaveNameParameterName).value
+        if self.savedMapName is None or str(self.savedMapName).strip() == "":
+            self.get_logger().warn(f"None or empty {nodesParameters.mapSaveNameParameterName} parameter, falling back to default value '{mapSaveNameDefaultValue}'.")
+            self.savedMapName = mapSaveNameDefaultValue
+        else: self.savedMapName = str(self.savedMapName).strip()
+
+        fsmTimerPeriodDefaultValue = nodesParameters.fsmTimerPeriodParameterDefaultValue
+        self.declare_parameter(nodesParameters.fsmTimerPeriodParameterName, Parameter.Type.DOUBLE)
+        fsmTimerPeriod = self.get_parameter(nodesParameters.fsmTimerPeriodParameterName).value
+        if fsmTimerPeriod is None or float(fsmTimerPeriod) <= 0.0:
+            self.get_logger().warn(f"Invalid FSM timer period ({fsmTimerPeriod}), falling back to default value {fsmTimerPeriodDefaultValue} secs.")
+            fsmTimerPeriod = fsmTimerPeriodDefaultValue
+        else: fsmTimerPeriod = float(fsmTimerPeriod)
+
+        self.FSMtimer = self.create_timer(fsmTimerPeriod, self.stepUpFSM) # A timer created like that (alias with self.create_timer) is gonna be spun as soon as this node is spun via rclpy.spin(); also remeber that a ROS2 timer always waits for the end of the previous callback execution before triggering the next one
+        self.get_logger().info(f"Task2 FSM node initialized. Initial state: {self.currentFSMstate.name}.")
+
+    def amclCallback(self, msg): self.lastAMCLMsg = msg
+
+    def jointStateCallback(self, msg): self.latestJointState = msg
+
+    def stepUpFSM(self):
+        if self.currentFSMstate == Task2FSMState.TUCK_ARM: self.handle_tuckArm()
+        elif self.currentFSMstate == Task2FSMState.WAIT_ARM_TUCKED: self.handle_waitArmTucked()
+        elif self.currentFSMstate == Task2FSMState.TRIGGER_LOCALIZATION_RESTART: self.handle_triggerLocalization()
+        elif self.currentFSMstate == Task2FSMState.WAIT_LOCALIZATION_RESTARTED: self.handle_waitLocalizationTriggered()
+        elif self.currentFSMstate == Task2FSMState.EVALUATING_LOCALIZATION: self.handle_evaluatingLocalization()
+        elif self.currentFSMstate == Task2FSMState.LOCALIZING: self.handle_localizing()
+        elif self.currentFSMstate == Task2FSMState.SET_HEAD_FOR_DISCOVERY: self.handle_setHeadForDiscovery()
+        elif self.currentFSMstate == Task2FSMState.WAIT_HEAD_FOR_DISCOVERY: self.handle_waitHeadForDiscovery()
+        elif self.currentFSMstate == Task2FSMState.DISCOVERING: self.handle_discovering()
+        elif self.currentFSMstate == Task2FSMState.DISCOVERY_ORDER_PATHS: self.handle_discoveryOrderPaths()
+        elif self.currentFSMstate == Task2FSMState.DISCOVERY_WAIT_ORDER_PATH: self.handle_discoveryWaitOrderPath()
+        elif self.currentFSMstate == Task2FSMState.DISCOVERY_COMPUTE_PATH: self.handle_discoveryComputePath()
+        elif self.currentFSMstate == Task2FSMState.DISCOVERY_WAIT_PATH: self.handle_discoveryWaitPath()
+        elif self.currentFSMstate == Task2FSMState.DISCOVERY_SPIN_TO_PATH_HEADING: self.handle_discoverySpinToPathHeading()
+        elif self.currentFSMstate == Task2FSMState.DISCOVERY_WAIT_SPIN: self.handle_discoveryWaitSpin()
+        elif self.currentFSMstate == Task2FSMState.DISCOVERY_NAVIGATE_TO_GOAL: self.handle_discoveryNavigateToGoal()
+        elif self.currentFSMstate == Task2FSMState.DISCOVERY_WAIT_NAVIGATION: self.handle_discoveryWaitNavigation()
+        elif self.currentFSMstate == Task2FSMState.DISCOVERY_SET_YAW_TOLERANCE: self.handle_discoverySetYawTolerance()
+        elif self.currentFSMstate == Task2FSMState.DISCOVERY_WAIT_YAW_TOLERANCE_SET: self.handle_discoveryWaitYawToleranceSet()
+        elif self.currentFSMstate == Task2FSMState.DISCOVERY_RESTORE_YAW_TOLERANCE: self.handle_discoveryRestoreYawTolerance()
+        elif self.currentFSMstate == Task2FSMState.DISCOVERY_WAIT_YAW_TOLERANCE_RESTORED: self.handle_discoveryWaitYawToleranceRestored()
+        elif self.currentFSMstate == Task2FSMState.DISCOVERY_FINISHED: self.handle_discoveryFinished()
+        else: self.get_logger().error(f"Encountered an unknown FSM state: {self.currentFSMstate}")
+
+    def handle_tuckArm(self):
+        if not self.tiagoArmActionClient.server_is_ready(): # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
+            self.get_logger().info("[TUCK_ARM] Waiting for TiagoArm Action Server...")
+            return
+        self.get_logger().info("[TUCK_ARM] Sending goal to TiagoArm Action Server...")
+        goalMsg = TiagoArm.Goal()
+        goalMsg.joint_positions = nodesParameters.HOME_JOINT_POSITIONS
+        self.armTuckGoalDone = False
+        self.armTuckGoalSucceeded = False
+        sendGoalFuture = self.tiagoArmActionClient.send_goal_async(
+            goalMsg,
+            feedback_callback = self.armFeedbackCallback
+        )
+        sendGoalFuture.add_done_callback(self.armGoalResponseCallback)
+        self.currentFSMstate = Task2FSMState.WAIT_ARM_TUCKED
+
+    def armFeedbackCallback(self, feedback_msg):
+        feedback = feedback_msg.feedback
+        self.get_logger().info(f"[TUCK_ARM] Feedback: {feedback.current_state}")
+
+    def armGoalResponseCallback(self, future):
+        goalHandle = future.result() # TODO: insert this line within a try-except block and manage possible exceptions in a proper way
+        if not goalHandle.accepted:
+            self.get_logger().error("[TUCK_ARM] Goal rejected by TiagoArm Action Server.")
+            self.armTuckGoalDone = True
+            self.armTuckGoalSucceeded = False
+            return
+        self.get_logger().info("[TUCK_ARM] Goal accepted by TiagoArm Action Server.")
+        getResultFuture = goalHandle.get_result_async()
+        getResultFuture.add_done_callback(self.armResultCallback)
+
+    def armResultCallback(self, future):
+        result = future.result().result # TODO: insert this line within a try-except block and manage possible exceptions in a proper way
+        if result.success:
+            self.get_logger().info(f"[TUCK_ARM] Success: {result.message}")
+            self.armTuckGoalDone = True
+            self.armTuckGoalSucceeded = True
+        else:
+            self.get_logger().error(f"[TUCK_ARM] Failed: {result.message}")
+            self.armTuckGoalDone = True
+            self.armTuckGoalSucceeded = False
+
+    def handle_waitArmTucked(self):
+        self.get_logger().info("[WAIT_ARM_TUCKED] Waiting for arm to be tucked...")
+        if self.armTuckGoalDone:
+            if self.armTuckGoalSucceeded:
+                self.get_logger().info("[WAIT_ARM_TUCKED] Arm motion completed.")
+                self.currentFSMstate = Task2FSMState.TRIGGER_LOCALIZATION_RESTART
+            else:
+                self.get_logger().warn("[WAIT_ARM_TUCKED] Arm goal failed or was rejected by TiagoArm Action Server. Retrying...")
+                self.currentFSMstate = Task2FSMState.TUCK_ARM
+
+    def isAMCLready(self) -> bool:
+        amclPosePublishersCount = self.count_publishers(nodesParameters.amclPoseTopic)
+        reinitGlobLocServiceReady = self.reinitializeGlobalLocalizationClient.service_is_ready()
+        self.get_logger().info(
+            f"[WAIT_AMCL_READY] amcl_pose publishers: {amclPosePublishersCount}, "
+            f"reinitialize_global_localization service ready: {reinitGlobLocServiceReady}"
+        )
+        return amclPosePublishersCount > 0 and reinitGlobLocServiceReady
+
+    def handle_triggerLocalization(self):
+        if not self.isAMCLready():
+            self.get_logger().info("[TRIGGER_GLOBAL_LOCALIZATION] Now waiting for AMCL/localization Stack readiness...")
+            return
+            # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
+        self.get_logger().info("[TRIGGER_GLOBAL_LOCALIZATION] AMCL/localization Stack is operationally ready!")
+        self.get_logger().info("[TRIGGER_GLOBAL_LOCALIZATION] Calling reinitialize_global_localization service...")
+        self.globalLocalizationResetDone = False
+        self.globalLocalizationResetSucceeded = False
+        req = Empty.Request()
+        future = self.reinitializeGlobalLocalizationClient.call_async(req)
+        future.add_done_callback(self.reinitializeGlobalLocalizationCallback)
+        self.currentFSMstate = Task2FSMState.WAIT_LOCALIZATION_RESTARTED
+
+    def reinitializeGlobalLocalizationCallback(self, future):
+        self.globalLocalizationResetDone = True
+        try:
+            _ = future.result()
+            self.globalLocalizationResetSucceeded = True
+        except Exception as e:
+            self.globalLocalizationResetSucceeded = False
+            self.get_logger().error(f"[TRIGGER_GLOBAL_LOCALIZATION] Global localization reset request failed, error was: {e}")
+
+    def handle_waitLocalizationTriggered(self):
+        if self.globalLocalizationResetDone:
+            if self.globalLocalizationResetSucceeded:
+                self.get_logger().info("\n\n\n\n\n\n[WAIT_LOCALIZATION_TRIGGERED] Global localization reset completed successfully!")
+                self.currentFSMstate = Task2FSMState.EVALUATING_LOCALIZATION
+            else:
+                self.get_logger().error("[WAIT_LOCALIZATION_TRIGGERED] Global localization reset failed, now retrying...")
+                self.currentFSMstate = Task2FSMState.TRIGGER_LOCALIZATION_RESTART
+    
+    def updateLocalizationMetricsHistory(self, metric):
+        self.localizationMetricsHistory.append(float(metric))
+        if len(self.localizationMetricsHistory) > self.localizationMetricsWindowSize:
+            self.localizationMetricsHistory.pop(0)
+
+    def isLocalizationMetricImprovingEnough(self):
+        if len(self.localizationMetricsHistory) < self.localizationMetricsWindowSize: return True
+        previousMetric = self.localizationMetricsHistory[-2]
+        currentMetric = self.localizationMetricsHistory[-1]
+
+        if currentMetric >= 1.0 and previousMetric > 0.0:
+            jumpUpPercent = ((currentMetric - previousMetric) / previousMetric) * 100.0
+
+            if jumpUpPercent >= self.localizationMetricsJumpUpResetPercent:
+                self.get_logger().warn(
+                    f"\n\n\n\n\[EVALUATING_LOCALIZATION] Large metric jump detected "
+                    f"({jumpUpPercent:.2f}%). Resetting localization metrics history.\n\n\n\n"
+                )
+                self.localizationMetricsHistory.clear()
+                return True
+        oldestMetric = self.localizationMetricsHistory[0]
+        newestMetric = self.localizationMetricsHistory[-1]
+        if oldestMetric <= 0.0: return True
+        improvementPercent = ((oldestMetric - newestMetric) / oldestMetric) * 100.0
+        return improvementPercent >= self.localizationMetricsMinImprovementPercent
+    
+    def collision_monitor_callback(self, future):
+        try:
+            response = future.result()
+            if response is None:
+                self.get_logger().error("No response from collision monitor")
+                return
+
+            result = response.results[0]
+            if result.successful:
+                self.get_logger().info("Collision monitor updated")
+            else:
+                self.get_logger().error(f"Failed: {result.reason}")
+
+        except Exception as e:
+            self.get_logger().error(f"Exception in collision monitor callback: {e}")
+        finally:
+            self.get_logger().info("\n\n\nCollision monitor callback completed\n\n\n")
+            self.collisionOkay = True
+            
+    def handle_evaluatingLocalization(self):
+        self.get_logger().info("[EVALUATING_LOCALIZATION] Evaluating localization quality...")
+        if self.lastAMCLMsg is None:
+            self.get_logger().info("[EVALUATING_LOCALIZATION] Still waiting for AMCL first incoming data...")
+        else:
+            msgg = self.lastAMCLMsg
+            covariance = msgg.pose.covariance
+            xVariance = covariance[0]
+            yVariance = covariance[7]
+            yawVariance = covariance[35]
+            metric = xVariance + yVariance + yawVariance
+            self.updateLocalizationMetricsHistory(metric)
+            self.get_logger().info(f"[EVALUATING_LOCALIZATION] Current AMCL pose covariance metric: {metric} (xVar: {xVariance}, yVar: {yVariance}, yawVar: {yawVariance})")
+            if metric < nodesParameters.autonomousLocalizationCovarianceTreshold:
+                self.localizationMetricsStableAmount += 1
+                self.localizationMetricsHistory.clear()
+                if self.localizationMetricsStableAmount >= self.localizationMetricsStableAmountRequired:
+                    self.get_logger().info(f"\n\n\n\n\OKAY\n\n\n\n")
+                    x = msgg.pose.pose.position.x
+                    y = msgg.pose.pose.position.y
+                    self.robot_xy_map = (x, y)
+                    self.currentFSMstate = Task2FSMState.SET_HEAD_FOR_DISCOVERY
+            elif not self.spinActionClient.server_is_ready() or not self.driveOnHeadingActionClient.server_is_ready() or not self.collisionMonitorEnabler.service_is_ready():
+                self.get_logger().warn(f"[EVALUATING_LOCALIZATION] Localization quality is not good enough, now waiting for the Spin Action Server and the DriveonHeading Action Server of the Nav2 Stack to be able to perform some movement...")
+            else:
+                self.get_logger().warn(f"[EVALUATING_LOCALIZATION] Localization quality is not good enough...")
+                if self.localizationPhase is None: self.localizationPhase = 0
+                self.localizationSpinDone = False
+                self.localizationSpinSucceeded = False
+                self.localizationDriveOnHeadingDone = False
+                self.localizationDriveOnHeadingSucceeded = False
+                import time
+                #time.sleep(1.0)
+                self.localizationMetricsStableAmount = 0
+                
+                if self.localizationPhase == 0:
+                    # Spin
+                    if self.collisionAvoidance:
+                        if not self.collisionSent:
+                            req = SetParameters.Request()
+
+                            param = Parameter('PolygonStop.enabled', value=False)
+                            req.parameters = [param.to_parameter_msg()]
+
+                            future = self.collisionMonitorEnabler.call_async(req)
+                            future.add_done_callback(self.collision_monitor_callback)
+                            self.collisionOkay = False
+                            self.collisionSent = True
+                        else:
+                            if self.collisionOkay:
+                                self.collisionSent = False
+                                self.collisionAvoidance = False
+                    else:
+                        self.collisionSent = False
+                        self.collisionOkay = False
+                        goalMsg = Spin.Goal()
+                        orientationDirection = random.choice([-1, 1])
+                        
+                        if not self.RANDOMWALK: orientationDirection = 1
+                        goalMsg.target_yaw = orientationDirection*nodesParameters.autonomousLocalizationSpinYaw
+                        goalMsg.time_allowance = Duration(sec = int(nodesParameters.autonomousLocalizationSpinTimeAllowance))
+                        sendGoalFuture = self.spinActionClient.send_goal_async(
+                            goalMsg,
+                            feedback_callback = self.localizationSpinFeedbackCallback
+                        )
+                        sendGoalFuture.add_done_callback(self.localizationSpinGoalResponseCallback)
+                        if not self.isLocalizationMetricImprovingEnough() or self.RANDOMWALK: self.localizationPhase = 1
+                elif self.localizationPhase == 1:
+                    if not self.collisionAvoidance:
+                        if not self.collisionSent:
+                            req = SetParameters.Request()
+
+                            param = Parameter('PolygonStop.enabled', value=True)
+                            req.parameters = [param.to_parameter_msg()]
+
+                            future = self.collisionMonitorEnabler.call_async(req)
+                            future.add_done_callback(self.collision_monitor_callback)
+                            self.collisionOkay = False
+                            self.collisionSent = True
+                        else:
+                            if self.collisionOkay:
+                                self.collisionSent = False
+                                self.collisionAvoidance = True
+                    else:
+                        # Drive on heading
+                        self.collisionSent = False
+                        self.collisionOkay = False
+                        goalMsg = DriveOnHeading.Goal()
+                        goalMsg.target.x = nodesParameters.autonomousLocalizationDriveDistance
+                        goalMsg.target.y = 0.0
+                        goalMsg.target.z = 0.0
+                        goalMsg.speed = float(nodesParameters.autonomousLocalizationDriveSpeed)
+                        goalMsg.time_allowance = Duration(sec = int(nodesParameters.autonomousLocalizationDriveTimeAllowance))
+                        sendGoalFuture = self.driveOnHeadingActionClient.send_goal_async(
+                            goalMsg,
+                            feedback_callback = self.driveOnHeadingFeedbackCallback
+                        )
+                        sendGoalFuture.add_done_callback(self.driveOnHeadingGoalResponseCallback)
+                        if not self.RANDOMWALK: self.localizationMetricsHistory.clear()
+                        self.localizationPhase = 0
+
+                if not self.collisionSent and not self.collisionOkay:
+                    self.currentFSMstate = Task2FSMState.LOCALIZING
+    
+    def localizationSpinFeedbackCallback(self, feedback_msg):
+        feedback = feedback_msg.feedback
+        angle_rad = feedback.angular_distance_traveled
+        angle_deg = angle_rad * 180.0 / 3.14
+        # self.get_logger().info(f"[TRIGGER_LOCALIZATION_SPIN] Spin in progress...  rotated so far: {angle_rad:.3f} rad ({angle_deg:.1f} deg)")
+        # Avoid too verbose logging
+
+    def driveOnHeadingFeedbackCallback(self, feedback_msg):
+        feedback = feedback_msg.feedback
+        # self.get_logger().info(f"[TRIGGER_DRIVE_ON_HEADING] Distance traveled so far: {feedback.distance_traveled:.3f} m")
+        # Avoid too verbose logging
+
+    def localizationSpinGoalResponseCallback(self, future):
+        goalHandle = future.result() # TODO: insert this line within a try-except block and manage possible exceptions in a proper way
+        if not goalHandle.accepted:
+            self.get_logger().error("[LOCALIZING] Spin goal rejected by Nav2.")
+            self.localizationSpinDone = True
+            self.localizationSpinSucceeded = False
+            return
+        self.get_logger().info("[LOCALIZING] Spin goal accepted by Nav2.")
+        getResultFuture = goalHandle.get_result_async()
+        getResultFuture.add_done_callback(self.localizationSpinResultCallback)
+
+    def driveOnHeadingGoalResponseCallback(self, future):
+        goalHandle = future.result() # TODO: insert this line within a try-except block and manage possible exceptions in a proper way
+        if not goalHandle.accepted:
+            self.get_logger().error("[LOCALIZING] Goal rejected by Nav2.")
+            self.localizationDriveOnHeadingDone = True
+            self.localizationDriveOnHeadingSucceeded = False
+            return
+        self.get_logger().info("[LOCALIZING] Goal accepted by Nav2.")
+        getResultFuture = goalHandle.get_result_async()
+        getResultFuture.add_done_callback(self.driveOnHeadingResultCallback)
+
+    def localizationSpinResultCallback(self, future):
+        result = future.result().result # TODO: insert this line within a try-except block and manage possible exceptions in a proper way
+        elapsed = result.total_elapsed_time.sec + result.total_elapsed_time.nanosec * 1e-9
+        self.get_logger().info(f"[LOCALIZING] Spin behavior completed (with status '{future.result().status}', result '{future.result().result}' and total_elapsed_time '{elapsed}').")
+        self.localizationSpinDone = True
+        self.localizationSpinSucceeded = (future.result().status == GoalStatus.STATUS_SUCCEEDED)
+
+    def driveOnHeadingResultCallback(self, future):
+        result = future.result().result # TODO: insert this line within a try-except block and manage possible exceptions in a proper way
+        elapsed = result.total_elapsed_time.sec + result.total_elapsed_time.nanosec * 1e-9
+        self.get_logger().info(f"[LOCALIZING] DriveOnHeading behavior completed (with status '{future.result().status}', result '{future.result().result}' and total_elapsed_time '{elapsed}').")
+        self.localizationDriveOnHeadingDone = True
+        self.localizationDriveOnHeadingSucceeded = (future.result().status == GoalStatus.STATUS_SUCCEEDED)
+        if not self.RANDOMWALK: self.currentFSMstate = Task2FSMState.TRIGGER_LOCALIZATION_RESTART
+        
+    def handle_localizing(self):
+        # self.get_logger().info("[LOCALIZING] Waiting for the localization movement to be completed...")
+        # Avoid too verbose logging
+        if self.localizationSpinDone or self.localizationDriveOnHeadingDone:
+            if self.localizationSpinSucceeded or self.localizationDriveOnHeadingSucceeded:
+                self.get_logger().info("[LOCALIZING] Movement completed successfully, now going back to evaluate localization quality...")
+                self.currentFSMstate = Task2FSMState.EVALUATING_LOCALIZATION
+            else:
+                self.get_logger().error("[LOCALIZING] Movement failed... anyway, now going back to evaluate localization quality and deciding the next step...")
+                self.currentFSMstate = Task2FSMState.EVALUATING_LOCALIZATION
+
+    def get_joint_position(self, joint_name):
+        if self.latestJointState is None:
+            return None
+        try:
+            idx = self.latestJointState.name.index(joint_name)
+            return float(self.latestJointState.position[idx])
+        except (ValueError, IndexError):
+            return None
+
+    def publish_head_tilt_command(self):
+        current_head_1 = self.get_joint_position("head_1_joint")
+        if current_head_1 is None:
+            self.get_logger().warn("[SET_HEAD_FOR_DISCOVERY] Cannot read current head_1_joint yet from /joint_states.")
+            return False
+
+        target_tilt = float(nodesParameters.headTiltDuringDiscovery)
+
+        msg = JointTrajectory()
+        msg.joint_names = ["head_1_joint", "head_2_joint"]
+
+        point = JointTrajectoryPoint()
+        point.positions = [current_head_1, target_tilt]
+        point.time_from_start = Duration(sec=2)
+
+        msg.points.append(point)
+        self.headCommandPublisher.publish(msg)
+
+        self.get_logger().info(
+            f"[SET_HEAD_FOR_DISCOVERY] Published head command: "
+            f"head_1_joint={current_head_1:.3f}, head_2_joint={target_tilt:.3f}."
+        )
+        return True
+
+    def handle_setHeadForDiscovery(self):
+        if self.publish_head_tilt_command():
+            self.currentFSMstate = Task2FSMState.WAIT_HEAD_FOR_DISCOVERY
+
+    def handle_waitHeadForDiscovery(self):
+        current_tilt = self.get_joint_position("head_2_joint")
+        if current_tilt is None:
+            self.get_logger().info("[WAIT_HEAD_FOR_DISCOVERY] Waiting for head_2_joint from /joint_states...")
+            return
+
+        target_tilt = float(nodesParameters.headTiltDuringDiscovery)
+        error = abs(current_tilt - target_tilt)
+
+        if error <= self.headTiltTolerance:
+            self.get_logger().info(
+                f"[WAIT_HEAD_FOR_DISCOVERY] Head tilt reached: "
+                f"current={current_tilt:.3f}, target={target_tilt:.3f}, error={error:.3f}."
+            )
+            self.currentFSMstate = Task2FSMState.DISCOVERING
+        else:
+            self.get_logger().info(
+                f"[WAIT_HEAD_FOR_DISCOVERY] Waiting head tilt: "
+                f"current={current_tilt:.3f}, target={target_tilt:.3f}, error={error:.3f}."
+            )
+
+    def handle_discovering(self):
+        reorder = False  # True -> ordina con ComputePathToPose; False -> usa ordine già ricevuto
+
+        self.get_logger().info("[DISCOVERING] Computing ordered discovery keypoints...")
+
+        keypoints, goals, first_spurious_index = discoveryPlanner.compute_ordered_keypoints(
+            yaml_path=os.path.join(self.savedMapPath, self.savedMapName + ".yaml"),
+            robot_xy_map=self.robot_xy_map,
+            visualize=True,
+        )
+
+        self.get_logger().info(
+            f"[DISCOVERING] Discovery planner returned {len(goals)} goals. "
+            f"first_spurious_index={first_spurious_index}"
+        )
+
+        self.discoveryCandidateKeypoints = list(keypoints)
+        self.discoveryCandidateGoals = list(goals)
+        self.discoveryOrderedKeypoints = []
+
+        if len(self.discoveryCandidateGoals) == 0:
+            self.get_logger().warn("[DISCOVERING] No discovery goals were produced by discoveryPlanner. Returning to start only.")
+
+        if reorder:
+            self.discoveryGoals = []
+            self.discoveryOrderingRemaining = list(range(len(self.discoveryCandidateGoals)))
+            self.discoveryOrderingEvalCursor = 0
+            self.discoveryOrderingCurrentStartXY = self.robot_xy_map
+            self.discoveryOrderingBestIndex = None
+            self.discoveryOrderingBestCost = None
+            self.discoveryOrderingCandidateIndex = None
+            self.currentFSMstate = Task2FSMState.DISCOVERY_ORDER_PATHS
+        else:
+            self.discoveryGoals = list(self.discoveryCandidateGoals)
+            self.discoveryOrderedKeypoints = list(self.discoveryCandidateKeypoints)
+            self.discoveryGoals.append(self.make_return_to_start_goal())
+            self.discoveryCurrentGoalIndex = 0
+            self.currentFSMstate = Task2FSMState.DISCOVERY_SET_YAW_TOLERANCE
+
+    def normalize_angle(self, angle):
+        return math.atan2(math.sin(angle), math.cos(angle))
+
+
+    def get_current_yaw_from_amcl(self):
+        q = self.lastAMCLMsg.pose.pose.orientation
+
+        siny_cosp = 2.0 * (q.w * q.z + q.x * q.y)
+        cosy_cosp = 1.0 - 2.0 * (q.y * q.y + q.z * q.z)
+
+        return math.atan2(siny_cosp, cosy_cosp)
+
+
+    def extract_initial_path_heading(self, path, min_segment_length=0.05):
+        if len(path.poses) < 2:
+            return None
+
+        x0 = path.poses[0].pose.position.x
+        y0 = path.poses[0].pose.position.y
+
+        for i in range(1, len(path.poses)):
+            xi = path.poses[i].pose.position.x
+            yi = path.poses[i].pose.position.y
+
+            dx = xi - x0
+            dy = yi - y0
+
+            if math.hypot(dx, dy) > min_segment_length:
+                return math.atan2(dy, dx)
+
+        return None
+
+
+    def compute_long_spin(self, current_yaw, target_heading):
+        short_spin = self.normalize_angle(target_heading - current_yaw)
+
+        if short_spin >= 0.0:
+            return short_spin - 2.0 * math.pi
+        else:
+            return short_spin + 2.0 * math.pi
+
+    def build_pose_stamped_from_xy(self, xy):
+        pose = NavigateToPose.Goal().pose
+        pose.header.frame_id = "map"
+        pose.header.stamp = self.get_clock().now().to_msg()
+        pose.pose.position.x = float(xy[0])
+        pose.pose.position.y = float(xy[1])
+        pose.pose.position.z = 0.0
+        pose.pose.orientation.w = 1.0
+        return pose
+
+    def compute_path_length(self, path):
+        if path is None or len(path.poses) < 2:
+            return float("inf")
+
+        total = 0.0
+        previous = path.poses[0].pose.position
+        for pose_stamped in path.poses[1:]:
+            current = pose_stamped.pose.position
+            total += math.hypot(current.x - previous.x, current.y - previous.y)
+            previous = current
+        return total
+
+    def make_return_to_start_goal(self):
+        returnGoal = NavigateToPose.Goal()
+        returnGoal.pose = self.build_pose_stamped_from_xy(self.robot_xy_map)
+        return returnGoal
+
+    def handle_discoveryOrderPaths(self):
+        if not self.computePathActionClient.server_is_ready():
+            self.get_logger().info("[DISCOVERY_ORDER_PATHS] Waiting for ComputePathToPose action server...")
+            return
+
+        if not self.discoveryOrderingRemaining:
+            self.discoveryGoals.append(self.make_return_to_start_goal())
+            self.save_final_discovery_order_plot()
+            self.discoveryCurrentGoalIndex = 0
+            self.currentFSMstate = Task2FSMState.DISCOVERY_SET_YAW_TOLERANCE
+            return
+
+        if self.discoveryOrderingEvalCursor >= len(self.discoveryOrderingRemaining):
+            if self.discoveryOrderingBestIndex is None:
+                chosenIndex = self.discoveryOrderingRemaining[0]
+                self.get_logger().warn(
+                    "[DISCOVERY_ORDER_PATHS] All ComputePathToPose evaluations failed for this ordering step. "
+                    f"Falling back to first remaining candidate index {chosenIndex}."
+                )
+            else:
+                chosenIndex = self.discoveryOrderingBestIndex
+
+            self.discoveryGoals.append(self.discoveryCandidateGoals[chosenIndex])
+            self.discoveryOrderedKeypoints.append(self.discoveryCandidateKeypoints[chosenIndex])
+            self.discoveryOrderingRemaining.remove(chosenIndex)
+            self.discoveryOrderingCurrentStartXY = self.discoveryCandidateKeypoints[chosenIndex]
+            self.discoveryOrderingEvalCursor = 0
+            self.discoveryOrderingBestIndex = None
+            self.discoveryOrderingBestCost = None
+            self.discoveryOrderingCandidateIndex = None
+            return
+
+        candidateIndex = self.discoveryOrderingRemaining[self.discoveryOrderingEvalCursor]
+        candidateGoal = self.discoveryCandidateGoals[candidateIndex]
+
+        goalMsg = ComputePathToPose.Goal()
+        goalMsg.start = self.build_pose_stamped_from_xy(self.discoveryOrderingCurrentStartXY)
+        goalMsg.goal = candidateGoal.pose
+        goalMsg.use_start = True
+
+        self.discoveryOrderingCandidateIndex = candidateIndex
+        self.discoveryOrderingPathDone = False
+        self.discoveryOrderingPathSucceeded = False
+        self.discoveryOrderingPathCost = None
+
+        self.get_logger().info(
+            f"[DISCOVERY_ORDER_PATHS] Evaluating candidate {candidateIndex} "
+            f"({self.discoveryOrderingEvalCursor + 1}/{len(self.discoveryOrderingRemaining)}) "
+            f"from start {self.discoveryOrderingCurrentStartXY}."
+        )
+
+        future = self.computePathActionClient.send_goal_async(goalMsg)
+        future.add_done_callback(self.discoveryOrderingComputePathGoalResponseCallback)
+        self.currentFSMstate = Task2FSMState.DISCOVERY_WAIT_ORDER_PATH
+
+    def discoveryOrderingComputePathGoalResponseCallback(self, future):
+        goalHandle = future.result()
+
+        if not goalHandle.accepted:
+            self.get_logger().error("[DISCOVERY_ORDER_PATHS] ComputePathToPose goal rejected during ordering.")
+            self.discoveryOrderingPathDone = True
+            self.discoveryOrderingPathSucceeded = False
+            return
+
+        resultFuture = goalHandle.get_result_async()
+        resultFuture.add_done_callback(self.discoveryOrderingComputePathResultCallback)
+
+    def discoveryOrderingComputePathResultCallback(self, future):
+        wrappedResult = future.result()
+        self.discoveryOrderingPathDone = True
+        self.discoveryOrderingPathSucceeded = (wrappedResult.status == GoalStatus.STATUS_SUCCEEDED)
+
+        if self.discoveryOrderingPathSucceeded:
+            self.discoveryOrderingPathCost = self.compute_path_length(wrappedResult.result.path)
+            self.get_logger().info(
+                f"[DISCOVERY_ORDER_PATHS] Candidate {self.discoveryOrderingCandidateIndex} path length: "
+                f"{self.discoveryOrderingPathCost:.3f} m."
+            )
+        else:
+            self.discoveryOrderingPathCost = None
+            self.get_logger().warn(
+                f"[DISCOVERY_ORDER_PATHS] Path computation failed for candidate "
+                f"{self.discoveryOrderingCandidateIndex} with status {wrappedResult.status}."
+            )
+
+    def handle_discoveryWaitOrderPath(self):
+        if not self.discoveryOrderingPathDone:
+            return
+
+        if self.discoveryOrderingPathSucceeded and self.discoveryOrderingPathCost is not None:
+            if self.discoveryOrderingBestCost is None or self.discoveryOrderingPathCost < self.discoveryOrderingBestCost:
+                self.discoveryOrderingBestCost = self.discoveryOrderingPathCost
+                self.discoveryOrderingBestIndex = self.discoveryOrderingCandidateIndex
+
+        self.discoveryOrderingEvalCursor += 1
+        self.currentFSMstate = Task2FSMState.DISCOVERY_ORDER_PATHS
+
+    def save_final_discovery_order_plot(self):
+        try:
+            yaml_path = Path(os.path.join(self.savedMapPath, self.savedMapName + ".yaml"))
+            plots_dir = yaml_path.parent / "discoveryPlots"
+            plots_dir.mkdir(parents=True, exist_ok=True)
+
+            with open(yaml_path, "r", encoding="utf-8") as f:
+                meta = yaml.safe_load(f)
+
+            image_path = yaml_path.parent / meta["image"]
+            img = np.array(Image.open(image_path))
+            height = img.shape[0]
+            resolution = float(meta["resolution"])
+            origin_x = float(meta["origin"][0])
+            origin_y = float(meta["origin"][1])
+
+            def map_to_pixel(x, y):
+                col = int(round((x - origin_x) / resolution - 0.5))
+                row = int(round(height - 0.5 - (y - origin_y) / resolution))
+                return row, col
+
+            plt.figure(figsize=(8, 8))
+            plt.imshow(img, cmap="gray", origin="upper")
+
+            if self.discoveryOrderedKeypoints:
+                previous_xy = self.robot_xy_map
+                for visit_idx, xy in enumerate(self.discoveryOrderedKeypoints, start=1):
+                    row, col = map_to_pixel(xy[0], xy[1])
+                    prev_row, prev_col = map_to_pixel(previous_xy[0], previous_xy[1])
+                    plt.plot([prev_col, col], [prev_row, row], linewidth=1.2, alpha=0.7)
+                    plt.scatter([col], [row], s=60, marker="D", c="red", edgecolors="white", linewidths=0.8, zorder=5)
+                    plt.text(col + 4, row + 4, str(visit_idx), fontsize=7, color="red", fontweight="bold", ha="left", va="top")
+                    previous_xy = xy
+
+            row_r, col_r = map_to_pixel(self.robot_xy_map[0], self.robot_xy_map[1])
+            plt.scatter([col_r], [row_r], s=150, marker="x", c="blue", linewidths=2.5, label="robot start / return", zorder=6)
+            if self.discoveryOrderedKeypoints:
+                last_row, last_col = map_to_pixel(self.discoveryOrderedKeypoints[-1][0], self.discoveryOrderedKeypoints[-1][1])
+                plt.plot([last_col, col_r], [last_row, row_r], linewidth=1.2, alpha=0.7, linestyle="--")
+
+            plt.title("final — Discovery order using ComputePathToPose path lengths")
+            plt.legend(loc="upper right", fontsize=8)
+            plt.axis("off")
+            plt.tight_layout()
+            plt.savefig(plots_dir / "final.png", dpi=150, bbox_inches="tight")
+            plt.close()
+            self.get_logger().info(f"[DISCOVERY_ORDER_PATHS] Final path-aware ordering plot saved to: {plots_dir / 'final.png'}")
+
+        except Exception as e:
+            self.get_logger().error(f"[DISCOVERY_ORDER_PATHS] Failed to save final ordering plot: {e}")
+        
+    def handle_discoveryComputePath(self):
+        if self.discoveryCurrentGoalIndex >= len(self.discoveryGoals):
+            self.currentFSMstate = Task2FSMState.DISCOVERY_RESTORE_YAW_TOLERANCE
+            return
+
+        if not self.computePathActionClient.server_is_ready():
+            self.get_logger().info("[DISCOVERY_COMPUTE_PATH] Waiting for ComputePathToPose action server...")
+            return
+
+        targetNavGoal = self.discoveryGoals[self.discoveryCurrentGoalIndex]
+
+        goalMsg = ComputePathToPose.Goal()
+        goalMsg.goal = targetNavGoal.pose
+        goalMsg.use_start = False
+
+        self.discoveryPathDone = False
+        self.discoveryPathSucceeded = False
+        self.discoveryComputedPath = None
+
+        self.get_logger().info(f"[DISCOVERY_COMPUTE_PATH] Requesting path for goal index {self.discoveryCurrentGoalIndex}...")
+
+        future = self.computePathActionClient.send_goal_async(goalMsg)
+        future.add_done_callback(self.discoveryComputePathGoalResponseCallback)
+
+        self.currentFSMstate = Task2FSMState.DISCOVERY_WAIT_PATH
+
+    def discoveryComputePathGoalResponseCallback(self, future):
+        goalHandle = future.result()
+
+        if not goalHandle.accepted:
+            self.get_logger().error("[DISCOVERY_COMPUTE_PATH] Goal rejected.")
+            self.discoveryPathDone = True
+            self.discoveryPathSucceeded = False
+            return
+
+        resultFuture = goalHandle.get_result_async()
+        resultFuture.add_done_callback(self.discoveryComputePathResultCallback)
+
+
+    def discoveryComputePathResultCallback(self, future):
+        wrappedResult = future.result()
+
+        self.discoveryPathDone = True
+        self.discoveryPathSucceeded = (wrappedResult.status == GoalStatus.STATUS_SUCCEEDED)
+
+        if self.discoveryPathSucceeded:
+            self.discoveryComputedPath = wrappedResult.result.path
+            self.get_logger().info("[DISCOVERY_COMPUTE_PATH] Path received successfully.")
+        else:
+            self.discoveryComputedPath = None
+            self.get_logger().error(f"[DISCOVERY_COMPUTE_PATH] Path computation failed with status {wrappedResult.status}.")
+
+    def handle_discoveryWaitPath(self):
+        if not self.discoveryPathDone:
+            return
+
+        if not self.discoveryPathSucceeded or self.discoveryComputedPath is None:
+            self.get_logger().warn("[DISCOVERY_WAIT_PATH] Path failed. Skipping this goal.")
+            self.discoveryCurrentGoalIndex += 1
+            self.currentFSMstate = Task2FSMState.DISCOVERY_COMPUTE_PATH
+            return
+
+        self.currentFSMstate = Task2FSMState.DISCOVERY_SPIN_TO_PATH_HEADING
+
+    def handle_discoverySpinToPathHeading(self):
+        if not self.spinActionClient.server_is_ready():
+            self.get_logger().info("[DISCOVERY_SPIN_TO_PATH_HEADING] Waiting for Spin action server...")
+            return
+
+        if self.lastAMCLMsg is None:
+            self.get_logger().warn("[DISCOVERY_SPIN_TO_PATH_HEADING] Missing AMCL pose.")
+            return
+
+        targetHeading = self.extract_initial_path_heading(self.discoveryComputedPath)
+
+        if targetHeading is None:
+            self.get_logger().warn("[DISCOVERY_SPIN_TO_PATH_HEADING] Cannot extract path heading. Skipping spin.")
+            self.currentFSMstate = Task2FSMState.DISCOVERY_NAVIGATE_TO_GOAL
+            return
+
+        currentYaw = self.get_current_yaw_from_amcl()
+        longSpin = self.compute_long_spin(currentYaw, targetHeading)
+
+        goalMsg = Spin.Goal()
+        goalMsg.target_yaw = float(longSpin)
+        goalMsg.time_allowance = Duration(sec=30)
+
+        self.discoverySpinDone = False
+        self.discoverySpinSucceeded = False
+
+        self.get_logger().info(
+            f"[DISCOVERY_SPIN_TO_PATH_HEADING] currentYaw={currentYaw:.3f}, "
+            f"targetHeading={targetHeading:.3f}, longSpin={longSpin:.3f}"
+        )
+
+        future = self.spinActionClient.send_goal_async(goalMsg)
+        future.add_done_callback(self.discoverySpinGoalResponseCallback)
+
+        self.currentFSMstate = Task2FSMState.DISCOVERY_WAIT_SPIN
+
+    def discoverySpinGoalResponseCallback(self, future):
+        goalHandle = future.result()
+
+        if not goalHandle.accepted:
+            self.get_logger().error("[DISCOVERY_SPIN] Goal rejected.")
+            self.discoverySpinDone = True
+            self.discoverySpinSucceeded = False
+            return
+
+        resultFuture = goalHandle.get_result_async()
+        resultFuture.add_done_callback(self.discoverySpinResultCallback)
+
+
+    def discoverySpinResultCallback(self, future):
+        wrappedResult = future.result()
+
+        self.discoverySpinDone = True
+        self.discoverySpinSucceeded = (wrappedResult.status == GoalStatus.STATUS_SUCCEEDED)
+
+        self.get_logger().info(f"[DISCOVERY_SPIN] Completed with status {wrappedResult.status}.")
+
+    def handle_discoveryWaitSpin(self):
+        if not self.discoverySpinDone:
+            return
+
+        if not self.discoverySpinSucceeded:
+            self.get_logger().warn("[DISCOVERY_WAIT_SPIN] Spin failed. Navigating anyway.")
+
+        self.currentFSMstate = Task2FSMState.DISCOVERY_NAVIGATE_TO_GOAL
+
+    def handle_discoveryNavigateToGoal(self):
+        if not self.navigateToPoseActionClient.server_is_ready():
+            self.get_logger().info("[DISCOVERY_NAVIGATE_TO_GOAL] Waiting for NavigateToPose action server...")
+            return
+
+        goalMsg = self.discoveryGoals[self.discoveryCurrentGoalIndex]
+
+        # refresh timestamp
+        goalMsg.pose.header.stamp = self.get_clock().now().to_msg()
+
+        self.discoveryNavDone = False
+        self.discoveryNavSucceeded = False
+
+        self.get_logger().info(f"[DISCOVERY_NAVIGATE_TO_GOAL] Navigating to goal index {self.discoveryCurrentGoalIndex}...")
+
+        future = self.navigateToPoseActionClient.send_goal_async(goalMsg)
+        future.add_done_callback(self.discoveryNavigateGoalResponseCallback)
+
+        self.currentFSMstate = Task2FSMState.DISCOVERY_WAIT_NAVIGATION
+
+    def discoveryNavigateGoalResponseCallback(self, future):
+        goalHandle = future.result()
+
+        if not goalHandle.accepted:
+            self.get_logger().error("[DISCOVERY_NAVIGATE_TO_GOAL] Goal rejected.")
+            self.discoveryNavDone = True
+            self.discoveryNavSucceeded = False
+            return
+
+        resultFuture = goalHandle.get_result_async()
+        resultFuture.add_done_callback(self.discoveryNavigateResultCallback)
+
+
+    def discoveryNavigateResultCallback(self, future):
+        wrappedResult = future.result()
+
+        self.discoveryNavDone = True
+        self.discoveryNavSucceeded = (wrappedResult.status == GoalStatus.STATUS_SUCCEEDED)
+
+        self.get_logger().info(f"[DISCOVERY_NAVIGATE_TO_GOAL] Completed with status {wrappedResult.status}.")
+
+    def handle_discoveryWaitNavigation(self):
+        if not self.discoveryNavDone:
+            return
+
+        if self.discoveryNavSucceeded:
+            self.get_logger().info(f"[DISCOVERY_WAIT_NAVIGATION] Goal index {self.discoveryCurrentGoalIndex} reached.")
+        else:
+            self.get_logger().warn(f"[DISCOVERY_WAIT_NAVIGATION] Goal index {self.discoveryCurrentGoalIndex} failed. Continuing anyway.")
+
+        self.discoveryCurrentGoalIndex += 1
+
+        if self.discoveryCurrentGoalIndex >= len(self.discoveryGoals):
+            self.currentFSMstate = Task2FSMState.DISCOVERY_RESTORE_YAW_TOLERANCE
+        else:
+            self.currentFSMstate = Task2FSMState.DISCOVERY_COMPUTE_PATH
+
+    def handle_discoverySetYawTolerance(self):
+        if not self.controllerServerGetParametersClient.service_is_ready():
+            self.get_logger().info("[DISCOVERY_SET_YAW_TOLERANCE] Waiting for controller_server get_parameters service...")
+            return
+
+        if not self.controllerServerSetParametersClient.service_is_ready():
+            self.get_logger().info("[DISCOVERY_SET_YAW_TOLERANCE] Waiting for controller_server set_parameters service...")
+            return
+
+        self.discoveryYawParamDone = False
+        self.discoveryYawParamSucceeded = False
+
+        req = GetParameters.Request()
+        req.names = [self.yawGoalToleranceParamName]
+
+        future = self.controllerServerGetParametersClient.call_async(req)
+        future.add_done_callback(self.discoveryGetOriginalYawToleranceCallback)
+
+        self.currentFSMstate = Task2FSMState.DISCOVERY_WAIT_YAW_TOLERANCE_SET
+
+    def discoveryGetOriginalYawToleranceCallback(self, future):
+        try:
+            response = future.result()
+
+            if len(response.values) != 1 or response.values[0].type == 0:
+                self.originalYawGoalTolerance = None
+                self.discoveryYawParamDone = True
+                self.discoveryYawParamSucceeded = False
+                self.get_logger().error(
+                    f"[DISCOVERY_SET_YAW_TOLERANCE] Could not read parameter '{self.yawGoalToleranceParamName}' from /controller_server. "
+                    f"The runtime update to 360 deg / 6.283185307179586 rad will NOT be applied. "
+                    f"Discovery will continue anyway, but final yaw may still be enforced by Nav2."
+                )
+                return
+
+            self.originalYawGoalTolerance = response.values[0].double_value
+
+            req = SetParameters.Request()
+            param = Parameter(
+                self.yawGoalToleranceParamName,
+                Parameter.Type.DOUBLE,
+                6.283185307179586
+            )
+            req.parameters = [param.to_parameter_msg()]
+
+            setFuture = self.controllerServerSetParametersClient.call_async(req)
+            setFuture.add_done_callback(self.discoverySetYawToleranceCallback)
+
+        except Exception as e:
+            self.originalYawGoalTolerance = None
+            self.discoveryYawParamDone = True
+            self.discoveryYawParamSucceeded = False
+            self.get_logger().error(
+                f"[DISCOVERY_SET_YAW_TOLERANCE] Exception while reading original yaw tolerance '{self.yawGoalToleranceParamName}': {e}. "
+                f"The runtime update to 360 deg / 6.283185307179586 rad will NOT be applied. "
+                f"Discovery will continue anyway, but final yaw may still be enforced by Nav2."
+            )
+
+    def discoverySetYawToleranceCallback(self, future):
+        try:
+            response = future.result()
+
+            if len(response.results) != 1:
+                self.discoveryYawParamDone = True
+                self.discoveryYawParamSucceeded = False
+                self.get_logger().error("[DISCOVERY_SET_YAW_TOLERANCE] Unexpected empty SetParameters response.")
+                return
+
+            result = response.results[0]
+            self.discoveryYawParamDone = True
+            self.discoveryYawParamSucceeded = result.successful
+
+            if result.successful:
+                self.get_logger().info(
+                    f"[DISCOVERY_SET_YAW_TOLERANCE] {self.yawGoalToleranceParamName} set to 6.283185307179586 rad. "
+                    f"Original value was {self.originalYawGoalTolerance}."
+                )
+            else:
+                self.get_logger().error(
+                    f"[DISCOVERY_SET_YAW_TOLERANCE] Failed to set '{self.yawGoalToleranceParamName}' to 360 deg / "
+                    f"6.283185307179586 rad. Reason from /controller_server: {result.reason}. "
+                    f"Discovery will continue anyway, but final yaw may still be enforced by Nav2."
+                )
+
+        except Exception as e:
+            self.discoveryYawParamDone = True
+            self.discoveryYawParamSucceeded = False
+            self.get_logger().error(
+                f"[DISCOVERY_SET_YAW_TOLERANCE] Exception while setting '{self.yawGoalToleranceParamName}' to 360 deg / "
+                f"6.283185307179586 rad: {e}. Discovery will continue anyway, but final yaw may still be enforced by Nav2."
+            )
+
+    def handle_discoveryWaitYawToleranceSet(self):
+        if not self.discoveryYawParamDone:
+            return
+
+        if not self.discoveryYawParamSucceeded:
+            self.get_logger().warn(
+                "[DISCOVERY_WAIT_YAW_TOLERANCE_SET] Yaw tolerance update did not succeed. "
+                "Continuing discovery anyway with the current controller_server configuration."
+            )
+
+        self.currentFSMstate = Task2FSMState.DISCOVERY_COMPUTE_PATH
+
+    def handle_discoveryRestoreYawTolerance(self):
+        if self.originalYawGoalTolerance is None:
+            self.get_logger().warn(
+                f"[DISCOVERY_RESTORE_YAW_TOLERANCE] Original value of '{self.yawGoalToleranceParamName}' is unknown, "
+                f"so no restore can be applied. This usually means the initial read or the initial update to 360 deg failed."
+            )
+            self.currentFSMstate = Task2FSMState.DISCOVERY_FINISHED
+            return
+
+        if not self.controllerServerSetParametersClient.service_is_ready():
+            self.get_logger().info("[DISCOVERY_RESTORE_YAW_TOLERANCE] Waiting for controller_server set_parameters service...")
+            return
+
+        self.discoveryRestoreYawDone = False
+        self.discoveryRestoreYawSucceeded = False
+
+        req = SetParameters.Request()
+        param = Parameter(
+            self.yawGoalToleranceParamName,
+            Parameter.Type.DOUBLE,
+            float(self.originalYawGoalTolerance)
+        )
+        req.parameters = [param.to_parameter_msg()]
+
+        future = self.controllerServerSetParametersClient.call_async(req)
+        future.add_done_callback(self.discoveryRestoreYawToleranceCallback)
+
+        self.currentFSMstate = Task2FSMState.DISCOVERY_WAIT_YAW_TOLERANCE_RESTORED
+
+    def discoveryRestoreYawToleranceCallback(self, future):
+        try:
+            response = future.result()
+
+            if len(response.results) != 1:
+                self.discoveryRestoreYawDone = True
+                self.discoveryRestoreYawSucceeded = False
+                self.get_logger().error("[DISCOVERY_RESTORE_YAW_TOLERANCE] Unexpected empty SetParameters response.")
+                return
+
+            result = response.results[0]
+            self.discoveryRestoreYawDone = True
+            self.discoveryRestoreYawSucceeded = result.successful
+
+            if result.successful:
+                self.get_logger().info(
+                    f"[DISCOVERY_RESTORE_YAW_TOLERANCE] Restored {self.yawGoalToleranceParamName} to {self.originalYawGoalTolerance}."
+                )
+            else:
+                self.get_logger().error(
+                    f"[DISCOVERY_RESTORE_YAW_TOLERANCE] Failed to restore '{self.yawGoalToleranceParamName}' to original value "
+                    f"{self.originalYawGoalTolerance}. Reason from /controller_server: {result.reason}."
+                )
+
+        except Exception as e:
+            self.discoveryRestoreYawDone = True
+            self.discoveryRestoreYawSucceeded = False
+            self.get_logger().error(
+                f"[DISCOVERY_RESTORE_YAW_TOLERANCE] Exception while restoring '{self.yawGoalToleranceParamName}' "
+                f"to original value {self.originalYawGoalTolerance}: {e}."
+            )
+
+    def handle_discoveryWaitYawToleranceRestored(self):
+        if not self.discoveryRestoreYawDone:
+            return
+
+        if not self.discoveryRestoreYawSucceeded:
+            self.get_logger().warn(
+                "[DISCOVERY_WAIT_YAW_TOLERANCE_RESTORED] Restore of original yaw_goal_tolerance failed. "
+                "Finishing anyway."
+            )
+
+        self.currentFSMstate = Task2FSMState.DISCOVERY_FINISHED
+
+    def handle_discoveryFinished(self):
+        self.get_logger().info("[DISCOVERY_FINISHED] Discovery navigation completed.")
+        self.shouldShutdown = True
+
+
+def main(args = None):
+    node = None
+    try:
+        rclpy.init(args = args)
+        node = Task2FSMNode()
+        while rclpy.ok() and not node.shouldShutdown: rclpy.spin_once(node, timeout_sec = 0.1) # spin_once() spins (IF present, otherwise it waits once the indicated time) the single first available callback, then immediatly returns 
+    except KeyboardInterrupt:
+        if node is not None: node.get_logger().info(f"KeyboardInterrupt received, shutting down {nodesParameters.task2FSMNodeName}...")
+    finally:
+        if node is not None: node.destroy_node()
+        if rclpy.ok(): rclpy.shutdown()
+
+if __name__ == "__main__": main()
