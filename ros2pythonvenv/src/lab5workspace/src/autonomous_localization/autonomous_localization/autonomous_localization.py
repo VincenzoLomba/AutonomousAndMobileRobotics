@@ -18,7 +18,7 @@ class InitialPositionNode(Node):
     def __init__(self):
         super().__init__('initial_position_node')
 
-        # Subscribe to the amcl_pose topic to get the robot's estimated position (AMCL = Adaptive Monte Carlo Localization)
+        # Subscribe to the amcl_pose topic to get the robot's estimated position (AMCL = Adaptive Monte Carlo Localization) 
         self.odom_subscription = self.create_subscription(
             PoseWithCovarianceStamped, 'amcl_pose',
             self.amcl_callback, 10
