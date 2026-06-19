@@ -25,15 +25,30 @@ task1FSMlaunchDelay = 15.0
 task2FSMlaunchDelay = 15.0
 task3FSMlaunchDelay = 15.0
 
+gazeboWorldName = "group7"
+
 fsmTimerPeriodParameterName = "fsm_timer_period"
 fsmTimerPeriodParameterDefaultValue = 0.5
+mapSavePathParameterName = "map_path"
+mapSavePathParameterDefaultValue = "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/tiagoexamproject/map" # "/tmp/tiagomap/"
+mapSaveNameParameterName = "map_name"
+mapSaveNameParameterDefaultValue = "map"
+
+tasksFSMFolderName = "tiago_exam_tasks"
+task1FSMNodeName = "task1_fsm_node"
+task2FSMNodeName = "task2_fsm_node"
+task3FSMNodeName = "task3_fsm_node"
+task1FSMlaunchDelay = 15.0
+task2FSMlaunchDelay = 15.0
+task3FSMlaunchDelay = 15.0
+
+tiagoArmNodeName = "tiago_arm_node"
+
+
 
 nav2SaveMapServiceName = "/map_saver/save_map"
 nav2MapTopic = "map"
-mapSavePathParameterName = "map_path"
-mapSaveNameParameterName = "map_name"
-mapSavePathParameterDefaultValue = "/home/vincenzo/Documenti/AMR/ros2pythonvenv/src/tiagoexamproject/map"  # "/tmp/tiagomap/"
-mapSaveNameParameterDefaultValue = "map"
+
 
 amclPoseTopic = "amcl_pose"
 reinitializeGlobalLocalizationServiceName = "reinitialize_global_localization"

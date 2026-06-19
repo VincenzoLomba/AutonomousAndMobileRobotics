@@ -15,6 +15,9 @@ def generate_launch_description():
     )
     use_sim_time = LaunchConfiguration("use_sim_time")
     namespace = LaunchConfiguration("namespace")
+    return_to_init = LaunchConfiguration("return_to_init")                   # MOD 18
+    start_exploration_immediately = LaunchConfiguration(                      # MOD 17
+        "start_exploration_immediately")
 
     declare_use_sim_time_argument = DeclareLaunchArgument(
         "use_sim_time", default_value="true", description="Use simulation/Gazebo clock"
@@ -23,6 +26,28 @@ def generate_launch_description():
         "namespace",
         default_value="",
         description="Namespace for the explore node",
+    )
+    # MOD 18: return_to_init moved from params.yaml to launch argument.
+    # Default true: robot returns to starting pose after exploration completes.
+    declare_return_to_init_argument = DeclareLaunchArgument(
+        "return_to_init",
+        default_value="true",
+        description=(
+            "If true, the robot navigates back to its initial pose after exploration "
+            "completes. If false, the robot stops at its last position."
+        ),
+    )
+    # MOD 17: controls whether exploration starts immediately on node launch.
+    # Default true: original ExploreLite behaviour (start immediately).
+    # Set to false to start paused and wait for True on /explore/resume.
+    declare_start_immediately_argument = DeclareLaunchArgument(
+        "start_exploration_immediately",
+        default_value="true",
+        description=(
+            "If true, exploration begins immediately when the node starts (original "
+            "behaviour). If false, the node starts paused and waits for a True message "
+            "on the /explore/resume topic."
+        ),
     )
 
     # Map fully qualified names to relative ones so the node's namespace can be prepended.
@@ -36,11 +61,20 @@ def generate_launch_description():
         name="explore_node",
         namespace=namespace,
         executable="explore",
-        parameters=[config, {"use_sim_time": use_sim_time}],
+        parameters=[
+            config,
+            {
+                "use_sim_time": use_sim_time,
+                "return_to_init": return_to_init,                            # MOD 18
+                "start_exploration_immediately": start_exploration_immediately,  # MOD 17
+            },
+        ],
         output="screen",
         remappings=remappings,
     )
     ld.add_action(declare_use_sim_time_argument)
     ld.add_action(declare_namespace_argument)
+    ld.add_action(declare_return_to_init_argument)
+    ld.add_action(declare_start_immediately_argument)
     ld.add_action(node)
     return ld

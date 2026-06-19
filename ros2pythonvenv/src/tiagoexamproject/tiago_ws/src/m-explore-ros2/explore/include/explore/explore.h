@@ -81,8 +81,7 @@ public:
   Explore();
   ~Explore();
 
-  void start();
-  void stop(bool finished_exploring = false);
+  void stop();
   void resume();
 
   using NavigationGoalHandle =
@@ -97,6 +96,39 @@ private:
    * @brief  Make a global plan
    */
   void makePlan();
+
+  // ---------------------------------------------------------------------------
+  // NodePhase — authoritative macro-state of the node.
+  // Always kept 1:1 with ExploreStatus.msg: every transition calls setPhase()
+  // which atomically updates node_phase_ and publishes the corresponding status.
+  // ---------------------------------------------------------------------------
+  enum class NodePhase {
+    EXPLORATION_STARTED,
+    EXPLORATION_IN_PROGRESS,
+    EXPLORATION_PAUSED,
+    EXPLORATION_PAUSED_DURING_RETURN,
+    EXPLORATION_COMPLETE,
+    RETURNING_TO_ORIGIN,
+    RETURN_TO_ORIGIN_FAILED,
+  };
+
+  // Set the node macro-state and publish the corresponding ExploreStatus message.
+  // This is the single point where internal state and external topic are updated.
+  void setPhase(NodePhase phase);
+
+  // Phase name for logging. Must be a member function (not a free function)
+  // because NodePhase is a private nested type: a free function outside the
+  // class cannot name a private member type, even when given an instance of
+  // it as a parameter — this produces a hard compile error, not a warning.
+  static const char* phaseToString(NodePhase phase);
+
+  // Reset all exploration state to a clean starting point. Cancels all in-flight
+  // Nav2 actions (NavigateToPose, Spin, ComputePath) and the return-to-init
+  // watchdog timer, invalidates all pending callbacks via generation counters,
+  // clears the frontier blacklist, resets progress tracking and the pre-rotation
+  // state machine. Cancels exploring_timer_.
+  // Always safe to call: all cancel operations are idempotent.
+  void resetExplorationState();
 
   // ---------------------------------------------------------------------------
   // Exploration pre-rotation state machine
@@ -211,15 +243,18 @@ private:
   rclcpp_action::Client<nav2_msgs::action::Spin>::SharedPtr spin_client_;
   frontier_exploration::FrontierSearch search_;
   rclcpp::TimerBase::SharedPtr exploring_timer_;
+  // One-shot watchdog timer for the entire return-to-init sequence.
+  // Created in beginReturnToInitSequence(), cancelled on any return outcome.
+  rclcpp::TimerBase::SharedPtr return_watchdog_timer_;
 
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr resume_subscription_;
   void resumeCallback(const std_msgs::msg::Bool::SharedPtr msg);
 
   std::vector<geometry_msgs::msg::Point> frontier_blacklist_;
   geometry_msgs::msg::Point prev_goal_;
-  double prev_distance_;
+  double prev_distance_ = std::numeric_limits<double>::infinity();
   rclcpp::Time last_progress_;
-  size_t last_markers_count_;
+  size_t last_markers_count_ = 0;
 
   geometry_msgs::msg::Pose initial_pose_;
   void returnToInitialPose();
@@ -233,16 +268,19 @@ private:
   int    max_spin_retries_;
   bool visualize_;
   bool return_to_init_;
+  // Maximum total duration (seconds) allowed for the entire return-to-init
+  // sequence (ComputePath + optional spin + NavigateToPose combined).
+  // Must be >> spin_time_allowance + expected NavigateToPose duration.
+  double return_to_init_timeout_sec_;
   std::string robot_base_frame_;
   bool resuming_ = false;
-  bool finished_exploring_ = false;
-  // True after the very first resume() call. Used to publish EXPLORATION_STARTED
-  // exactly once (on first start) instead of EXPLORATION_IN_PROGRESS.
+  // True after the very first exploration start (either via resume() or via
+  // start_exploration_immediately=true in the constructor). Used by setPhase()
+  // to publish EXPLORATION_STARTED exactly once instead of EXPLORATION_IN_PROGRESS.
   bool has_ever_started_ = false;
+  // Authoritative macro-state of the node. Always 1:1 with ExploreStatus.msg.
+  NodePhase node_phase_ = NodePhase::EXPLORATION_PAUSED;
   // Generation counter for the return-to-init NavigateToPose goal.
-  // Incremented before each async_send_goal in returnToInitialPose() and
-  // in resume() when finished_exploring_ is true, so that result callbacks
-  // from a return NavigateToPose cancelled by resume() are silently ignored.
   uint64_t return_nav_generation_ = 0;
 };
 }  // namespace explore

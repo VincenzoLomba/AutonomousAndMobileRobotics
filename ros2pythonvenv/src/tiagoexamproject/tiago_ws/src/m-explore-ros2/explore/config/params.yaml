@@ -7,8 +7,8 @@
 
     robot_base_frame: base_link
 
-    # Enable automatic return to the starting pose when exploration completes.
-    return_to_init: true
+    # NOTE: return_to_init is now a launch argument (not a YAML parameter).
+    # Pass it when launching: ros2 launch explore_lite explore.launch.py return_to_init:=true
 
     # Topic names for the occupancy grid and incremental updates.
     costmap_topic: map
@@ -62,6 +62,12 @@
     # (CANCEL_REQUESTED, WAITING_NAV_TERMINATION, PRE_ROTATION_PATH_REQUESTED,
     # SPIN_ACTIVE). It therefore reflects only time spent actually navigating
     # or genuinely stuck, never time spent in pre-rotation housekeeping.
+    #
+    # NOTE (detour environments): This metric uses Euclidean distance to the
+    # frontier, not path length. In environments with strong detours (e.g.
+    # U-shaped corridors) the robot may move away from the frontier in a straight
+    # line while correctly following a longer path. In such cases consider
+    # increasing progress_timeout to avoid premature blacklisting.
     progress_timeout: 60.0 # 30.0
 
     # ---------------------------------------------------------------------------
@@ -83,13 +89,13 @@
     # new heading differs from the previous one by more than this threshold, an
     # additional corrective Spin is performed, subject to max_spin_retries.
     # Default ≈ 20 degrees.
-    post_spin_heading_tolerance: 0.3490
+    post_spin_heading_tolerance: 0.1745 # 0.3490
 
     # Maximum total number of Spin attempts per pre-rotation sequence (including
     # the first). When set to 1 (default), the behaviour is identical to the
     # original implementation: one spin, no heading recheck. When set to 2 or
     # more, up to (max_spin_retries - 1) corrective spins may follow.
-    max_spin_retries: 1
+    max_spin_retries: 2 # 1
 
     # ---------------------------------------------------------------------------
     # Watchdog timeouts for the pre-rotation state machine
@@ -134,3 +140,14 @@
     # return-to-init pre-rotation spin.
     # MUST be <= spin_watchdog_timeout (see invariant note above).
     spin_time_allowance: 20.0
+
+    # ---------------------------------------------------------------------------
+    # Return-to-init watchdog
+    # ---------------------------------------------------------------------------
+    # Total time budget (seconds) for the entire return-to-init sequence:
+    # ComputePathToPose + optional pre-rotation Spin + NavigateToPose combined.
+    # If this timer fires before the robot reaches the initial pose, the node
+    # transitions to RETURN_TO_ORIGIN_FAILED.
+    # Should be significantly larger than spin_time_allowance plus the expected
+    # maximum NavigateToPose travel time across the mapped area.
+    return_to_init_timeout: 300.0
