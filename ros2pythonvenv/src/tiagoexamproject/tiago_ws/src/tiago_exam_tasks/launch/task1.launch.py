@@ -14,33 +14,33 @@ from launch.actions import TimerAction
 
 def generate_launch_description():
 
-    # Remember: use "DeclareLaunchArgument" to declare a launch argument/parameter (that can be set from the command line when launching the file).
+    # Remember: use "DeclareLaunchArgument" to declare a launch argument/parameter (that can be set from the command line when launching the file)
 
-    # This is the name of the Gazebo world to be used the world file (which is gonna be "group7.world" by default).
+    # This is the name of the Gazebo world to be used the world file (which is gonna be "group7.world" by default)
     worldNameArgumentLabel = 'world_name'
     declareLaunchArgumentWorldName = DeclareLaunchArgument(
         worldNameArgumentLabel,
         default_value = tiagoExamParameters.gazeboWorldName
     )
-    # This is the maximum time the Tiago spawner waits before successfully spawning the robot.
+    # This is the maximum time the Tiago spawner waits before successfully spawning the robot
     tiagoSpawnTimeoutArgumentLabel = 'tiagoSpawnTimeout'
     declareLaunchArgumentTiagoSpawnTimeout = DeclareLaunchArgument(
         tiagoSpawnTimeoutArgumentLabel,
         default_value = '60.0'
     )
-    # This is the X coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0).
+    # This is the X coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0)
     tiagoSpawnCoordinateXArgumentLabel = 'tiagoSpawnCoordinateX'
     declareLaunchArgumentTiagoSpawnCoordinateX = DeclareLaunchArgument(
         tiagoSpawnCoordinateXArgumentLabel,
         default_value = '0.0'
     )
-    # This is the Y coordinate of the Tiago robot spawn point in the Gazebo world (default is -1.3).
+    # This is the Y coordinate of the Tiago robot spawn point in the Gazebo world (default is -1.3)
     tiagoSpawnCoordinateYArgumentLabel = 'tiagoSpawnCoordinateY'
     declareLaunchArgumentTiagoSpawnCoordinateY = DeclareLaunchArgument(
         tiagoSpawnCoordinateYArgumentLabel,
         default_value = '-1.3'
     )
-    # This is the Z coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0).
+    # This is the Z coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0)
     tiagoSpawnCoordinateZArgumentLabel = 'tiagoSpawnCoordinateZ'
     declareLaunchArgumentTiagoSpawnCoordinateZ = DeclareLaunchArgument(
         tiagoSpawnCoordinateZArgumentLabel,
@@ -150,7 +150,7 @@ def generate_launch_description():
         ),
         launch_arguments = {
             'use_sim_time': 'True',
-            "return_to_init": 'False',
+            "return_to_init": 'True',
             'start_exploration_immediately': 'False'
         }.items()
     )
@@ -181,7 +181,7 @@ def generate_launch_description():
         name = tiagoExamParameters.tiagoArmNodeName,
         output = 'screen', # This makes the node's log messages appear in the terminal, which can be useful for debugging and monitoring
         parameters=[
-            {'use_sim_time': 'True'}
+            {'use_sim_time': True}
         ]
     )
     

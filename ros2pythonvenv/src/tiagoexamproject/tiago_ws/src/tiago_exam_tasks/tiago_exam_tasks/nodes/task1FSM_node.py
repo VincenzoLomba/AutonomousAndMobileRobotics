@@ -12,10 +12,14 @@ from . import tiagoExamParameters as params
 from nav2_msgs.srv import SaveMap
 from rclpy.parameter import Parameter
 import os
+from rcl_interfaces.srv import SetParameters
+import math
 
 class Task1FSMState(Enum):
     TUCK_ARM = 1
     WAIT_ARM_TUCKED = 2
+    DISABLE_YAW_GOAL_CHECKER = 9
+    WAIT_DISABLED_YAW_GOAL_CHECKER = 10
     START_EXPLORE_LITE = 3
     WAIT_EXPLORATION_START = 4
     WAIT_EXPLORATION_COMPLETE = 5
@@ -34,12 +38,15 @@ class Task1FSMNode(Node):
         self.exploreLiteStatusTopicLabel = params.exploreLiteStatusTopicLabel
         self.exploreLiteNodeName = params.exploreLiteNodeName
         self.exploreLiteStatus = None
+        self.yawGoalToleranceParamName = params.yawToleranceGoalCheckerParamName
         
         self.armTuckGoalDone = False
         self.armTuckGoalSucceeded = False
         self.mapSaveDone = False
         self.mapSaveSucceeded = False
         self.shouldShutdown = False
+        self.disableYAWGoalCheckerDone = False
+        self.disableYAWGoalCheckerSucceeded = False
 
         # Create the publisher for the explore/resume topic to be able to start/pause the autonomous exploration managed by the ExploreLite Node
         self.exploreLiteExploreResumeTopicPublisher = self.create_publisher(Bool, self.exploreLiteExploreResumeTopicLabel, 10) # remark: 10 is the length of this publisher queue, i.e. the maximum number of messages that can be buffered before being sent out (if the subscriber is not receiving & processing them fast enough)
@@ -49,6 +56,8 @@ class Task1FSMNode(Node):
         self.tiagoArmActionClient = ActionClient(self, TiagoArm, params.tiagoArmActionName) # Action Client
         # Initialize the Service Client for the SaveMap Service (exposed by the Nav2 Map Saver Node) to be able to send requests for saving the final generated map
         self.saveMapClient = self.create_client(SaveMap, params.nav2SaveMapServiceName) # Service Client
+        # Initialize the Service Client for setting parameters on the controller server (used to online get and set the yaw_goal_tolerance value of the Goal Checker used within the Nav2 Stack)
+        self.controllerServerSetParametersClient = self.create_client(SetParameters, params.controllerServerSetParametersServiceName)
 
         # Initialize the internal state
         self.currentFSMstate = Task1FSMState.TUCK_ARM
@@ -88,6 +97,8 @@ class Task1FSMNode(Node):
     def stepUpFSM(self):
         if self.currentFSMstate == Task1FSMState.TUCK_ARM: self.handle_tuckArm()
         elif self.currentFSMstate == Task1FSMState.WAIT_ARM_TUCKED: self.handle_waitArmTucked()
+        elif self.currentFSMstate == Task1FSMState.DISABLE_YAW_GOAL_CHECKER: self.handle_disableYawGoalChecker()
+        elif self.currentFSMstate == Task1FSMState.WAIT_DISABLED_YAW_GOAL_CHECKER: self.handle_waitDisabledYawGoalChecker()
         elif self.currentFSMstate == Task1FSMState.START_EXPLORE_LITE: self.handle_startExploreLite()
         elif self.currentFSMstate == Task1FSMState.WAIT_EXPLORATION_START: self.handle_waitExplorationStart()
         elif self.currentFSMstate == Task1FSMState.WAIT_EXPLORATION_COMPLETE: self.handle_waitExplorationComplete()
@@ -97,7 +108,7 @@ class Task1FSMNode(Node):
         else: self.get_logger().error(f"Encountered an unknown FSM state: {self.currentFSMstate}")
 
     def handle_tuckArm(self):
-        if not self.tiagoArmActionClient.server_is_ready():
+        if not self.tiagoArmActionClient.server_is_ready(): # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
             self.logInfoWithStatus("Waiting for TiagoArm Action Server...")
             return
         self.logInfoWithStatus("Sending goal to TiagoArm Action Server...")
@@ -144,10 +155,56 @@ class Task1FSMNode(Node):
         if self.armTuckGoalDone:
             if self.armTuckGoalSucceeded:
                 self.logInfoWithStatus("Arm motion completed.")
-                self.currentFSMstate = Task1FSMState.START_EXPLORE_LITE
+                self.currentFSMstate = Task1FSMState.DISABLE_YAW_GOAL_CHECKER
             else:
                 self.logErrorWithStatus("Arm goal failed or was rejected by TiagoArm Action Server. Retrying...")
                 self.currentFSMstate = Task1FSMState.TUCK_ARM
+
+    def disableYawGoalCheckerCallback(self, future):
+        try:
+            response = future.result()
+            if len(response.results) != 1:
+                self.disableYAWGoalCheckerDone = True
+                self.disableYAWGoalCheckerSucceeded = False
+                self.logErrorWithStatus(
+                    f"Unexpected empty SetParameters response for parameter '{self.yawGoalToleranceParamName}': the parameter may have remained unchanged."
+                )
+                return
+            # Retrieve the result of the SetParameters request
+            result = response.results[0]
+            self.disableYAWGoalCheckerDone = True
+            self.disableYAWGoalCheckerSucceeded = result.successful
+            if result.successful: self.logInfoWithStatus(f"{self.yawGoalToleranceParamName} successfully set to 2pi rad.")
+            else:
+                self.logErrorWithStatus(
+                    f"Failed to set '{self.yawGoalToleranceParamName}' to 360 deg / "
+                    f"2pi rad. Reason from {params.controllerServerSetParametersServiceName}: {result.reason}."
+                )
+        except Exception as e:
+            self.disableYAWGoalCheckerDone = True
+            self.disableYAWGoalCheckerSucceeded = False
+            self.logErrorWithStatus(f"Exception while setting '{self.yawGoalToleranceParamName}' to 360 deg / 2pi rad (the parameter may have remained unchanged): {e}.")
+
+    def handle_disableYawGoalChecker(self):
+        if not self.controllerServerSetParametersClient.service_is_ready():
+            self.logInfoWithStatus(f"Waiting for {params.controllerServerSetParametersServiceName} service...")
+            return
+        # Building up a SetParameters request
+        req = SetParameters.Request()
+        param = Parameter(self.yawGoalToleranceParamName, Parameter.Type.DOUBLE, 2.0 * math.pi)
+        req.parameters = [param.to_parameter_msg()]
+        self.disableYAWGoalCheckerDone = False
+        self.disableYAWGoalCheckerSucceeded = False
+        future = self.controllerServerSetParametersClient.call_async(req)
+        future.add_done_callback(self.disableYawGoalCheckerCallback)
+        self.returnToInitYawToleranceRequestSent = True
+        self.logInfoWithStatus(f"Requested parameters '{params.yawToleranceGoalCheckerParamName}' to be set equal to 2pi rad.")
+        self.currentFSMstate = Task1FSMState.WAIT_DISABLED_YAW_GOAL_CHECKER
+
+    def handle_waitDisabledYawGoalChecker(self):
+        # Note that the outcome of the SetParameters request is handled AND LOGGED in the disableYawGoalCheckerCallback() method
+        # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
+        if self.disableYAWGoalCheckerDone: self.currentFSMstate = Task1FSMState.START_EXPLORE_LITE
 
     def isExploreLiteReady(self) -> bool:
         exploreResumeTopicSubscriptionsInfo = self.get_subscriptions_info_by_topic(self.exploreLiteExploreResumeTopicLabel)
@@ -185,7 +242,13 @@ class Task1FSMNode(Node):
 
     def handle_waitExplorationComplete(self):
         # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
-        if self.exploreLiteStatus == ExploreStatus.EXPLORATION_COMPLETE: # or self.exploreLiteStatus == ExploreStatus.RETURNING_TO_ORIGIN:
+        # In a previous version of the code, the YAW Goal Checker was disabled only when returning to the origin;
+        # in the final version, it's disabled from the very beginning of the exploration.
+        # if self.exploreLiteStatus == ExploreStatus.RETURNING_TO_ORIGIN:
+        #     # The Tiago robot is returning to origin: we only care for reaching the origin point in terms of location and NOT orientation
+        #     if not self.returnToInitYawToleranceRequestSent: self.requestReturnToInitYawToleranceDisable()
+        #     return
+        if self.exploreLiteStatus == ExploreStatus.EXPLORATION_COMPLETE:
             self.logInfoWithStatus("ExploreLite reported a completed exploration, proceeding to map saving.")
             self.currentFSMstate = Task1FSMState.SAVE_MAP
         elif self.exploreLiteStatus == ExploreStatus.RETURN_TO_ORIGIN_FAILED:
