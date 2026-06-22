@@ -9,37 +9,38 @@ from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
-from tiago_exam_tasks.nodes import nodesParameters
+from tiago_exam_tasks.nodes import tiagoExamParameters
 from launch.actions import TimerAction
 
 def generate_launch_description():
 
-    # Using "DeclareLaunchArgument" to declare a launch argument/parameter (that can be set from the command line when launching the file).
-    # This is the name of the Gazebo world to be used the world file (which is "group7.world" by default).
+    # Remember: use "DeclareLaunchArgument" to declare a launch argument/parameter (that can be set from the command line when launching the file)
+
+    # This is the name of the Gazebo world to be used the world file (which is gonna be "group7.world" by default)
     worldNameArgumentLabel = 'world_name'
     declareLaunchArgumentWorldName = DeclareLaunchArgument(
         worldNameArgumentLabel,
-        default_value = nodesParameters.gazeboWorldName
+        default_value = tiagoExamParameters.gazeboWorldName
     )
-    # This is the maximum time the Tiago spawner waits before successfully spawning the robot.
+    # This is the maximum time the Tiago spawner waits before successfully spawning the robot
     tiagoSpawnTimeoutArgumentLabel = 'tiagoSpawnTimeout'
     declareLaunchArgumentTiagoSpawnTimeout = DeclareLaunchArgument(
         tiagoSpawnTimeoutArgumentLabel,
         default_value = '60.0'
     )
-    # This is the X coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0).
+    # This is the X coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0)
     tiagoSpawnCoordinateXArgumentLabel = 'tiagoSpawnCoordinateX'
     declareLaunchArgumentTiagoSpawnCoordinateX = DeclareLaunchArgument(
         tiagoSpawnCoordinateXArgumentLabel,
         default_value = '4.2'
     )
-    # This is the Y coordinate of the Tiago robot spawn point in the Gazebo world (default is -1.3).
+    # This is the Y coordinate of the Tiago robot spawn point in the Gazebo world (default is -1.3)
     tiagoSpawnCoordinateYArgumentLabel = 'tiagoSpawnCoordinateY'
     declareLaunchArgumentTiagoSpawnCoordinateY = DeclareLaunchArgument(
         tiagoSpawnCoordinateYArgumentLabel,
         default_value = '-1.0'
     )
-    # This is the Z coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0).
+    # This is the Z coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0)
     tiagoSpawnCoordinateZArgumentLabel = 'tiagoSpawnCoordinateZ'
     declareLaunchArgumentTiagoSpawnCoordinateZ = DeclareLaunchArgument(
         tiagoSpawnCoordinateZArgumentLabel,
@@ -47,28 +48,22 @@ def generate_launch_description():
     )
     # This is the period of the Task2 FSM timer
     declareLaunchArgumentFSMtimerPeriod = DeclareLaunchArgument(
-        nodesParameters.fsmTimerPeriodParameterName,
-        default_value = str(nodesParameters.fsmTimerPeriodParameterDefaultValue)
+        tiagoExamParameters.fsmTimerPeriodParameterName,
+        default_value = str(tiagoExamParameters.fsmTimerPeriodParameterDefaultValue)
     )
-    # This is the path where the map to be used (for running the discovery policy) is gonna be stored
+    # This is the path (name excluded) where the map to be used (for running the discovery policy) is gonna be stored
     declareLaunchArgumentSavedMapPath = DeclareLaunchArgument(
-        nodesParameters.mapSavePathParameterName,
-        default_value = nodesParameters.mapSavePathParameterDefaultValue
+        tiagoExamParameters.mapSavePathParameterName,
+        default_value = tiagoExamParameters.mapSavePathParameterDefaultValue
     )
     # This is the name of the map file (without the path) that is gonna be used
     declareLaunchArgumentSavedMapName = DeclareLaunchArgument(
-        nodesParameters.mapSaveNameParameterName,
-        default_value = nodesParameters.mapSaveNameParameterDefaultValue
+        tiagoExamParameters.mapSaveNameParameterName,
+        default_value = tiagoExamParameters.mapSaveNameParameterDefaultValue
     )
 
+    # Remember: use "IncludeLaunchDescription" to include another launch file within this one
 
-    # Using "IncludeLaunchDescription" to include another launch file within this one.
-    # Specifically, the launch file related to starting up the Tiago simulation, that performs the following operations:
-    # 1. Launches the exam Gazebo world (relying on the proper launcher tiago_exam_worlds/launch/pal_gazebo_exam.launch.py)
-    # 2. Spawns the Tiago robot into the simulation (relying on the proper launcher tiago_exam/launch/tiago_spawn.launch.py)
-    # 3. Starts the Tiago bringup stack (relying on the proper launcher tiago_robot/tiago_bringup/launch/tiago_bringup.launch.py)
-    # 4. Optionally starts MoveIt (if the parameter "moveit" is set to "true", default is "true") (relying on the proper launcher tiago_moveit_config/launch/move_group.launch.py)
-    # 5. Launches tuck_arm.py to move the arm to its initial home configuration (contained in tiago_exam/scripts)
     tiagoExamCMD = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             os.path.join(
@@ -81,14 +76,6 @@ def generate_launch_description():
         launch_arguments={
             'world_name': LaunchConfiguration(worldNameArgumentLabel),
             'moveit': 'true',
-            # Important note: the launcher tiago_exam.launch.py (together with tiago_spawn.launch.py, which it uses), has been modified to accept four new parameters:
-            # - tiagoSpawnTimeout: used to configure the maximum time the Tiago spawner waits before successfully spawning the robot.
-            #                      It can be useful to set this parameter to a relatively high value, because if the Gazebo simulation is slow to start,
-            #                      the spawning process may time out before Gazebo itself is fully up and running.
-            #                      Note indeed that spawning is not possible until the Gazebo simulator has been completely and correctly started.
-            # - tiagoSpawnCoordinateX: used to configure the X coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0)
-            # - tiagoSpawnCoordinateY: used to configure the Y coordinate of the Tiago robot spawn point in the Gazebo world (default is -1.3)
-            # - tiagoSpawnCoordinateZ: used to configure the Z coordinate of the Tiago robot spawn point in the Gazebo world (default is 0.0)
             'tiagoSpawnTimeout': LaunchConfiguration(tiagoSpawnTimeoutArgumentLabel),
             'tiagoSpawnCoordinateX': LaunchConfiguration(tiagoSpawnCoordinateXArgumentLabel),
             'tiagoSpawnCoordinateY': LaunchConfiguration(tiagoSpawnCoordinateYArgumentLabel),
@@ -96,32 +83,10 @@ def generate_launch_description():
         }.items()
     )
 
-    # Again, using "IncludeLaunchDescription" to include another launch file within this one.
-    # Specifically, the launch file related to starting up the Nav2 & RViz stack for SLAM and mapping purposes, that performs the following operations:
-    #
-    # If is_public_sim is True, the launcher uses the following standard Nav2 & RViz Stack bringup (properly customized for the usage of Tiago):
-    #   1. Launch of the Nav2 Stack bringup (relying on the proper launcher nav2_bringup/launch/bringup_launch.py, contained in the Nav2 package "nav2_bringup" installed within ROS2 Humble), parameterized with:
-    #   - "params_file" parameter: set to the path of a pre-existing YAML configuration file "tiago_nav_public_sim.yaml" (which is "tiago_ws/src/tiago_navigation/tiago_2dnav/params/tiago_nav_public_sim.yaml")
-    #   - "map" parameter: set to the path of a pre-existing map accordingly to the "world_name" launcher-parameter (which is pmb2_navigation/pmb2_maps/configurations/<world_name>/map.yaml)
-    #   - "use_sim_time" parameter: set to "True", in order to make Nav2 Stack nodes using the simulation clock (instead of the real machine clock)
-    #   2. Launch of RViz coherently with the Nav2 Stack (relying on the proper launcher nav2_bringup/launch/rviz_launch.py contained in the Nav2 package "nav2_bringup" installed within ROS2 Humble), parameterized with:
-    #   - "rviz_config" parameter: set to the path of a pre-existing RViz configuration file "navigation.rviz" (which is "tiago_ws/src/tiago_navigation/tiago_2dnav/config/rviz/navigation.rviz")
-    # If instead is_public_sim is False, the launcher does not use the standard Nav2 Stack bringup directly.
-    # Instead, it relies on an already existing "PAL launcher" (pal_navigation_cfg_public/pal_navigation_cfg_bringup/launch/nav_bringup.launch.py).
-    # In that case, the performed operations are the following:
-    #   1. Indeed, launch of the PAL Nav2 Stack bringup (relying on the proper launcher pal_navigation_cfg_public/pal_navigation_cfg_bringup/launch/nav_bringup.launch.py), parameterized with:
-    #   - "map_path" parameter: set to be the same as the "map_path" launcher-parameter 
-    # Indeed, it is quite relevant to know the behavior of the PAL Nav2 Stack bringup. It behaves in the following way:
-    #   1. Launch of a proper Stack accordingly to the value of the "slam" launcher-parameter:
-    #   - If "slam" is set to "True", the PAL Nav2 Stack bringup launches the SLAM Stack (relying on the proper launcher nav2_bringup/launch/slam_launch.py, contained in the Nav2 package "nav2_bringup" installed within ROS2 Humble), parameterized with:
-    #     - "params_file" parameter: set to the path of a pre-existing YAML configuration file (which is "tiago_ws/src/pal_navigation_cfg_public/pal_navigation_cfg_params/params/<robot_name>_nav2.yaml")
-    #   - If set to "False", the PAL Nav2 Stack bringup launches the Localization Stack (relying on the proper launcher nav2_bringup/launch/localization_launch.py, contained in the Nav2 package "nav2_bringup" installed within ROS2 Humble), parameterized with:
-    #     - "params_file" parameter: set to the path of a pre-existing YAML configuration file (which is "tiago_ws/src/pal_navigation_cfg_public/pal_navigation_cfg_params/params/<robot_name>_nav2.yaml")
-    #     - "map" parameter: set as <map_path>/map.yaml (where <map_path> is the value of the "map_path" launcher-parameter)
-    #   2. It remaps the "cmd_vel" topic (one of the standard topics of the Nav2 Stack) as "nav_vel" (Nav2 Stack nodes will publish velocity commands on the "nav_vel" topic, instead of the standard "cmd_vel" one)
-    #   3. Launch of the Nav2 Navigation Module (relying on the proper launcher nav2_bringup/launch/navigation_launch.py, contained in the Nav2 package "nav2_bringup" installed within ROS2 Humble)
-    #   4. Only if the launcher-param "rviz" is "True", launch of RViz coherently with the Nav2 Stack (relying on the proper launcher nav2_bringup/launch/rviz_launch.py contained in the Nav2 package "nav2_bringup" installed within ROS2 Humble), parameterized with:
-    #   - "rviz_config" parameter: set to the path of a pre-existing RViz configuration file "navigation.rviz" (which is "tiago_ws/src/tiago_navigation/tiago_2dnav/config/rviz/navigation.rviz")
+    # With respect to the launcher for the Task1, in this launcher for the Task2 it is exploited another modification of the "stack" of launch files related to "tiago_nav_bringup.launch.py":
+    # in fact, it has been added a new launch argument "cmd_vel_smoothed_remap_topic" that can be used to ALTER the final topic onto which the final value of the velocity is written.
+    # The canonical behaviour goes from the Nav2 Stack, through a Velocity Smoother, and finally to the topic "cmd_vel".
+    # On the contrary, in this Task2 this final topic is explicitly replaced to "cmd_vel_unsafe". Then, a Collision Monitor is added, to introduce the possibility to exploit the odometry to avoid bumping into obstacles.
     tiagoNavBringupCMD = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
             os.path.join(
@@ -134,23 +99,26 @@ def generate_launch_description():
             'is_public_sim': 'False',
             'slam': 'False',
             'rviz': 'True',
-            'map_path': LaunchConfiguration(nodesParameters.mapSavePathParameterName),
+            'map_path': LaunchConfiguration(tiagoExamParameters.mapSavePathParameterName),
             'cmd_vel_smoothed_remap_topic': 'cmd_vel_unsafe'
         }.items()
     )
 
     # Using "Node" to include within this launch file the Node that exposes the Action Server to control and move the Tiago's arm
     tiagoArmNodeCMD = Node(
-        package = 'tiago_exam_tasks',
-        executable = 'tiago_arm_node',
-        name = 'tiago_arm_node',
+        package = tiagoExamParameters.tasksFSMFolderName,
+        executable = tiagoExamParameters.tiagoArmNodeName,
+        name = tiagoExamParameters.tiagoArmNodeName,
         output = 'screen', # This makes the node's log messages appear in the terminal, which can be useful for debugging and monitoring
         parameters=[
             {'use_sim_time': True}
         ]
     )
 
-    # This is a LifecycleNode NEEDS TO BE putted up!!!!
+    # Using "Node" to include within this launch file the Node that implements the Collision Monitor.
+    # When active, ti behaves as a filter for the original cmd_vel topic (exploiting the odometry), as anticipated in the comments above.
+    # Also, this is a "LifecycleNode", that means (from Ros2 Humble documentation) that is not sufficient to run it: it also has to be put in an "active" state explicitly.
+    # Note that the behaviour of that Collision Monitor Node is described in the file tiago_exam_tasks/config/collision_monitor.yaml
     collisionMonitorCMD = Node(
         package='nav2_collision_monitor',
         executable='collision_monitor',
@@ -169,7 +137,7 @@ def generate_launch_description():
         ]
     )
 
-    # This puts it up!!!! (altrimentiresta in unconfigured o inactive)
+    # Using "Node" to include within this launch file the Node that that (as just commented above) explicitly puts on an "active" state the Collision Monitor Node.
     collisionMonitorLifecycleManagerCMD = Node(
         package='nav2_lifecycle_manager',
         executable='lifecycle_manager',
@@ -183,6 +151,7 @@ def generate_launch_description():
         }]
     )
 
+    # Using "Node" to include within this launch file the Node that implements the Aruco Marker detection for the pick location (marker ID 26)
     pickLocationArucoNodeCMD = Node(
         package='aruco_ros',
         executable="single",
@@ -195,15 +164,16 @@ def generate_launch_description():
         parameters=[{
             "use_sim_time": True,
             "image_is_rectified": True,
-            "marker_size": 0.25,
-            "marker_id": 26,
-            "reference_frame": "map",
+            "marker_size": tiagoExamParameters.pickLocationMarker.markerSize,
+            "marker_id": tiagoExamParameters.pickLocationMarker.markerID,
+            "reference_frame": tiagoExamParameters.pickLocationMarker.markerReferenceFrame,
             "camera_frame": "head_front_camera_rgb_optical_frame",
-            "marker_frame": "aruco_marker_frame_26",
+            "marker_frame": tiagoExamParameters.pickLocationMarker.markerFrame,
             "corner_refinement": "LINES",
         }]
     )
 
+    # Using "Node" to include within this launch file the Node that implements the Aruco Marker detection for the place location (marker ID 238)
     placeLocationArucoNodeCMD = Node(
         package='aruco_ros',
         executable="single",
@@ -216,11 +186,11 @@ def generate_launch_description():
         parameters=[{
             "use_sim_time": True,
             "image_is_rectified": True,
-            "marker_size": 0.25,
-            "marker_id": 238,
-            "reference_frame": "map",
+            "marker_size": tiagoExamParameters.placeLocationMarker.markerSize,
+            "marker_id": tiagoExamParameters.placeLocationMarker.markerID,
+            "reference_frame": tiagoExamParameters.placeLocationMarker.markerReferenceFrame,
             "camera_frame": "head_front_camera_rgb_optical_frame",
-            "marker_frame": "aruco_marker_frame_238",
+            "marker_frame": tiagoExamParameters.placeLocationMarker.markerFrame,
             "corner_refinement": "LINES",
         }]
     )
@@ -228,18 +198,18 @@ def generate_launch_description():
     # Using "Node" to include within this launch file the Node that implements the FSM that implements the logic that executes the Task2
     # Wrapping it within a "TimerAction" to delay its start of some pre-choosen seconds
     task2FSMNodeCMDdelayed = TimerAction(
-        period = nodesParameters.task2FSMlaunchDelay,
+        period = tiagoExamParameters.task2FSMlaunchDelay,
         actions= [
             Node(
-                package = 'tiago_exam_tasks',
-                executable = 'task2_fsm_node',
-                name = 'task2_fsm_node',
+                package = tiagoExamParameters.tasksFSMFolderName,
+                executable = tiagoExamParameters.task2FSMNodeName,
+                name = tiagoExamParameters.task2FSMNodeName,
                 output = 'screen', # This makes the node's log messages appear in the terminal, which can be useful for debugging and monitoring
                 parameters = [
                     {'use_sim_time': True},
-                    {nodesParameters.fsmTimerPeriodParameterName: LaunchConfiguration(nodesParameters.fsmTimerPeriodParameterName)},
-                    {nodesParameters.mapSavePathParameterName: LaunchConfiguration(nodesParameters.mapSavePathParameterName)},
-                    {nodesParameters.mapSaveNameParameterName: LaunchConfiguration(nodesParameters.mapSaveNameParameterName)}
+                    {tiagoExamParameters.fsmTimerPeriodParameterName: LaunchConfiguration(tiagoExamParameters.fsmTimerPeriodParameterName)},
+                    {tiagoExamParameters.mapSavePathParameterName: LaunchConfiguration(tiagoExamParameters.mapSavePathParameterName)},
+                    {tiagoExamParameters.mapSaveNameParameterName: LaunchConfiguration(tiagoExamParameters.mapSaveNameParameterName)}
                 ]
             )
         ]
