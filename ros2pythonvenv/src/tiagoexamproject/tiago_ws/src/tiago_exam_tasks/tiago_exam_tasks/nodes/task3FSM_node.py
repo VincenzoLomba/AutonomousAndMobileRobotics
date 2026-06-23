@@ -1,16 +1,14 @@
-# This Python file defines a ROS 2 Humble node implementing the FSM for Task3.
-# Task3 starts from the same robust startup/localization phase used in Task2,
-# then navigates to the pick platform, estimates the current cube pose and moves the arm to an approach pose.
+
+# This Python files defines a ROS2 Humble Node which implements the FSM that implements the logic that executes the Task3
 
 import math
 import random
 from enum import Enum
-
 import rclpy
 from rclpy.action import ActionClient
 from rclpy.node import Node
 from rclpy.parameter import Parameter
-
+from . import tiagoExamParameters as params
 from action_msgs.msg import GoalStatus
 from builtin_interfaces.msg import Duration
 from geometry_msgs.msg import PoseStamped, PoseWithCovarianceStamped, TransformStamped
@@ -21,26 +19,69 @@ from std_srvs.srv import Empty
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from tf2_geometry_msgs import do_transform_pose
 from tf2_ros import Buffer, StaticTransformBroadcaster, TransformListener
-
 from tiago_exam_interfaces.action import TiagoArm, TiagoGripper
-from . import nodesParameters
+from dataclasses import dataclass, field
+from typing import Optional
+from rclpy.time import Time
+from typing import Optional, Dict, Any, List
+from dataclasses import dataclass, asdict
+import discoveryLoader
+import numpy as np
+from scipy.spatial.transform import Rotation as SciPyRotation
+from geometry_msgs.msg import Pose
+import copy
 
+@dataclass
+class ArucoSample:
+    # This simple class represents the single sample collected via an Aruco Marker detection
+    stamp_sec: int # Seconds part of the ROS timestamp associated with the transform message.
+    stamp_nanosec: int # Nanoseconds part of the ROS timestamp associated with the transform message.
+    frame_id: str # Reference frame in which the marker pose is expressed, typically "map".
+    child_frame_id: str # TF child frame associated with the detected ArUco marker.
+    position: List[float] # Marker position [x, y, z] expressed in frame_id, in meters.
+    quaternion: List[float] # Normalized marker orientation [x, y, z, w] expressed in frame_id.
+
+@dataclass
+class CubeData:
+    # This class will be used to organize and collect all the relevant data for the currently selected cube.
+    # Note that the currently selected cube is the one cube with which the Tiago robot is actually interacting!
+    markerInfo: params.MarkerInfo # This is the set of Aruco Marker informations associated to the cube
+    arucoSamples: list[ArucoSample] = field(default_factory=list) # This list will be used to store all the collected ArUco marker samples for the currently selected cube
+    detectionWaitStartTime: Optional[Time] = None # During the Task3 execution, at a certain moment the Tiago robot will wait a certain time for collecting Aruco samples for the currently selected cube; this variable will store the time at which this waiting phase starts
+    finalPoseMap: Optional[params.ArucoPoseEstimate] = None # Final estimated pose of the currently selected cube (of its marker) expressed in the "map" reference frame (obtained by aggregating all the collected samples for the currently selected cube)
+    finalPoseBaseLink: Optional[params.ArucoPoseEstimate] = None # Same as the previous variable, BUT expressed in the "base_link" reference frame
+    approachPose: Optional[Pose] = None # Apporach pose for the cube (espressed in the "base_link" reference frame)
+    # Important: in the final version of the code, the grasping pose is reached simply by a vertical translation of the Tiago torso FROM the approach pose
+    # graspingPosition: Optional[list[float]] = None # Position part of the grasping pose for the cube
+    # graspingQuaternion: Optional[list[float]] = None # Orientation part of the grasping pose for the cube
+    @property
+    def markerID(self) -> int: return self.markerInfo.markerID
+    @property
+    def markerNickname(self) -> str: return self.markerInfo.markerNickname
 
 class Task3FSMState(Enum):
+    # Autonomous localization (copied from Task2 FSM)
     TUCK_ARM = 1
     WAIT_ARM_TUCKED = 2
     TRIGGER_LOCALIZATION_RESTART = 3
     WAIT_LOCALIZATION_RESTARTED = 4
     EVALUATING_LOCALIZATION = 5
     LOCALIZING = 6
-    SET_HEAD_FOR_CUBE_SEARCH = 7
+    # Cubes transportation between pick and place locations
+    INIT_CUBES_TRANSPORTATION = 7
+    NAVIGATE_TO_PICK_PLATFORM = 10
+    CUBE_DETECTION = 12
+    MOVE_ARM_TO_PICKING_CONFIGURATION = 14
+
+
+
     WAIT_HEAD_FOR_TASK3 = 8
     LOAD_TASK2_DISCOVERY_RESULTS = 9
-    NAVIGATE_TO_PICK_PLATFORM = 10
+    
     WAIT_PICK_PLATFORM_NAVIGATION = 11
-    WAIT_BEFORE_CUBE_DETECTION = 12
+    
     BUILD_CURRENT_CUBE_APPROACH_POSE = 13
-    MOVE_ARM_TO_PICKING_CONFIGURATION = 14
+    
     WAIT_ARM_TO_PICKING_CONFIGURATION = 15
     MOVE_ARM_TO_CURRENT_CUBE_APPROACH = 16
     WAIT_ARM_TO_CURRENT_CUBE_APPROACH = 17
@@ -74,68 +115,68 @@ class Task3FSMState(Enum):
     WAIT_RETURN_TO_INITIAL_POSE = 45
     FINISH = 46
 
-
 class Task3FSMNode(Node):
 
     def __init__(self):
-        super().__init__(nodesParameters.task3FSMNodeName)
-        self.get_logger().info(f"Starting {nodesParameters.task3FSMNodeName} initialization...")
 
+        super().__init__(params.task3FSMNodeName)
+        self.get_logger().info(f"Starting {params.task3FSMNodeName} initialization...")
+
+        # +---------------------------------------------------------------------------------------------------------------------------------------------+
+        # | The following portion of code is exactly the same as the one used in the Task2 FSM Node for (1) arm tucking and (2) autonomous localization |
+        # +---------------------------------------------------------------------------------------------------------------------------------------------+
+
+        self.lastAMCLMsg = None
+        self.latestJointState = None
+        self.collectArucoSamples = False
+        self.pickArucoSamples = []
+        self.placeArucoSamples = []
+        self.arucoLocationsSaved = False
         self.armTuckGoalDone = False
         self.armTuckGoalSucceeded = False
-
         self.globalLocalizationResetDone = False
         self.globalLocalizationResetSucceeded = False
-
+        self.localizationMetricsHistory = []
+        self.localizationMetricsWindowSize = params.localizationMetricsWindowSize
+        self.localizationMetricsJumpUpResetPercent = params.localizationMetricsJumpUpResetPercent
+        self.localizationMetricsMinImprovementPercent = params.localizationMetricsMinImprovementPercent
+        self.collisionMonitorRequestSent = False
+        self.collisionMonitorResponseReceived = False
+        self.collisionMonitorEnabled = False
+        self.localizationPhase = None
+        self.localizationGoodMetricConsecutiveCountRequired = 2 
+        self.localizationGoodMetricConsecutiveCount = params.localizationGoodMetricConsecutiveCountRequired
+        self.robotXY = (0.0, 0.0)
         self.localizationSpinDone = False
         self.localizationSpinSucceeded = False
         self.localizationDriveOnHeadingDone = False
         self.localizationDriveOnHeadingSucceeded = False
-        self.localizationPhase = None
-        self.lastAMCLMsg = None
-        self.localizationMetricsWindowSize = 5
-        self.localizationMetricsHistory = []
-        self.localizationMetricsMinImprovementPercent = 5.0
-        self.localizationMetricsStableAmount = 0
-        self.localizationMetricsStableAmountRequired = 4
-        self.localizationMetricsJumpUpResetPercent = 20.0
+        self.RANDOMWALKlocalization = False
+        self.headTiltTolerance = params.headTiltTolerance
 
-        self.latestJointState = None
-        self.headTiltTolerance = 0.02
+        self.shouldShutdown = False
 
-        self.robot_xy_map = (0.0, 0.0)
-        self.initialRobotPose = None
-        self.returnToInitialPoseDone = False
-        self.returnToInitialPoseSucceeded = False
+        # +------------------------------------------------------------------------------------------------------------------------+
+        # |                                          End of the reused part fo the code                                            |
+        # +------------------------------------------------------------------------------------------------------------------------+
+        
+        # This variable will be used to enable/disable the collection of the ArUco marker samples for the currently selected cube
+        self.collectCurrentCubeSamplesENABLER = False 
+        self.currentCubeIndex = 0 # This is the index of the currently selected cube, AKA the cube that the Tiago robot is actually interacting with
+        self.cubesData = [] # This list will store the data for all the cubes that the Tiago robot will have to pick and place (and will be indexed via self.currentCubeIndex)
+        # Initialize the internal state (and related quantities)
+        if not params.cubes or len(params.cubes) == 0:
+            self.get_logger().error("The provided cubes list (to be pick and placed) seems to be empty! Provide a valid list!")
+            self.currentFSMstate = Task3FSMState.FINISH
+        else:
+            self.cubesData = [CubeData(markerInfo = cube) for cube in params.cubes]
+            self.currentFSMstate = Task3FSMState.TUCK_ARM
 
-        self.RANDOMWALK = False
+        self.pickLocation: params.ArucoPoseEstimate = None # In this variable it will be sotred the loaded estimated pose of the pick location
+        self.placeLocation: params.ArucoPoseEstimate = None # In this variable it will be sotred the loaded estimated pose of the place location
 
-        self.collisionSent = False
-        self.collisionOkay = False
-        self.collisionAvoidance = False
-
-        self.task2DiscoveryResults = None
-        self.task2DiscoveryResultsLoaded = False
-
-        self.cubeMarkerIdsToMove = [63, 582]
-        self.currentCubeIndex = 0
-        self.currentCubeMarkerId = self.cubeMarkerIdsToMove[self.currentCubeIndex]
-        self.latestCubeMarkerTransforms = {63: None, 582: None}
-        self.currentCubeSamples = []
-        self.collectCurrentCubeSamples = False
-        self.cubeDetectionWaitStartTime = None
-
-        self.currentCubeFinalPoseMap = None
-        self.currentCubeFinalPoseBaseLink = None
-        self.currentCubeApproachPosition = None
-        self.currentCubeApproachQuaternion = None
-        self.currentCubeGraspingPosition = None
-        self.currentCubeGraspingQuaternion = None
-        self.cubeApproachPosesBaseLink = {}
-        self.currentCubeEffectiveGraspingTranslation = None
-        self.cubeEffectiveGraspingTranslations = {}
-        self.torsoMinSafePosition = 0.005
-
+        self.tiltHeadSent = False
+        
         self.pickPlatformNavigationSent = False
         self.pickPlatformNavigationDone = False
         self.pickPlatformNavigationSucceeded = False
@@ -173,195 +214,144 @@ class Task3FSMNode(Node):
 
         self.nextStateAfterTransportConfiguration = None
 
-        self.torsoMotionTarget = None
-        self.torsoMotionStartTime = None
-        self.torsoMotionTimeout = 8.0
-        self.torsoMotionTolerance = 0.005
-        self.torsoApproachJointPosition = None
+        # During the transportation, the torso of the Tiago robot will be moved. The following variables will be involved in that motion.
+        self.torsoMotionTarget = None # Last set target position for the torso motion.
+        self.torsoMotionStartTime = None # Instant at which the torso motion was commanded (used to check for timeout).
+        self.torsoMotionTimeout = 8.0 # Maximum time allowed for the single torso motion to complete (in seconds).
+        self.torsoMotionTolerance = 0.005 # Tolerance for considering the single torso motion as completed (in meters).
 
+        self.initialRobotPose = None # In this variable, the whole POSE of the robot BEFORE starting the transportation will be stored
+
+        
+
+        self.torsoApproachJointPosition = None
+        self.torsoMinSafePosition = 0.005
+
+
+        # Initialize the TF broadcaster to be able to publish STATIC TFs
         self.tfBroadcaster = StaticTransformBroadcaster(self)
+        # Initialize the TF buffer and listener to be able to listen to the TFs published by other nodes (e.g. the ArUco Marker detection nodes)
         self.tfBuffer = Buffer()
         self.tfListener = TransformListener(self.tfBuffer, self)
+        # Initialize the Action Client for the TiagoGripper Action Server (exposed by the TiagoGripper Node) to be able to send goal for the gripper motion
+        self.tiagoGripperActionClient = ActionClient(self, TiagoGripper, params.tiagoGripperActionName)
+        # Subscribe to the Aruco Marker detection topics for all the required cubes
+        self.cubesArucoSubscriptionsDictionary = {}
+        for cube in params.cubes:
+            self.cubesArucoSubscriptionsDictionary[cube.markerID] = self.create_subscription(
+                TransformStamped, cube.getTopicTF(), 
+                lambda msg, markerID = cube.markerID: self.storeCubeMarkerSample(msg, markerID), 10,
+            )
+        # Initialize the Publisher for commanding the torso position AKA publisher to the "/torso_controller/joint_trajectory" topic
+        self.torsoCommandPublisher = self.create_publisher(JointTrajectory, params.torsoCommandTopic, 10)
+            
+        # +-----------------------------------------------------------------------------------------+
+        # | The following portion of code is exactly the same as the one used in the Task2 FSM Node |
+        # +-----------------------------------------------------------------------------------------+
 
-        self.shouldShutdown = False
+        # Initialize the Action Client for the TiagoArm Action Server (exposed by the TiagoArm Node) to be able to send goal for the arm motion
+        self.tiagoArmActionClient = ActionClient(self, TiagoArm, params.tiagoArmActionName) # Action Client
+        # Subscribe to the "amcl_pose" topic to get the robot's estimated position (AMCL = Adaptive Monte Carlo Localization) (note that this is a PLANAR localizator)
+        self.AMCLPoseSubscription = self.create_subscription(PoseWithCovarianceStamped, params.amclPoseTopic, self.amclCallback, 10)
+        # Subscribe to the "joint_states" topic to get the current joint states of the robot
+        self.jointStateSubscription = self.create_subscription(JointState, params.jointStateTopic, self.jointStateCallback, 10)
+        # Subscribe to the Aruco Marker detection topics for both pick and place locations to get the detected marker poses
+        # self.pickArucoSubscription = self.create_subscription(TransformStamped, '/aruco_pick/single/transform', self.pickArucoCallback, 10)
+        # self.placeArucoSubscription = self.create_subscription(TransformStamped, '/aruco_place/single/transform', self.placeArucoCallback, 10)
+        # Initialize the Publisher for commanding the head position (its tilt position) AKA publisher to the "/head_controller/joint_trajectory" topic
+        self.headCommandPublisher = self.create_publisher(JointTrajectory, params.headCommandTopic, 10)
+        # Initialize the Service Client "reinitialize_global_localization" to be used to reinitialize in a clean way the global autonomous localization process (that will be later on managed via AMCL)
+        self.reinitializeGlobalLocalizationClient = self.create_client(Empty, params.reinitializeGlobalLocalizationServiceName)
+        # Initialize the Action Client for the Spin Action Server provided by the Nav2 Stack
+        self.spinActionClient = ActionClient(self, Spin, params.spinActionName)
+        # Initialize the Action Client for the DriveOnHeading Action Server provided by the Nav2 Stack
+        self.driveOnHeadingActionClient = ActionClient(self, DriveOnHeading, params.driveOnHeadingActionName)
+        # Initialize the Service Client for enabling/disabling the collision monitor
+        self.collisionMonitorEnabler = self.create_client(SetParameters, params.collisionMonitorSetParametersServiceName)
+        # Initialize the Action Client for the ComputePathToPose Action Server provided by the Nav2 Stack
+        # self.computePathActionClient = ActionClient(self, ComputePathToPose, params.computePathToPoseActionName)
+        # Initialize the Action Client for the NavigateToPose Action Server provided by the Nav2 Stack
+        self.navigateToPoseActionClient = ActionClient(self, NavigateToPose, params.navigateToPoseActionName)
 
-        self.tiagoArmActionClient = ActionClient(
-            self,
-            TiagoArm,
-            nodesParameters.tiagoArmActionName,
-        )
-        self.tiagoGripperActionClient = ActionClient(
-            self,
-            TiagoGripper,
-            nodesParameters.tiagoGripperActionName,
-        )
-
-        self.AMCLPoseSubscription = self.create_subscription(
-            PoseWithCovarianceStamped,
-            nodesParameters.amclPoseTopic,
-            self.amclCallback,
-            10,
-        )
-        self.jointStateSubscription = self.create_subscription(
-            JointState,
-            '/joint_states',
-            self.jointStateCallback,
-            10,
-        )
-        self.cube63ArucoSubscription = self.create_subscription(
-            TransformStamped,
-            '/aruco_cube_63/single/transform',
-            self.cube63ArucoCallback,
-            10,
-        )
-        self.cube582ArucoSubscription = self.create_subscription(
-            TransformStamped,
-            '/aruco_cube_582/single/transform',
-            self.cube582ArucoCallback,
-            10,
-        )
-
-        self.headCommandPublisher = self.create_publisher(
-            JointTrajectory,
-            '/head_controller/joint_trajectory',
-            10,
-        )
-        self.torsoCommandPublisher = self.create_publisher(
-            JointTrajectory,
-            '/torso_controller/joint_trajectory',
-            10,
-        )
-
-        self.reinitializeGlobalLocalizationClient = self.create_client(
-            Empty,
-            nodesParameters.reinitializeGlobalLocalizationServiceName,
-        )
-        self.spinActionClient = ActionClient(
-            self,
-            Spin,
-            nodesParameters.spinActionName,
-        )
-        self.driveOnHeadingActionClient = ActionClient(
-            self,
-            DriveOnHeading,
-            nodesParameters.driveOnHeadingActionName,
-        )
-        self.navigateToPoseActionClient = ActionClient(
-            self,
-            NavigateToPose,
-            'navigate_to_pose',
-        )
-        self.collisionMonitorEnabler = self.create_client(
-            SetParameters,
-            '/collision_monitor/set_parameters',
-        )
-
-        self.currentFSMstate = Task3FSMState.TUCK_ARM
-
-        mapSavePathDefaultValue = nodesParameters.mapSavePathParameterDefaultValue
-        self.declare_parameter(nodesParameters.mapSavePathParameterName, Parameter.Type.STRING)
-        self.savedMapPath = self.get_parameter(nodesParameters.mapSavePathParameterName).value
+        # Retrieve the map path parameter
+        mapSavePathDefaultValue = params.mapSavePathParameterDefaultValue
+        self.declare_parameter(params.mapSavePathParameterName, Parameter.Type.STRING)
+        self.savedMapPath = self.get_parameter(params.mapSavePathParameterName).value
         if self.savedMapPath is None or str(self.savedMapPath).strip() == "":
-            self.get_logger().warn(
-                f"None, empty or invalid {nodesParameters.mapSavePathParameterName} parameter, "
-                f"falling back to default value '{mapSavePathDefaultValue}'."
-            )
+            self.get_logger().warn(f"None, empty or invalid {params.mapSavePathParameterName} parameter, falling back to default value '{mapSavePathDefaultValue}'.")
             self.savedMapPath = mapSavePathDefaultValue
-        else:
-            self.savedMapPath = str(self.savedMapPath).strip()
+        else: self.savedMapPath = str(self.savedMapPath).strip()
 
-        mapSaveNameDefaultValue = nodesParameters.mapSaveNameParameterDefaultValue
-        self.declare_parameter(nodesParameters.mapSaveNameParameterName, Parameter.Type.STRING)
-        self.savedMapName = self.get_parameter(nodesParameters.mapSaveNameParameterName).value
+        # Retrieve the map name parameter
+        mapSaveNameDefaultValue = params.mapSaveNameParameterDefaultValue
+        self.declare_parameter(params.mapSaveNameParameterName, Parameter.Type.STRING)
+        self.savedMapName = self.get_parameter(params.mapSaveNameParameterName).value
         if self.savedMapName is None or str(self.savedMapName).strip() == "":
-            self.get_logger().warn(
-                f"None or empty {nodesParameters.mapSaveNameParameterName} parameter, "
-                f"falling back to default value '{mapSaveNameDefaultValue}'."
-            )
+            self.get_logger().warn(f"None or empty {params.mapSaveNameParameterName} parameter, falling back to default value '{mapSaveNameDefaultValue}'.")
             self.savedMapName = mapSaveNameDefaultValue
-        else:
-            self.savedMapName = str(self.savedMapName).strip()
+        else: self.savedMapName = str(self.savedMapName).strip()
 
-        fsmTimerPeriodDefaultValue = nodesParameters.fsmTimerPeriodParameterDefaultValue
-        self.declare_parameter(nodesParameters.fsmTimerPeriodParameterName, Parameter.Type.DOUBLE)
-        fsmTimerPeriod = self.get_parameter(nodesParameters.fsmTimerPeriodParameterName).value
+        # Retrieve the FSM timer period parameter
+        fsmTimerPeriodDefaultValue = params.fsmTimerPeriodParameterDefaultValue
+        self.declare_parameter(params.fsmTimerPeriodParameterName, Parameter.Type.DOUBLE)
+        fsmTimerPeriod = self.get_parameter(params.fsmTimerPeriodParameterName).value
         if fsmTimerPeriod is None or float(fsmTimerPeriod) <= 0.0:
-            self.get_logger().warn(
-                f"Invalid FSM timer period ({fsmTimerPeriod}), "
-                f"falling back to default value {fsmTimerPeriodDefaultValue} secs."
-            )
+            self.get_logger().warn(f"Invalid FSM timer period ({fsmTimerPeriod}), falling back to default value {fsmTimerPeriodDefaultValue} secs.")
             fsmTimerPeriod = fsmTimerPeriodDefaultValue
-        else:
-            fsmTimerPeriod = float(fsmTimerPeriod)
+        else: fsmTimerPeriod = float(fsmTimerPeriod)
 
-        self.FSMtimer = self.create_timer(fsmTimerPeriod, self.stepUpFSM)
+        self.FSMtimer = self.create_timer(fsmTimerPeriod, self.stepUpFSM) # A timer created like that (alias with self.create_timer) is gonna be spun as soon as this node is spun via rclpy.spin(); also remeber that a ROS2 timer always waits for the end of the previous callback execution before triggering the next one
         self.get_logger().info(f"Task3 FSM node initialized. Initial state: {self.currentFSMstate.name}.")
 
-    def amclCallback(self, msg):
-        self.lastAMCLMsg = msg
+        # +-----------------------------------------------------------------------------------------+
+        # |             End of the reused part fo the code (and end of the constructor)             |
+        # +-----------------------------------------------------------------------------------------+
+    
+    def logInfoWithStatus(self, message): self.get_logger().info(f"[{self.currentFSMstate.name}] {message}")
+    def logWarnWithStatus(self, message): self.get_logger().warn(f"[{self.currentFSMstate.name}] {message}")
+    def logErrorWithStatus(self, message): self.get_logger().error(f"[{self.currentFSMstate.name}] {message}")
 
-    def jointStateCallback(self, msg):
-        self.latestJointState = msg
+    def amclCallback(self, msg): self.lastAMCLMsg = msg
+    def jointStateCallback(self, msg): self.latestJointState = msg
 
-    def cube63ArucoCallback(self, msg: TransformStamped):
-        self.store_cube_marker_sample(msg, 63)
-
-    def cube582ArucoCallback(self, msg: TransformStamped):
-        self.store_cube_marker_sample(msg, 582)
-
-    def store_cube_marker_sample(self, msg: TransformStamped, marker_id: int):
-        self.latestCubeMarkerTransforms[marker_id] = msg
-
-        if not self.collectCurrentCubeSamples or marker_id != self.currentCubeMarkerId:
-            return
-
+    def storeCubeMarkerSample(self, msg: TransformStamped, markerID: int):
+        # This method takes care of the collected Aruco Marker samples (for the currently selected cube) and stores them in the corresponding list
+        currentCubeData = self.cubesData[self.currentCubeIndex]
+        if not self.collectCurrentCubeSamplesENABLER or markerID != currentCubeData.markerID: return
         t = msg.transform.translation
         q = msg.transform.rotation
         norm = math.sqrt(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w)
-
         if norm <= 1e-9:
-            self.get_logger().warn(f"[CUBE_ARUCO] Ignoring marker {marker_id} sample with invalid zero-norm quaternion.")
+            self.logWarnWithStatus(f"Ignoring {currentCubeData.markerNickname} marker {currentCubeData.markerID} sample with invalid [almost] zero-norm quaternion.")
             return
-
-        self.currentCubeSamples.append({
-            'stamp_sec': int(msg.header.stamp.sec),
-            'stamp_nanosec': int(msg.header.stamp.nanosec),
-            'frame_id': str(msg.header.frame_id),
-            'child_frame_id': str(msg.child_frame_id),
-            'marker_id': int(marker_id),
-            'position': [float(t.x), float(t.y), float(t.z)],
-            'quaternion': [float(q.x / norm), float(q.y / norm), float(q.z / norm), float(q.w / norm)],
-        })
+        self.cubesData[self.currentCubeIndex].arucoSamples.append(ArucoSample(
+            stamp_sec = int(msg.header.stamp.sec), # Seconds part of the ROS timestamp associated with the transform message.
+            stamp_nanosec = int(msg.header.stamp.nanosec), # Nanoseconds part of the ROS timestamp associated with the transform message.
+            frame_id = str(msg.header.frame_id), # Reference frame in which the marker pose is expressed, typically "map".
+            child_frame_id = str(msg.child_frame_id), # TF child frame associated with the detected ArUco marker.
+            position = [float(t.x), float(t.y), float(t.z)], # Marker position [x, y, z] expressed in frame_id, in meters.
+            quaternion = [float(q.x / norm), float(q.y / norm), float(q.z / norm), float(q.w / norm)], # Normalized marker orientation [x, y, z, w] expressed in frame_id.
+        ))
 
     def stepUpFSM(self):
-        if self.currentFSMstate == Task3FSMState.TUCK_ARM:
-            self.handle_tuckArm()
-        elif self.currentFSMstate == Task3FSMState.WAIT_ARM_TUCKED:
-            self.handle_waitArmTucked()
-        elif self.currentFSMstate == Task3FSMState.TRIGGER_LOCALIZATION_RESTART:
-            self.handle_triggerLocalization()
-        elif self.currentFSMstate == Task3FSMState.WAIT_LOCALIZATION_RESTARTED:
-            self.handle_waitLocalizationTriggered()
-        elif self.currentFSMstate == Task3FSMState.EVALUATING_LOCALIZATION:
-            self.handle_evaluatingLocalization()
-        elif self.currentFSMstate == Task3FSMState.LOCALIZING:
-            self.handle_localizing()
-        elif self.currentFSMstate == Task3FSMState.SET_HEAD_FOR_CUBE_SEARCH:
-            self.handle_setHeadForCubeSearch()
-        elif self.currentFSMstate == Task3FSMState.WAIT_HEAD_FOR_TASK3:
-            self.handle_waitHeadForTask3()
-        elif self.currentFSMstate == Task3FSMState.LOAD_TASK2_DISCOVERY_RESULTS:
-            self.handle_loadTask2DiscoveryResults()
-        elif self.currentFSMstate == Task3FSMState.NAVIGATE_TO_PICK_PLATFORM:
-            self.handle_navigateToPickPlatform()
-        elif self.currentFSMstate == Task3FSMState.WAIT_PICK_PLATFORM_NAVIGATION:
-            self.handle_waitPickPlatformNavigation()
-        elif self.currentFSMstate == Task3FSMState.WAIT_BEFORE_CUBE_DETECTION:
-            self.handle_waitBeforeCubeDetection()
-        elif self.currentFSMstate == Task3FSMState.BUILD_CURRENT_CUBE_APPROACH_POSE:
-            self.handle_buildCurrentCubeApproachPose()
-        elif self.currentFSMstate == Task3FSMState.MOVE_ARM_TO_PICKING_CONFIGURATION:
-            self.handle_moveArmToPickingConfiguration()
+        # Autonomous localization (copied from Task2 FSM)
+        if self.currentFSMstate == Task3FSMState.TUCK_ARM: self.handle_tuckArm()
+        elif self.currentFSMstate == Task3FSMState.WAIT_ARM_TUCKED: self.handle_waitArmTucked()
+        elif self.currentFSMstate == Task3FSMState.TRIGGER_LOCALIZATION_RESTART: self.handle_triggerLocalization()
+        elif self.currentFSMstate == Task3FSMState.WAIT_LOCALIZATION_RESTARTED: self.handle_waitLocalizationTriggered()
+        elif self.currentFSMstate == Task3FSMState.EVALUATING_LOCALIZATION: self.handle_evaluatingLocalization()
+        elif self.currentFSMstate == Task3FSMState.LOCALIZING: self.handle_localizing()
+        # Cubes transportation between pick and place locations
+        # Note that in the following FSM states I have used a DIFFERENT standard approach w.r.t previous ones:
+        # I do NOT split anymore the single action in a couple of execute/wait states, but I handle that couple in an unique state.
+        # In order to do that, I have added an additional FLAG for each state/action (the "sent" one)
+        elif self.currentFSMstate == Task3FSMState.INIT_CUBES_TRANSPORTATION: self.handle_initCubesTransportation()
+        elif self.currentFSMstate == Task3FSMState.NAVIGATE_TO_PICK_PLATFORM: self.handle_navigateToPickPlatform()
+        elif self.currentFSMstate == Task3FSMState.CUBE_DETECTION: self.handle_cubeDetection()
+        elif self.currentFSMstate == Task3FSMState.MOVE_ARM_TO_PICKING_CONFIGURATION: self.handle_moveArmToPickingConfiguration()
+
+
+
         elif self.currentFSMstate == Task3FSMState.WAIT_ARM_TO_PICKING_CONFIGURATION:
             self.handle_waitArmToPickingConfiguration()
         elif self.currentFSMstate == Task3FSMState.MOVE_ARM_TO_CURRENT_CUBE_APPROACH:
@@ -429,86 +419,114 @@ class Task3FSMNode(Node):
         else:
             self.get_logger().error(f"Encountered an unknown FSM state: {self.currentFSMstate}")
 
+    # +--------------------------------------------------------------------------------------------------------------------------+
+    # | The following portion of code related to the tuck of the arm is exactly the same as the one used in the Task1/2 FSM Node |
+    # +--------------------------------------------------------------------------------------------------------------------------+
+
     def handle_tuckArm(self):
-        if not self.tiagoArmActionClient.server_is_ready():
-            self.get_logger().info("[TUCK_ARM] Waiting for TiagoArm Action Server...")
+        if not self.tiagoArmActionClient.server_is_ready(): # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
+            self.logInfoWithStatus("Waiting for TiagoArm Action Server...")
             return
-
-        self.get_logger().info("[TUCK_ARM] Sending goal to TiagoArm Action Server...")
+        self.logInfoWithStatus("Sending goal to TiagoArm Action Server...")
         goalMsg = TiagoArm.Goal()
-        goalMsg.joint_positions = nodesParameters.HOME_JOINT_POSITIONS
-
+        goalMsg.joint_positions = params.HOME_JOINT_POSITIONS
         self.armTuckGoalDone = False
         self.armTuckGoalSucceeded = False
-
         sendGoalFuture = self.tiagoArmActionClient.send_goal_async(
             goalMsg,
-            feedback_callback=self.armFeedbackCallback,
+            feedback_callback = self.armFeedbackCallback
         )
         sendGoalFuture.add_done_callback(self.armGoalResponseCallback)
         self.currentFSMstate = Task3FSMState.WAIT_ARM_TUCKED
 
     def armFeedbackCallback(self, feedback_msg):
         feedback = feedback_msg.feedback
-        self.get_logger().info(f"[TUCK_ARM] Feedback: {feedback.current_state}")
+        self.logInfoWithStatus(f"Feedback: {feedback.current_state}")
 
     def armGoalResponseCallback(self, future):
-        goalHandle = future.result()  # TODO: add explicit exception handling.
+        goalHandle = future.result() # TODO: insert this line within a try-except block and manage possible exceptions in a proper way
         if not goalHandle.accepted:
-            self.get_logger().error("[TUCK_ARM] Goal rejected by TiagoArm Action Server.")
+            self.logErrorWithStatus("Goal rejected by TiagoArm Action Server.")
             self.armTuckGoalDone = True
             self.armTuckGoalSucceeded = False
             return
-
-        self.get_logger().info("[TUCK_ARM] Goal accepted by TiagoArm Action Server.")
+        self.logInfoWithStatus("Goal accepted by TiagoArm Action Server.")
         getResultFuture = goalHandle.get_result_async()
         getResultFuture.add_done_callback(self.armResultCallback)
 
     def armResultCallback(self, future):
-        result = future.result().result  # TODO: add explicit exception handling.
+        result = future.result().result # TODO: insert this line within a try-except block and manage possible exceptions in a proper way
         if result.success:
-            self.get_logger().info(f"[TUCK_ARM] Success: {result.message}")
+            self.logInfoWithStatus(f"Success: {result.message}")
             self.armTuckGoalDone = True
             self.armTuckGoalSucceeded = True
         else:
-            self.get_logger().error(f"[TUCK_ARM] Failed: {result.message}")
+            self.logErrorWithStatus(f"Failed: {result.message}")
             self.armTuckGoalDone = True
             self.armTuckGoalSucceeded = False
 
     def handle_waitArmTucked(self):
-        self.get_logger().info("[WAIT_ARM_TUCKED] Waiting for arm to be tucked...")
+        self.logInfoWithStatus("Waiting for arm to be tucked...")
+        # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
         if self.armTuckGoalDone:
             if self.armTuckGoalSucceeded:
-                self.get_logger().info("[WAIT_ARM_TUCKED] Arm motion completed.")
+                self.logInfoWithStatus("Arm motion completed.")
                 self.currentFSMstate = Task3FSMState.TRIGGER_LOCALIZATION_RESTART
             else:
-                self.get_logger().warn(
-                    "[WAIT_ARM_TUCKED] Arm goal failed or was rejected by TiagoArm Action Server. Retrying..."
-                )
+                self.logWarnWithStatus("Arm goal failed or was rejected by TiagoArm Action Server. Retrying...")
                 self.currentFSMstate = Task3FSMState.TUCK_ARM
 
+    # +--------------------------------------------------------------------------------------------------------------------------+
+    # |                             End of the part fo the code related to the tuck of the arm                                   |
+    # +--------------------------------------------------------------------------------------------------------------------------+
+
+    # +----------------------------------------------------------------------------------------------------------------------------+
+    # | The following portion of code related to Autonomous Localization is exactly the same as the one used in the Task2 FSM Node |
+    # +----------------------------------------------------------------------------------------------------------------------------+
+    # Note: I also left all the comments (I was lazy and I didn't want to remove them)
+
+    def computePositionsMedoid(self, samples):
+        # This method computes the mediod position among the list of samples received in input
+        # Note that the medioid is the one vector (among all the considered ones) that minimizes the sum of the distances from all the others
+        positions = np.array([sample.position for sample in samples], dtype = float)
+        pairwiseDistances = np.linalg.norm(positions[:, None, :] - positions[None, :, :], axis=2)
+        medoidIndex = int(np.argmin(pairwiseDistances.sum(axis=1)))
+        return positions[medoidIndex].tolist()
+
+    def computeOrientationsMedoid(self, samples):
+        # This method computes the mediod orientation (expressed as a quaternion) among the list of samples received in input
+        # Note that it is selected the quaternion which rotation has the minimum total angular distance from all other sample quaternion orientations
+        quaternions = np.array([sample.quaternion for sample in samples], dtype = float)
+        rotations = SciPyRotation.from_quat(quaternions)
+        totalDistances = []
+        for i in range(len(rotations)):
+            relativeRotations = rotations[i].inv() * rotations
+            totalDistances.append(float(np.sum(relativeRotations.magnitude())))
+        medoidIndex = int(np.argmin(totalDistances))
+        return quaternions[medoidIndex].tolist()
+
     def isAMCLready(self) -> bool:
-        amclPosePublishersCount = self.count_publishers(nodesParameters.amclPoseTopic)
+        # This method checks whether the AMCL/localization stack is ready to be used (i.e. it is operationally ready)
+        # Note that this check is performed by verifying that:
+        # (1) there is at least one publisher on the "amcl_pose" topic and
+        # (2) the "reinitialize_global_localization" service is ready to be called
+        amclPosePublishersCount = self.count_publishers(params.amclPoseTopic)
         reinitGlobLocServiceReady = self.reinitializeGlobalLocalizationClient.service_is_ready()
-        self.get_logger().info(
-            f"[WAIT_AMCL_READY] amcl_pose publishers: {amclPosePublishersCount}, "
+        self.logInfoWithStatus(
+            f"amcl_pose publishers: {amclPosePublishersCount}, "
             f"reinitialize_global_localization service ready: {reinitGlobLocServiceReady}"
         )
         return amclPosePublishersCount > 0 and reinitGlobLocServiceReady
 
-    def handle_triggerLocalization(self):
+    def handle_triggerLocalizationRestart(self):
+        # In this state, the FSM triggers a full fresh restart of the autonomous localization procedure
         if not self.isAMCLready():
-            self.get_logger().info(
-                "[TRIGGER_GLOBAL_LOCALIZATION] Waiting for AMCL/localization stack readiness..."
-            )
-            return
-
-        self.get_logger().info("[TRIGGER_GLOBAL_LOCALIZATION] AMCL/localization stack is operationally ready.")
-        self.get_logger().info("[TRIGGER_GLOBAL_LOCALIZATION] Calling reinitialize_global_localization service...")
-
+            self.logInfoWithStatus("Now waiting for AMCL/localization Stack readiness...")
+            return # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
+        self.logInfoWithStatus("AMCL/localization Stack is operationally ready!")
+        self.logInfoWithStatus("Calling reinitialize_global_localization service (the aim is to start from a fresh re-initialized localization procedure)...")
         self.globalLocalizationResetDone = False
         self.globalLocalizationResetSucceeded = False
-
         req = Empty.Request()
         future = self.reinitializeGlobalLocalizationClient.call_async(req)
         future.add_done_callback(self.reinitializeGlobalLocalizationCallback)
@@ -517,446 +535,475 @@ class Task3FSMNode(Node):
     def reinitializeGlobalLocalizationCallback(self, future):
         self.globalLocalizationResetDone = True
         try:
-            _ = future.result()
+            _ = future.result() # As indicated in the documentation (note that this is an Empty service)
             self.globalLocalizationResetSucceeded = True
         except Exception as e:
             self.globalLocalizationResetSucceeded = False
-            self.get_logger().error(
-                f"[TRIGGER_GLOBAL_LOCALIZATION] Global localization reset request failed: {e}"
-            )
+            self.logErrorWithStatus(f"Global localization reset request failed, error was: {e}")
 
-    def handle_waitLocalizationTriggered(self):
+    def handle_waitLocalizationRestarted(self):
+        # In this state, the FSM waits for the completion of the global localization reset procedure (and eventually restart it in case of failure)
         if self.globalLocalizationResetDone:
             if self.globalLocalizationResetSucceeded:
-                self.get_logger().info("[WAIT_LOCALIZATION_TRIGGERED] Global localization reset completed successfully.")
+                self.logInfoWithStatus("\n |>\n |> Global localization reset completed successfully!\n |>")
                 self.currentFSMstate = Task3FSMState.EVALUATING_LOCALIZATION
             else:
-                self.get_logger().error("[WAIT_LOCALIZATION_TRIGGERED] Global localization reset failed. Retrying...")
+                self.logErrorWithStatus("n |>\n |> Global localization reset failed, now retrying...\n |>")
                 self.currentFSMstate = Task3FSMState.TRIGGER_LOCALIZATION_RESTART
-
+    
     def updateLocalizationMetricsHistory(self, metric):
+        # This method enrich the history of the localization metrics.
+        # Indeed, the localization metric is periodically computed and stored (as it will be shown in the following code).
+        # Note that the history of the localization metric has a limited lenght: when the maximum length is reached, the oldest metric is removed from the history!
         self.localizationMetricsHistory.append(float(metric))
         if len(self.localizationMetricsHistory) > self.localizationMetricsWindowSize:
             self.localizationMetricsHistory.pop(0)
 
     def isLocalizationMetricImprovingEnough(self):
-        if len(self.localizationMetricsHistory) < self.localizationMetricsWindowSize:
-            return True
-
+        # This method checks whether the localization metric is improving enough (i.e. it is decreasing enough) or not.
+        # The basic idea behind this check is: if the localization metric is not improving enough, then some action should be taken in relation to that.
+        # The check is carried out accordingly to the following procedure:
+        # (1) if the history of the localization metric is still not full, then True is immediatly returned
+        # (2) if the current metric satisfies the threshold of being considered "good enough", then True is immediatly returned
+        # (3) if the current metric is greater than [or equal to] value 1.0 (that is, it's considered still quite big),
+        #     then it is checked whether the current metric has jumped up with respect to the previous one.
+        #     If that's the case (indeed, a big jump has been detected), it's assumed that the localization procedure has just performed a big correction,
+        #     so the evaluation of its improvement is reset (and True is returned).
+        # (4) if the oldest metric is less than or equal to 0.0 (should not happen), then it is assumed that the metric is improving enough (i.e. return True)
+        # (5) Finally, the improvement percentage is computed and compared with the related threshold (returning True or False as a conseguence).
+        if len(self.localizationMetricsHistory) < self.localizationMetricsWindowSize: return True
         previousMetric = self.localizationMetricsHistory[-2]
         currentMetric = self.localizationMetricsHistory[-1]
-
+        if currentMetric < params.autonomousLocalizationMetricsTreshold: return True
         if currentMetric >= 1.0 and previousMetric > 0.0:
             jumpUpPercent = ((currentMetric - previousMetric) / previousMetric) * 100.0
             if jumpUpPercent >= self.localizationMetricsJumpUpResetPercent:
-                self.get_logger().warn(
-                    f"[EVALUATING_LOCALIZATION] Large metric jump detected "
-                    f"({jumpUpPercent:.2f}%). Resetting localization metrics history."
-                )
+                self.logWarnWithStatus(f"\n |>\n |> Large metric jump detected ({jumpUpPercent:.2f}%). Resetting localization metrics history.\n |>")
                 self.localizationMetricsHistory.clear()
                 return True
-
         oldestMetric = self.localizationMetricsHistory[0]
         newestMetric = self.localizationMetricsHistory[-1]
-        if oldestMetric <= 0.0:
-            return True
-
+        if oldestMetric <= 0.0: return True # This is just a safety check to avoid division by zero or negative values (it should never happen in practice)
         improvementPercent = ((oldestMetric - newestMetric) / oldestMetric) * 100.0
         return improvementPercent >= self.localizationMetricsMinImprovementPercent
-
-    def collision_monitor_callback(self, future):
+    
+    def collisionMonitorCallback(self, future):
+        # This method is the callback for the Collision Monitor Service response to a request for enabling OR disabling it.
+        # Note that this callback has been realized taking as reference the related documentation of Ros2 Humble
         try:
             response = future.result()
             if response is None:
-                self.get_logger().error("No response from collision monitor.")
+                self.logErrorWithStatus("No response received from Collision Monitor (unexpected)! This will be ignored")
                 return
-
             result = response.results[0]
-            if result.successful:
-                self.get_logger().info("Collision monitor updated.")
-            else:
-                self.get_logger().error(f"Failed to update collision monitor: {result.reason}")
-
-        except Exception as e:
-            self.get_logger().error(f"Exception in collision monitor callback: {e}")
+            if result.successful: self.logInfoWithStatus("Collision Monitor correctly updated!")
+            else: self.logErrorWithStatus(f"Failed: {result.reason}")
+        except Exception as e: self.logErrorWithStatus(f"Exception in collision monitor callback (unexpected)(this will be ignored): {e}")
         finally:
-            self.collisionOkay = True
-
+            # TODO: manage in a better way the situation in wwhich the Collision Monitor response is an unexpected one
+            self.get_logger().info("\n |>\n |> Collision monitor callback completed\n |>")
+            self.collisionMonitorResponseReceived = True
+            
     def handle_evaluatingLocalization(self):
-        self.get_logger().info("[EVALUATING_LOCALIZATION] Evaluating localization quality...")
+        # In this state, the FSM evaluates the quality of the localization process by checking the covariance of the AMCL pose estimation.
+        # On the basis of that evaluation, it takes different actions.
+        # The implemented behavior is the following: the autonomous localization is performed through a simple rotation in-place.
+        # The rotation in-place is performed by the robot until the localization quality is good enough (i.e. the covariance of the AMCL pose estimation is below a certain threshold).
+        # At the same time, it is also periodically checked whether the localization quality is improving or not.
+        # In case no improvement is detected, then the current position is considered unsuitable to be used for an autonomous localization performed via in-place rotation.
+        # In that case, a simple DriveOnHeading Action is performed to reach a new position (protected with the usage of a Collision Monitor), then the autonomous localization procedure is restarted from scratch (i.e. the AMCL pose estimation is reinitialized and the in-place rotation is performed again).
+        self.logInfoWithStatus("Evaluating localization quality...")
+        if self.lastAMCLMsg is None: self.logInfoWithStatus("Still waiting for AMCL first incoming data (no data at all received yet)...")
+        else:
+            message = self.lastAMCLMsg
+            covariance = message.pose.covariance
+            xVariance = covariance[0]
+            yVariance = covariance[7]
+            yawVariance = covariance[35]
+            metric = xVariance + yVariance + yawVariance # This is the metric used for the evaluation of the localization quality (the lower, the better)!
+            self.updateLocalizationMetricsHistory(metric)
+            self.logInfoWithStatus(f"\n |>\n |> Current AMCL pose covariance metric: {metric} (xVar: {xVariance}, yVar: {yVariance}, yawVar: {yawVariance})\n |>")
+            if metric < params.autonomousLocalizationMetricsTreshold:
+                self.localizationGoodMetricConsecutiveCount += 1
+                self.localizationMetricsHistory.clear()
+                self.logInfoWithStatus(f"\n |>\n |> Localization quality is good enough (metric: {metric}) for {self.localizationGoodMetricConsecutiveCount} consecutive evaluations (required a total of {self.localizationGoodMetricConsecutiveCountRequired}).\n |>")
+                if self.localizationGoodMetricConsecutiveCount >= self.localizationGoodMetricConsecutiveCountRequired:
+                    self.logInfoWithStatus(f"\n |>\n |> Autonomous localization has been correctly fullfilled (final metric: {metric}).\n |>")
+                    x = message.pose.pose.position.x
+                    y = message.pose.pose.position.y
+                    self.robotXY = (x, y)
+                    self.currentFSMstate = Task3FSMState.SET_HEAD_FOR_DISCOVERY
+                    return
+            else: self.localizationGoodMetricConsecutiveCount = 0
+            if not self.spinActionClient.server_is_ready() or not self.driveOnHeadingActionClient.server_is_ready() or not self.collisionMonitorEnabler.service_is_ready():
+                self.logWarnWithStatus("Localization quality is not good enough, now waiting for the Spin ActionServer, the DriveonHeading ActionServer (of the Nav2 Stack) and the Collision Monitor Service to be ready...")
+            else:
+                # The localization quality is not good enough, so the FSM will trigger a proper procedure to improve it!
+                # A Spin and a DriveOnHeading couple of Actions are periodically alternated.
+                # The "self.localizationPhase" variable is used to keep track of which Action has to be triggered NEXT (0 for Spin, 1 for DriveOnHeading).
+                # That is, if on zero, then the last performed Action was a DriveOnHeading.
+                # Otherwise, if on one, then the last performed Action was a Spin.
+                self.logWarnWithStatus("Localization quality is not good enough, now triggering improvement procedure...")
+                if self.localizationPhase is None: self.localizationPhase = 0
+                self.localizationSpinDone = False
+                self.localizationSpinSucceeded = False
+                self.localizationDriveOnHeadingDone = False
+                self.localizationDriveOnHeadingSucceeded = False
+                # self.localizationGoodMetricConsecutiveCount = 0
+                
+                if self.localizationPhase == 0: # That is, we need to pass to a Spin Action (the last performed Action was a DriveOnHeading)
+                    if self.collisionMonitorEnabled: # The Collision Monitor should NOT be enabled during the Spin Action
+                        self.localizationGoodMetricConsecutiveCount -= 1 # We are gonna repeat this handler only to wait for the Collision Monitor to be disabled,
+                        # so we need to decrement the count of the consecutive good metrics (otherwise, it would be incremented again in the next iteration)
+                        if not self.collisionMonitorRequestSent:
+                            # Accordingly to the Collision Monitor Ros2 Humble documentation, the following lines of code disable the Collision Monitor itself
+                            req = SetParameters.Request()
+                            param = Parameter('PolygonStop.enabled', value = False)
+                            req.parameters = [param.to_parameter_msg()]
+                            future = self.collisionMonitorEnabler.call_async(req)
+                            future.add_done_callback(self.collisionMonitorCallback)
+                            self.collisionMonitorResponseReceived = False
+                            self.collisionMonitorRequestSent = True
+                        else:
+                            if self.collisionMonitorResponseReceived:
+                                self.collisionMonitorRequestSent = False
+                                self.collisionMonitorEnabled = False
+                    else:
+                        # Now executing the Spin Action (the Collision Monitor is disabled, as it should be in this phase)
+                        self.collisionMonitorRequestSent = False
+                        self.collisionMonitorResponseReceived = False
+                        goalMsg = Spin.Goal()
+                        # In a previous version of the code, I was also using a random-walk approach (UNUSED in the final version of the code: RANDOMWALKlocalization = False)
+                        orientationDirection = random.choice([-1, 1]) # The spin orientation is randomly choosen ONLY in case of a random-walk approach
+                        if not self.RANDOMWALKlocalization: orientationDirection = 1
+                        goalMsg.target_yaw = orientationDirection*params.autonomousLocalizationSpinYaw
+                        goalMsg.time_allowance = Duration(sec = int(params.autonomousLocalizationSpinTimeAllowance))
+                        sendGoalFuture = self.spinActionClient.send_goal_async(
+                            goalMsg,
+                            feedback_callback = self.localizationSpinFeedbackCallback
+                        )
+                        sendGoalFuture.add_done_callback(self.localizationSpinGoalResponseCallback)
+                        # In a previous version of the code, I was also using a random-walk approach (UNUSED in the final version of the code: RANDOMWALKlocalization = False)
+                        # If the localization metric is not improving enough, then it means that we are in a position in which a simple in-place rotation is not sufficient to successfully improve the localization quality: we need to move!
+                        if not self.isLocalizationMetricImprovingEnough() or self.RANDOMWALKlocalization: self.localizationPhase = 1
 
-        if self.lastAMCLMsg is None:
-            self.get_logger().info("[EVALUATING_LOCALIZATION] Still waiting for first AMCL data...")
-            return
+                elif self.localizationPhase == 1: # That is, we need to pass to a DriveOnHeading Action (the last performed Action was a Spin)
+                    if not self.collisionMonitorEnabled: # The Collision Monitor should be enabled during the DriveOnHeading Action
+                        self.localizationGoodMetricConsecutiveCount -= 1 # We are gonna repeat this handler only to wait for the Collision Monitor to be enabled,
+                        # so we need to decrement the count of the consecutive good metrics (otherwise, it would be incremented again in the next iteration)
+                        if not self.collisionMonitorRequestSent:
+                            # Accordingly to the Collision Monitor Ros2 Humble documentation, the following lines of code enable the Collision Monitor itself
+                            req = SetParameters.Request()
+                            param = Parameter('PolygonStop.enabled', value = True)
+                            req.parameters = [param.to_parameter_msg()]
+                            future = self.collisionMonitorEnabler.call_async(req)
+                            future.add_done_callback(self.collisionMonitorCallback)
+                            self.collisionMonitorResponseReceived = False
+                            self.collisionMonitorRequestSent = True
+                        else:
+                            if self.collisionMonitorResponseReceived:
+                                self.collisionMonitorRequestSent = False
+                                self.collisionMonitorEnabled = True
+                    else:
+                        # Now executing the DriveOnHeading Action (the Collision Monitor is enabled, as it should be in this phase)
+                        self.collisionMonitorRequestSent = False
+                        self.collisionMonitorResponseReceived = False
+                        goalMsg = DriveOnHeading.Goal()
+                        goalMsg.target.x = params.autonomousLocalizationDriveDistance
+                        goalMsg.target.y = 0.0
+                        goalMsg.target.z = 0.0
+                        goalMsg.speed = float(params.autonomousLocalizationDriveSpeed)
+                        goalMsg.time_allowance = Duration(sec = int(params.autonomousLocalizationDriveTimeAllowance))
+                        sendGoalFuture = self.driveOnHeadingActionClient.send_goal_async(
+                            goalMsg,
+                            feedback_callback = self.driveOnHeadingFeedbackCallback
+                        )
+                        sendGoalFuture.add_done_callback(self.driveOnHeadingGoalResponseCallback)
+                        # In a previous version of the code, I was also using a random-walk approach (UNUSED in the final version of the code: RANDOMWALKlocalization = False)
+                        # Due to the fact that the localization metric was not improving enough, a DriveOnHeading Action has been triggered.
+                        # After that, the autonomous localization procedure (AKA in-place rotation) will be restarted from scratch from the new reaced position.
+                        # That is, the localization metric hystory must be reset (and the FSM state "TRIGGER_LOCALIZATION_RESTART" will be reached)
+                        if not self.RANDOMWALKlocalization: self.localizationMetricsHistory.clear()
+                        self.localizationPhase = 0
 
-        msg = self.lastAMCLMsg
-        covariance = msg.pose.covariance
-        xVariance = covariance[0]
-        yVariance = covariance[7]
-        yawVariance = covariance[35]
-        metric = xVariance + yVariance + yawVariance
-
-        self.updateLocalizationMetricsHistory(metric)
-        self.get_logger().info(
-            f"[EVALUATING_LOCALIZATION] Current AMCL covariance metric: {metric} "
-            f"(xVar: {xVariance}, yVar: {yVariance}, yawVar: {yawVariance})"
-        )
-
-        if metric < nodesParameters.autonomousLocalizationCovarianceTreshold:
-            self.localizationMetricsStableAmount += 1
-            self.localizationMetricsHistory.clear()
-            if self.localizationMetricsStableAmount >= self.localizationMetricsStableAmountRequired:
-                self.get_logger().info("[EVALUATING_LOCALIZATION] Localization quality is stable and acceptable.")
-                x = msg.pose.pose.position.x
-                y = msg.pose.pose.position.y
-                self.robot_xy_map = (x, y)
-                self.currentFSMstate = Task3FSMState.SET_HEAD_FOR_CUBE_SEARCH
-            return
-
-        if (
-            not self.spinActionClient.server_is_ready()
-            or not self.driveOnHeadingActionClient.server_is_ready()
-            or not self.collisionMonitorEnabler.service_is_ready()
-        ):
-            self.get_logger().warn(
-                "[EVALUATING_LOCALIZATION] Localization quality is not good enough. "
-                "Waiting for Spin, DriveOnHeading and collision monitor interfaces..."
-            )
-            return
-
-        self.get_logger().warn("[EVALUATING_LOCALIZATION] Localization quality is not good enough.")
-
-        if self.localizationPhase is None:
-            self.localizationPhase = 0
-
-        self.localizationSpinDone = False
-        self.localizationSpinSucceeded = False
-        self.localizationDriveOnHeadingDone = False
-        self.localizationDriveOnHeadingSucceeded = False
-        self.localizationMetricsStableAmount = 0
-
-        if self.localizationPhase == 0:
-            self._start_localization_spin_phase()
-        elif self.localizationPhase == 1:
-            self._start_localization_drive_phase()
-
-        if not self.collisionSent and not self.collisionOkay:
-            self.currentFSMstate = Task3FSMState.LOCALIZING
-
-    def _start_localization_spin_phase(self):
-        if self.collisionAvoidance:
-            if not self.collisionSent:
-                req = SetParameters.Request()
-                param = Parameter('PolygonStop.enabled', value=False)
-                req.parameters = [param.to_parameter_msg()]
-                future = self.collisionMonitorEnabler.call_async(req)
-                future.add_done_callback(self.collision_monitor_callback)
-                self.collisionOkay = False
-                self.collisionSent = True
-            elif self.collisionOkay:
-                self.collisionSent = False
-                self.collisionAvoidance = False
-            return
-
-        self.collisionSent = False
-        self.collisionOkay = False
-
-        goalMsg = Spin.Goal()
-        orientationDirection = random.choice([-1, 1])
-        if not self.RANDOMWALK:
-            orientationDirection = 1
-        goalMsg.target_yaw = orientationDirection * nodesParameters.autonomousLocalizationSpinYaw
-        goalMsg.time_allowance = Duration(sec=int(nodesParameters.autonomousLocalizationSpinTimeAllowance))
-
-        sendGoalFuture = self.spinActionClient.send_goal_async(
-            goalMsg,
-            feedback_callback=self.localizationSpinFeedbackCallback,
-        )
-        sendGoalFuture.add_done_callback(self.localizationSpinGoalResponseCallback)
-
-        if not self.isLocalizationMetricImprovingEnough() or self.RANDOMWALK:
-            self.localizationPhase = 1
-
-    def _start_localization_drive_phase(self):
-        if not self.collisionAvoidance:
-            if not self.collisionSent:
-                req = SetParameters.Request()
-                param = Parameter('PolygonStop.enabled', value=True)
-                req.parameters = [param.to_parameter_msg()]
-                future = self.collisionMonitorEnabler.call_async(req)
-                future.add_done_callback(self.collision_monitor_callback)
-                self.collisionOkay = False
-                self.collisionSent = True
-            elif self.collisionOkay:
-                self.collisionSent = False
-                self.collisionAvoidance = True
-            return
-
-        self.collisionSent = False
-        self.collisionOkay = False
-
-        goalMsg = DriveOnHeading.Goal()
-        goalMsg.target.x = nodesParameters.autonomousLocalizationDriveDistance
-        goalMsg.target.y = 0.0
-        goalMsg.target.z = 0.0
-        goalMsg.speed = float(nodesParameters.autonomousLocalizationDriveSpeed)
-        goalMsg.time_allowance = Duration(sec=int(nodesParameters.autonomousLocalizationDriveTimeAllowance))
-
-        sendGoalFuture = self.driveOnHeadingActionClient.send_goal_async(
-            goalMsg,
-            feedback_callback=self.driveOnHeadingFeedbackCallback,
-        )
-        sendGoalFuture.add_done_callback(self.driveOnHeadingGoalResponseCallback)
-
-        if not self.RANDOMWALK:
-            self.localizationMetricsHistory.clear()
-        self.localizationPhase = 0
-
+                if not self.collisionMonitorRequestSent and not self.collisionMonitorResponseReceived: self.currentFSMstate = Task3FSMState.LOCALIZING
+    
     def localizationSpinFeedbackCallback(self, feedback_msg):
-        _ = feedback_msg
+        feedback = feedback_msg.feedback
+        angle_rad = feedback.angular_distance_traveled
+        angle_deg = angle_rad * 180.0 / 3.14
+        # self.logInfoWithStatus(f"Spin in progress...  rotated so far: {angle_rad:.3f} rad ({angle_deg:.1f} deg)")
+        # Lines of code commented out to avoid too verbose logging
 
     def driveOnHeadingFeedbackCallback(self, feedback_msg):
-        _ = feedback_msg
+        feedback = feedback_msg.feedback
+        # self.logInfoWithStatus(f"DriveOnHeading in progress...  distance traveled so far: {feedback.distance_traveled:.3f} m")
+        # Lines of code commented out to avoid too verbose logging
 
     def localizationSpinGoalResponseCallback(self, future):
-        goalHandle = future.result()  # TODO: add explicit exception handling.
+        goalHandle = future.result() # TODO: insert this line within a try-except block and manage possible exceptions in a proper way
         if not goalHandle.accepted:
-            self.get_logger().error("[LOCALIZING] Spin goal rejected by Nav2.")
+            self.logErrorWithStatus("Spin goal rejected by Nav2.")
             self.localizationSpinDone = True
             self.localizationSpinSucceeded = False
             return
-
         self.get_logger().info("[LOCALIZING] Spin goal accepted by Nav2.")
         getResultFuture = goalHandle.get_result_async()
         getResultFuture.add_done_callback(self.localizationSpinResultCallback)
 
     def driveOnHeadingGoalResponseCallback(self, future):
-        goalHandle = future.result()  # TODO: add explicit exception handling.
+        goalHandle = future.result() # TODO: insert this line within a try-except block and manage possible exceptions in a proper way
         if not goalHandle.accepted:
-            self.get_logger().error("[LOCALIZING] DriveOnHeading goal rejected by Nav2.")
+            self.logErrorWithStatus("DriveOnHeading goal rejected by Nav2.")
             self.localizationDriveOnHeadingDone = True
             self.localizationDriveOnHeadingSucceeded = False
             return
-
-        self.get_logger().info("[LOCALIZING] DriveOnHeading goal accepted by Nav2.")
+        self.logInfoWithStatus("DriveOnHeading goal accepted by Nav2.")
         getResultFuture = goalHandle.get_result_async()
         getResultFuture.add_done_callback(self.driveOnHeadingResultCallback)
 
     def localizationSpinResultCallback(self, future):
-        wrappedResult = future.result()  # TODO: add explicit exception handling.
-        result = wrappedResult.result
+        result = future.result().result # TODO: insert this line within a try-except block and manage possible exceptions in a proper way
         elapsed = result.total_elapsed_time.sec + result.total_elapsed_time.nanosec * 1e-9
-        self.get_logger().info(
-            f"[LOCALIZING] Spin behavior completed "
-            f"(status={wrappedResult.status}, total_elapsed_time={elapsed:.3f})."
-        )
+        self.logInfoWithStatus(f"Spin behavior completed (with status '{future.result().status}', result '{future.result().result}' and total_elapsed_time '{elapsed}').")
         self.localizationSpinDone = True
-        self.localizationSpinSucceeded = wrappedResult.status == GoalStatus.STATUS_SUCCEEDED
+        self.localizationSpinSucceeded = (future.result().status == GoalStatus.STATUS_SUCCEEDED)
 
     def driveOnHeadingResultCallback(self, future):
-        wrappedResult = future.result()  # TODO: add explicit exception handling.
-        result = wrappedResult.result
+        result = future.result().result # TODO: insert this line within a try-except block and manage possible exceptions in a proper way
         elapsed = result.total_elapsed_time.sec + result.total_elapsed_time.nanosec * 1e-9
-        self.get_logger().info(
-            f"[LOCALIZING] DriveOnHeading behavior completed "
-            f"(status={wrappedResult.status}, total_elapsed_time={elapsed:.3f})."
-        )
+        self.logInfoWithStatus(f"DriveOnHeading behavior completed (with status '{future.result().status}', result '{future.result().result}' and total_elapsed_time '{elapsed}').")
         self.localizationDriveOnHeadingDone = True
-        self.localizationDriveOnHeadingSucceeded = wrappedResult.status == GoalStatus.STATUS_SUCCEEDED
-
-        if not self.RANDOMWALK:
-            self.currentFSMstate = Task3FSMState.TRIGGER_LOCALIZATION_RESTART
-
+        self.localizationDriveOnHeadingSucceeded = (future.result().status == GoalStatus.STATUS_SUCCEEDED)
+        
     def handle_localizing(self):
-        if self.localizationSpinDone or self.localizationDriveOnHeadingDone:
-            if self.localizationSpinSucceeded or self.localizationDriveOnHeadingSucceeded:
-                self.get_logger().info(
-                    "[LOCALIZING] Movement completed successfully. Re-evaluating localization quality..."
-                )
+        # self.get_logger().info("[LOCALIZING] Waiting for the localization movement to be completed...")
+        # Lines of code commented out to avoid too verbose logging
+        if self.localizationSpinDone:
+            if self.localizationSpinSucceeded:
+                self.logInfoWithStatus("Spin movement completed successfully, now going back to evaluate localization quality...")
+                self.currentFSMstate = Task3FSMState.EVALUATING_LOCALIZATION
             else:
-                self.get_logger().error(
-                    "[LOCALIZING] Movement failed. Re-evaluating localization quality anyway..."
-                )
-            self.currentFSMstate = Task3FSMState.EVALUATING_LOCALIZATION
+                self.logErrorWithStatus("Spin movement failed... anyway, now going back to evaluate localization quality and deciding the next step...")
+                self.currentFSMstate = Task3FSMState.EVALUATING_LOCALIZATION
+        if self.localizationDriveOnHeadingDone:
+            if not self.RANDOMWALKlocalization:
+                # Note this important behaviour: in case of NOT relying on a random-walk-like approach (as it IS in the final version of the code),
+                # then after each single DriveOnHeading Action, the FSM state is set to "TRIGGER_LOCALIZATION_RESTART".
+                # This is exactly as expected and commented out before: after the position change, the autonomous localization procedure is restarted from scratch.
+                self.currentFSMstate = Task3FSMState.TRIGGER_LOCALIZATION_RESTART
+            elif self.localizationDriveOnHeadingSucceeded:
+                self.logInfoWithStatus("DriveOnHeading movement completed successfully, now going back to evaluate localization quality...")
+                self.currentFSMstate = Task3FSMState.EVALUATING_LOCALIZATION
+            else:
+                self.logErrorWithStatus("DriveOnHeading movement failed... anyway, now going back to evaluate localization quality and deciding the next step...")
+                self.currentFSMstate = Task3FSMState.EVALUATING_LOCALIZATION
 
-    def get_joint_position(self, joint_name):
-        if self.latestJointState is None:
-            return None
+    def getJointPosition(self, jointName):
+        # A very simple method that exploit the last available JointState message to extract the current position of a given joint
+        # If no info is available yet, or if it's not retrievable, then None is returned
+        if self.latestJointState is None: return None
         try:
-            idx = self.latestJointState.name.index(joint_name)
+            idx = self.latestJointState.name.index(jointName)
             return float(self.latestJointState.position[idx])
-        except (ValueError, IndexError):
-            return None
+        except (ValueError, IndexError): return None
+    
+    # +----------------------------------------------------------------------------------------------------------------------------+
+    # |                             End of the part fo the code related to Autonomous Localization                                 |
+    # +----------------------------------------------------------------------------------------------------------------------------+
 
-    def publish_torso_lift_command(self, target_position: float, label: str):
+    # +------------------------------------------------------------------------------------------------------------------------+
+    # |                      Transportation of all cubes from the Pick Location to the Place Location                          |
+    # +------------------------------------------------------------------------------------------------------------------------+
+
+    def publishTorsoliftCommand(self, targetPosition: float, label: str):
+        # This method publishes a command to the torso lift joint to move it to the specified target position
         msg = JointTrajectory()
-        msg.joint_names = ["torso_lift_joint"]
-
+        msg.joint_names = [params.torsoLiftJointName]
         point = JointTrajectoryPoint()
-        point.positions = [float(target_position)]
-        point.time_from_start = Duration(sec=2)
-
+        point.positions = [float(targetPosition)]
+        point.time_from_start = Duration(sec = 2) # Imposed time duration for the head movement
         msg.points.append(point)
         self.torsoCommandPublisher.publish(msg)
-
-        self.torsoMotionTarget = float(target_position)
+        self.torsoMotionTarget = float(targetPosition)
         self.torsoMotionStartTime = self.get_clock().now()
-        self.get_logger().info(f"[{label}] Published torso_lift_joint command: target={float(target_position):.4f}.")
+        self.logInfoWithStatus(f"Published {params.torsoLiftJointName} command, target to {float(targetPosition):.4f}.")
 
-    def is_torso_motion_completed(self, label: str):
+    def isTorsoMotionCompleted(self):
+        # This method can be used to check if the last published command for the torso motion has been already completed.
+        # Two boolean values are returned: done (indicating if the motion has to be considered as completed or not) and success (True IFF the motion is successful).
+        # Note that in case done==False, then surely also success==False
         if self.torsoMotionTarget is None or self.torsoMotionStartTime is None:
-            self.get_logger().error(f"[{label}] Missing torso motion target/start time.")
+            self.logErrorWithStatus("A request for check the complention of the torso motion was issued, but no torso motion seem to be in progress.")
             return False, False
-
-        currentTorsoPosition = self.get_joint_position("torso_lift_joint")
+        currentTorsoPosition = self.getJointPosition(params.torsoLiftJointName)
         if currentTorsoPosition is None:
-            self.get_logger().info(f"[{label}] Waiting for torso_lift_joint from /joint_states...")
+            self.logWarnWithStatus("Cannot read current " + params.torsoLiftJointName + " yet from topic " + params.jointStateTopic + ", retrying...")
             return False, False
-
         error = abs(float(currentTorsoPosition) - float(self.torsoMotionTarget))
         if error <= self.torsoMotionTolerance:
-            self.get_logger().info(
-                f"[{label}] Torso target reached: current={float(currentTorsoPosition):.4f}, "
-                f"target={float(self.torsoMotionTarget):.4f}, error={error:.4f}."
+            self.logInfoWithStatus(
+                f"Torso target successfully reached: current={float(currentTorsoPosition):.4f}, target={float(self.torsoMotionTarget):.4f}, error={error:.4f}."
             )
             return True, True
-
-        elapsed = (self.get_clock().now() - self.torsoMotionStartTime).nanoseconds * 1e-9
-        if elapsed > self.torsoMotionTimeout:
-            self.get_logger().error(
-                f"[{label}] Torso motion timed out: current={float(currentTorsoPosition):.4f}, "
+        elapsedSeconds = (self.get_clock().now() - self.torsoMotionStartTime).nanoseconds * 1e-9
+        if elapsedSeconds > self.torsoMotionTimeout:
+            self.logErrorWithStatus(
+                f"Torso motion timed out (timeout: {self.torsoMotionTimeout}s): current={float(currentTorsoPosition):.4f}, "
                 f"target={float(self.torsoMotionTarget):.4f}, error={error:.4f}."
             )
             return True, False
-
-        self.get_logger().info(
-            f"[{label}] Waiting torso: current={float(currentTorsoPosition):.4f}, "
+        self.logInfoWithStatus(
+            f"Waiting torso motion complention: current={float(currentTorsoPosition):.4f}, "
             f"target={float(self.torsoMotionTarget):.4f}, error={error:.4f}."
         )
         return False, False
 
-    def get_current_cube_gazebo_model_name(self):
-        return f"aruco_cube_exam_id{int(self.currentCubeMarkerId)}"
-
-    def get_current_cube_gazebo_link_name(self):
-        return "link"
-
-    def publish_head_tilt_for_cube_search_command(self):
-        current_head_1 = self.get_joint_position("head_1_joint")
-        if current_head_1 is None:
-            self.get_logger().warn(
-                "[SET_HEAD_FOR_CUBE_SEARCH] Cannot read current head_1_joint yet from /joint_states."
-            )
+    def publishHeadTiltCommand(self):
+        # This method can be used to publish a command to control the tilt-position of the Tiago head,
+        # and it is used (in this Task3 FSM) to tilt the head correctly in order to detect the cubes on the pick location table.
+        # This is literally the very same method used in the Task2 FSM Node
+        current_head_pan = self.getJointPosition(params.panHeadJointName)
+        if current_head_pan is None:
+            self.logWarnWithStatus("Cannot read current " + params.panHeadJointName + " yet from topic " + params.jointStateTopic + ", retrying...")
             return False
-
-        target_tilt = float(nodesParameters.headTiltDuringPickAndPlace)
-
+        target_head_tilt = float(params.headTiltDuringPickAndPlace)
         msg = JointTrajectory()
-        msg.joint_names = ["head_1_joint", "head_2_joint"]
-
+        msg.joint_names = [params.panHeadJointName, params.tiltHeadJointName]
         point = JointTrajectoryPoint()
-        point.positions = [current_head_1, target_tilt]
-        point.time_from_start = Duration(sec=2)
-
+        point.positions = [current_head_pan, target_head_tilt]
+        point.time_from_start = Duration(sec = 2) # Imposed time duration for the head movement
         msg.points.append(point)
         self.headCommandPublisher.publish(msg)
-
-        self.get_logger().info(
-            f"[SET_HEAD_FOR_CUBE_SEARCH] Published head command: "
-            f"head_1_joint={current_head_1:.3f}, head_2_joint={target_tilt:.3f}."
-        )
+        self.logInfoWithStatus(f"Published head tilt command: {params.panHeadJointName}={current_head_pan:.3f}, {params.tiltHeadJointName}={target_head_tilt:.3f}.")
         return True
+    
+    def broadcastTF(self, pose: Pose, parentFrameID: str, frameID: str):
+        # This method simply broadcasts a TF transform from parentFrameID to frameID
+        msg = TransformStamped()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.header.frame_id = parentFrameID
+        msg.child_frame_id = frameID
+        msg.transform.translation.x = float(pose.position.x)
+        msg.transform.translation.y = float(pose.position.y)
+        msg.transform.translation.z = float(pose.position.z)
+        msg.transform.rotation.x = float(pose.orientation.x)
+        msg.transform.rotation.y = float(pose.orientation.y)
+        msg.transform.rotation.z = float(pose.orientation.z)
+        msg.transform.rotation.w = float(pose.orientation.w)
+        self.tfBroadcaster.sendTransform(msg)
 
-    def handle_setHeadForCubeSearch(self):
-        if self.initialRobotPose is None:
+    def handle_initCubesTransportation(self):
+        # In this state, the FSM carries out all the initialization operations needed to be done BEFORE starting the transportation of cubes.
+        # (1) Store the actual robot pose (that will be considered as the "initial" one and that will be used to return to it after the whole transportation process)
+        # (2) Tilt the Tiago head to a proper position in order to detect the cubes on the pick location table
+        # (3) Load of the results of the cubes discovery (performed in Task2) from the related YAML files (indeed, the pick and place locations in the map)
+        if self.initialRobotPose is None: # If None, that means that we are still missing the initial robot pose stored
+            # (1) Store the initial pose
+            # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
             if self.lastAMCLMsg is None:
-                self.get_logger().warn(
-                    "[SET_HEAD_FOR_CUBE_SEARCH] Cannot store initial robot pose yet: no AMCL pose available."
-                )
+                self.logWarnWithStatus("Waiting for an AMCL pose message to be available to store the initial robot pose before the cubes transportation...")
             else:
                 self.initialRobotPose = PoseStamped()
                 self.initialRobotPose.header.frame_id = self.lastAMCLMsg.header.frame_id
                 self.initialRobotPose.header.stamp = self.get_clock().now().to_msg()
                 self.initialRobotPose.pose = self.lastAMCLMsg.pose.pose
-                self.get_logger().info(
-                    "[SET_HEAD_FOR_CUBE_SEARCH] Stored initial robot pose before lowering the head: "
+                self.logInfoWithStatus(
+                    "Successfully stored initial robot pose, now tilting Tiago head:"
                     f"frame={self.initialRobotPose.header.frame_id}, "
                     f"x={self.initialRobotPose.pose.position.x:.3f}, "
                     f"y={self.initialRobotPose.pose.position.y:.3f}."
                 )
-
-        if self.publish_head_tilt_for_cube_search_command():
-            self.currentFSMstate = Task3FSMState.WAIT_HEAD_FOR_TASK3
-
-    def handle_waitHeadForTask3(self):
-        current_tilt = self.get_joint_position("head_2_joint")
-        if current_tilt is None:
-            self.get_logger().info("[WAIT_HEAD_FOR_TASK3] Waiting for head_2_joint from /joint_states...")
-            return
-
-        target_tilt = float(nodesParameters.headTiltDuringPickAndPlace)
-        error = abs(current_tilt - target_tilt)
-
-        if error <= self.headTiltTolerance:
-            self.get_logger().info(
-                f"[WAIT_HEAD_FOR_TASK3] Head tilt reached: "
-                f"current={current_tilt:.3f}, target={target_tilt:.3f}, error={error:.3f}."
-            )
-            self.currentFSMstate = Task3FSMState.LOAD_TASK2_DISCOVERY_RESULTS
+        # (2) Tilt the Tiago head to a proper position in order to detect the cubes on the pick location table
+        # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
+        elif not self.tiltHeadSent:
+            if self.publishHeadTiltCommand(): self.tiltHeadSent = True
         else:
-            self.get_logger().info(
-                f"[WAIT_HEAD_FOR_TASK3] Waiting head tilt: "
-                f"current={current_tilt:.3f}, target={target_tilt:.3f}, error={error:.3f}."
-            )
+            current_head_tilt = self.getJointPosition(params.tiltHeadJointName)
+            if current_head_tilt is None:
+                self.logInfoWithStatus("Waiting for a value for " + params.tiltHeadJointName + " from " + params.jointStateTopic + "...")
+                return
+            target_head_tilt = float(params.headTiltDuringPickAndPlace)
+            head_tilt_error = abs(current_head_tilt - target_head_tilt)
+            if head_tilt_error > self.headTiltTolerance:
+                self.logInfoWithStatus(f"Waiting head tilt: current={current_head_tilt:.3f}, target={target_head_tilt:.3f}, error={head_tilt_error:.3f}.")
+            else:
+                self.logInfoWithStatus(f"Head tilt done: current={current_head_tilt:.3f}, target={target_head_tilt:.3f}, error={head_tilt_error:.3f}.")
+                # (3) Load discovery results (the load is attempted only ONCE; TODO: implement a limited-in-amount retry mechanism in case of failure)
+                self.logInfoWithStatus("Loading Task2 discovery results from YAML files...")
+                try:
+                    self.pickLocation, self.placeLocation = discoveryLoader.loadTask2LocationEstimates(self.savedMapPath)
+                    # Note that the TF transforms broadcasting is not strictly required for the correct execution of the Task3 FSM,
+                    # but it is useful for debugging and visualization purposes (e.g. in RViz) and therefore it has been performed.
+                    self.broadcastTF(self.pickLocation.pose, self.pickLocation.frame_id, "task2_pick_location_estimate")
+                    self.broadcastTF(self.placeLocation.pose, self.placeLocation.frame_id, "task2_place_location_estimate")
+                    self.logInfoWithStatus("Task2 discovery results loaded successfully!")
+                    self.currentFSMstate = Task3FSMState.NAVIGATE_TO_PICK_PLATFORM
+                except Exception as e:
+                    self.logErrorWithStatus(f"Failed to load Task2 discovery results, now shutting down the FSM Task3 Node. Error: {e}")
+                    self.currentFSMstate = Task3FSMState.FINISH
+                    return
 
-    def broadcast_task2_location_estimate(self, estimate, child_frame_id: str):
-        if not estimate.found:
-            self.get_logger().warn(f"[TASK2_RESULTS_TF] Cannot broadcast {estimate.label}: estimate not found.")
-            return
-
-        if estimate.position is None or estimate.orientation is None:
-            self.get_logger().warn(f"[TASK2_RESULTS_TF] Cannot broadcast {estimate.label}: missing pose data.")
-            return
-
-        msg = TransformStamped()
-        msg.header.stamp = self.get_clock().now().to_msg()
-        msg.header.frame_id = estimate.frame_id
-        msg.child_frame_id = child_frame_id
-        msg.transform.translation.x = float(estimate.position["x"])
-        msg.transform.translation.y = float(estimate.position["y"])
-        msg.transform.translation.z = float(estimate.position["z"])
-        msg.transform.rotation.x = float(estimate.orientation["x"])
-        msg.transform.rotation.y = float(estimate.orientation["y"])
-        msg.transform.rotation.z = float(estimate.orientation["z"])
-        msg.transform.rotation.w = float(estimate.orientation["w"])
-        self.tfBroadcaster.sendTransform(msg)
-
-    def rotate_vector_by_quaternion(self, vector, qx: float, qy: float, qz: float, qw: float):
+    def rotateVectorByQuaternion(self, vector, qx: float, qy: float, qz: float, qw: float):
+        # A simple utility method that rotates a 3D vector by a quaternion (qx, qy, qz, qw)
         vx, vy, vz = vector
-
         ix =  qw * vx + qy * vz - qz * vy
         iy =  qw * vy + qz * vx - qx * vz
         iz =  qw * vz + qx * vy - qy * vx
         iw = -qx * vx - qy * vy - qz * vz
-
         rx = ix * qw + iw * -qx + iy * -qz - iz * -qy
         ry = iy * qw + iw * -qy + iz * -qx - ix * -qz
         rz = iz * qw + iw * -qz + ix * -qy - iy * -qx
         return (rx, ry, rz)
+    
+    def quaternionFromYaw(self, yaw: float):
+        # A simple utility method that builds a quaternion from a yaw angle (in radians); the quaternion is returned as a dictionary form, with keys 'x', 'y', 'z', 'w'
+        half_yaw = yaw * 0.5
+        return {'x': 0.0, 'y': 0.0, 'z': math.sin(half_yaw), 'w': math.cos(half_yaw) }
+    
+    def multiplyQuaternionsAndNormalize(self, q1, q2):
+        # A simple utility method that multiplies two quaternions and normalizes the result
+        x1, y1, z1, w1 = q1
+        x2, y2, z2, w2 = q2
+        q = [
+            w1*x2 + x1*w2 + y1*z2 - z1*y2,
+            w1*y2 - x1*z2 + y1*w2 + z1*x2,
+            w1*z2 + x1*y2 - y1*x2 + z1*w2,
+            w1*w2 - x1*x2 - y1*y2 - z1*z2,
+        ]
+        norm = math.sqrt(q[0]*q[0] + q[1]*q[1] + q[2]*q[2] + q[3]*q[3])
+        if norm <= 1e-9: raise ValueError("Error while multiplying quaternions: the resulting quaternion has a norm too close to zero (norm = {:.6f})".format(norm))
+        return [q[0]/norm, q[1]/norm, q[2]/norm, q[3]/norm]
+    
+    def transformChangeReferenceFrame(self, arucoPoseEstimate: params.ArucoPoseEstimate, targetFrameID: str):
+        # A simple utility method that transforms a given ArucoPoseEstimate to a different reference frame (indeed, targetFrameID)
+        sourceFrameID = str(arucoPoseEstimate.frame_id)
+        transform = self.tfBuffer.lookup_transform(
+            targetFrameID,
+            sourceFrameID,
+            rclpy.time.Time(),
+        )
+        transPose = do_transform_pose(arucoPoseEstimate.pose, transform)
+        return params.ArucoPoseEstimate(
+            found=arucoPoseEstimate.found,
+            marker_id=arucoPoseEstimate.marker_id,
+            label=arucoPoseEstimate.label,
+            frame_id=targetFrameID, # New parent frame!
+            marker_frame=arucoPoseEstimate.marker_frame,
+            sample_count=arucoPoseEstimate.sample_count,
+            pose = copy.deepcopy(transPose)
+        )
+
+
+    
+     #-----------------------------------------------------------------------------------------------
 
     def yaw_from_quaternion(self, qx: float, qy: float, qz: float, qw: float) -> float:
         siny_cosp = 2.0 * (qw * qz + qx * qy)
         cosy_cosp = 1.0 - 2.0 * (qy * qy + qz * qz)
         return math.atan2(siny_cosp, cosy_cosp)
 
-    def quaternion_from_yaw(self, yaw: float):
-        half_yaw = yaw * 0.5
-        return {
-            'x': 0.0,
-            'y': 0.0,
-            'z': math.sin(half_yaw),
-            'w': math.cos(half_yaw),
-        }
+    
 
     def pose_dict_to_pose_stamped(self, pose_dict: dict) -> PoseStamped:
         pose = PoseStamped()
@@ -1014,6 +1061,8 @@ class Task3FSMNode(Node):
             marker_id=int(pose_dict['marker_id']),
             label=str(pose_dict['label']),
         )
+    
+     #-----------------------------------------------------------------------------------------------
 
     def broadcast_pose_dict(self, pose_dict: dict, child_frame_id: str):
         msg = TransformStamped()
@@ -1029,282 +1078,189 @@ class Task3FSMNode(Node):
         msg.transform.rotation.w = float(pose_dict['orientation']['w'])
         self.tfBroadcaster.sendTransform(msg)
 
-    def build_platform_approach_goal(self, location_estimate, approach_distance: float) -> NavigateToPose.Goal:
-        if location_estimate.position is None or location_estimate.orientation is None:
-            raise ValueError(f"Cannot build {location_estimate.label} platform approach goal: missing estimate pose.")
+    def buildPlatformApproachGoal(self, platformLocation: params.ArucoPoseEstimate, approachDistance: float) -> NavigateToPose.Goal:
+        # This method builds a navigation goal to approach a given platform (pick or place) at a specified distance from it.
+        markerX = float(platformLocation.position['x'])
+        markerY = float(platformLocation.position['y'])
+        markerZ = float(platformLocation.position['z'])
+        markerQX = float(platformLocation.orientation['x'])
+        markerQY = float(platformLocation.orientation['y'])
+        markerQZ = float(platformLocation.orientation['z'])
+        markerQW = float(platformLocation.orientation['w'])
 
-        marker_x = float(location_estimate.position['x'])
-        marker_y = float(location_estimate.position['y'])
-        marker_z = float(location_estimate.position['z'])
-        qx = float(location_estimate.orientation['x'])
-        qy = float(location_estimate.orientation['y'])
-        qz = float(location_estimate.orientation['z'])
-        qw = float(location_estimate.orientation['w'])
-
-        offset_x, offset_y, offset_z = self.rotate_vector_by_quaternion(
-            (0.0, 0.0, approach_distance),
-            qx,
-            qy,
-            qz,
-            qw,
+        offsetX, offsetY, offsetZ = self.rotateVectorByQuaternion( # The rotation brings the offset vector from the marker frame to the map frame
+            (0.0, 0.0, approachDistance), # Defined in the marker frame, so that the offset is along the marker's Z-axis (i.e. the normal to the marker plane)
+            markerQX,
+            markerQY,
+            markerQZ,
+            markerQW,
         )
 
-        goal_x = marker_x + offset_x
-        goal_y = marker_y + offset_y
-        goal_z = marker_z + offset_z
-        yaw_to_marker = math.atan2(marker_y - goal_y, marker_x - goal_x)
-        goal_quat = self.quaternion_from_yaw(yaw_to_marker)
-
+        # Define the goal in the map reference frame
+        goalX = markerX + offsetX
+        goalY = markerY + offsetY
+        goalZ = markerZ + offsetZ
+        yawPointingToMarker = math.atan2(markerY - goalY, markerX - goalX)
+        goalQuaternion = self.quaternionFromYaw(yawPointingToMarker)
         goal = NavigateToPose.Goal()
-        goal.pose.header.frame_id = location_estimate.frame_id
+        goal.pose.header.frame_id = platformLocation.frame_id
         goal.pose.header.stamp = self.get_clock().now().to_msg()
-        goal.pose.pose.position.x = float(goal_x)
-        goal.pose.pose.position.y = float(goal_y)
+        goal.pose.pose.position.x = float(goalX)
+        goal.pose.pose.position.y = float(goalY)
         goal.pose.pose.position.z = 0.0
-        goal.pose.pose.orientation.x = goal_quat['x']
-        goal.pose.pose.orientation.y = goal_quat['y']
-        goal.pose.pose.orientation.z = goal_quat['z']
-        goal.pose.pose.orientation.w = goal_quat['w']
+        goal.pose.pose.orientation.x = goalQuaternion['x']
+        goal.pose.pose.orientation.y = goalQuaternion['y']
+        goal.pose.pose.orientation.z = goalQuaternion['z']
+        goal.pose.pose.orientation.w = goalQuaternion['w']
 
-        debugPose = {
-            'marker_id': int(location_estimate.marker_id),
-            'label': f'{location_estimate.label}_platform_approach',
-            'frame_id': location_estimate.frame_id,
-            'position': {'x': goal_x, 'y': goal_y, 'z': goal_z},
-            'orientation': goal_quat,
-        }
-        self.broadcast_pose_dict(debugPose, f"task3_{location_estimate.label}_platform_approach_goal")
-
-        self.get_logger().info(
-            f"[PLATFORM_APPROACH] Built {location_estimate.label} approach goal: "
-            f"marker=({marker_x:.3f}, {marker_y:.3f}, {marker_z:.3f}), "
-            f"goal=({goal_x:.3f}, {goal_y:.3f}, {goal_z:.3f}), "
-            f"approach_distance={approach_distance:.3f}, yaw_to_marker={yaw_to_marker:.3f}."
-        )
+        # Broadcasting the goal as a TF transform for visualization/debugging purposes (e.g. in RViz)
+        self.broadcastTF(goal.pose.pose, f"task3_{platformLocation.label}_platform_approach") 
         return goal
 
-    def handle_loadTask2DiscoveryResults(self):
-        if not self.task2DiscoveryResultsLoaded:
-            self.get_logger().info("[LOAD_TASK2_DISCOVERY_RESULTS] Loading Task2 discovery result files...")
-
-            try:
-                self.task2DiscoveryResults = nodesParameters.load_task2_discovery_results(self.savedMapPath)
-                self.task2DiscoveryResultsLoaded = True
-
-                self.broadcast_task2_location_estimate(
-                    self.task2DiscoveryResults.pick,
-                    child_frame_id="task2_pick_location_estimate",
-                )
-                self.broadcast_task2_location_estimate(
-                    self.task2DiscoveryResults.place,
-                    child_frame_id="task2_place_location_estimate",
-                )
-
-                self.get_logger().info(
-                    "[LOAD_TASK2_DISCOVERY_RESULTS] Task2 discovery results loaded successfully. "
-                    f"pick_samples={self.task2DiscoveryResults.pick.sample_count}, "
-                    f"place_samples={self.task2DiscoveryResults.place.sample_count}."
-                )
-
-            except Exception as e:
-                self.get_logger().error(f"[LOAD_TASK2_DISCOVERY_RESULTS] Failed to load Task2 discovery results: {e}")
-                self.shouldShutdown = True
-                return
-
-        self.currentFSMstate = Task3FSMState.NAVIGATE_TO_PICK_PLATFORM
-
     def handle_navigateToPickPlatform(self):
-        if not self.navigateToPoseActionClient.server_is_ready():
-            self.get_logger().info("[NAVIGATE_TO_PICK_PLATFORM] Waiting for NavigateToPose action server...")
-            return
-
-        try:
-            pickGoal = self.build_platform_approach_goal(
-                self.task2DiscoveryResults.pick,
-                approach_distance=float(nodesParameters.platformApproachDistance),
-            )
-        except Exception as e:
-            self.get_logger().error(f"[NAVIGATE_TO_PICK_PLATFORM] Failed to build pick platform goal: {e}")
-            self.shouldShutdown = True
-            return
-
-        self.pickPlatformNavigationDone = False
-        self.pickPlatformNavigationSucceeded = False
-        self.pickPlatformNavigationSent = True
-
-        self.get_logger().info("[NAVIGATE_TO_PICK_PLATFORM] Sending pick platform approach goal to Nav2.")
-        future = self.navigateToPoseActionClient.send_goal_async(pickGoal)
-        future.add_done_callback(self.pickPlatformNavigationGoalResponseCallback)
-        self.currentFSMstate = Task3FSMState.WAIT_PICK_PLATFORM_NAVIGATION
+        # In this state, the FSM sends a navigation goal to the Nav2 stack in order to approach the pick platform
+        # Note: at this stage, the currently selected sube to be transported is indeed ALREADY selected (and it's the one with index self.currentCubeIndex)
+        if not self.pickPlatformNavigationSent:
+            if not self.navigateToPoseActionClient.server_is_ready():
+                self.logInfoWithStatus("Waiting for NavigateToPose action server...")
+                return
+            self.logInfoWithStatus("Sending to Nav2 a NavigateToPose goal to approach the pick platform.")
+            pickGoal = self.buildPlatformApproachGoal(self.pickLocation, params.platformApproachDistance)
+            self.pickPlatformNavigationSent = True
+            self.pickPlatformNavigationDone = False
+            self.pickPlatformNavigationSucceeded = False
+            future = self.navigateToPoseActionClient.send_goal_async(pickGoal)
+            future.add_done_callback(self.pickPlatformNavigationGoalResponseCallback)
+        else:
+            if not self.pickPlatformNavigationDone: return
+            if not self.pickPlatformNavigationSucceeded:
+                self.logErrorWithStatus("Navigation to pick platform failed, now retrying...")
+                # TODO: implement a WatchDog mechanism to avoid retrying indefinitely
+                self.pickPlatformNavigationSent = False
+            else:
+                self.logInfoWithStatus("Successfully navigated to the pick platform")
+                self.collectCurrentCubeSamplesENABLER = True
+                self.cubeDetectionWaitStartTime = None
+                self.currentFSMstate = Task3FSMState.CUBE_DETECTION
 
     def pickPlatformNavigationGoalResponseCallback(self, future):
-        goalHandle = future.result()  # TODO: add explicit exception handling.
+        goalHandle = future.result() # TODO: add explicit exception handling
         if not goalHandle.accepted:
-            self.get_logger().error("[NAVIGATE_TO_PICK_PLATFORM] Goal rejected by Nav2.")
+            self.logErrorWithStatus("NavigateToPose goal (to navigate to pick platform approach) rejected by Nav2.")
             self.pickPlatformNavigationDone = True
             self.pickPlatformNavigationSucceeded = False
             return
-
-        self.get_logger().info("[NAVIGATE_TO_PICK_PLATFORM] Goal accepted by Nav2.")
+        self.logInfoWithStatus("NavigateToPose goal (to navigate to pick platform approach) accepted by Nav2.")
         resultFuture = goalHandle.get_result_async()
         resultFuture.add_done_callback(self.pickPlatformNavigationResultCallback)
 
     def pickPlatformNavigationResultCallback(self, future):
-        wrappedResult = future.result()  # TODO: add explicit exception handling.
+        wrappedResult = future.result() # TODO: add explicit exception handling
         self.pickPlatformNavigationDone = True
         self.pickPlatformNavigationSucceeded = wrappedResult.status == GoalStatus.STATUS_SUCCEEDED
-        self.get_logger().info(f"[NAVIGATE_TO_PICK_PLATFORM] Completed with status {wrappedResult.status}.")
-
-    def handle_waitPickPlatformNavigation(self):
-        if not self.pickPlatformNavigationDone:
-            return
-
-        if not self.pickPlatformNavigationSucceeded:
-            self.get_logger().error("[WAIT_PICK_PLATFORM_NAVIGATION] Pick platform navigation failed.")
-            self.shouldShutdown = True
-            return
-
-        self.get_logger().info("[WAIT_PICK_PLATFORM_NAVIGATION] Pick platform reached. Starting cube marker sampling.")
-        self.currentCubeSamples.clear()
-        self.collectCurrentCubeSamples = True
-        self.cubeDetectionWaitStartTime = None
-        self.currentFSMstate = Task3FSMState.WAIT_BEFORE_CUBE_DETECTION
-
-    def handle_waitBeforeCubeDetection(self):
+        self.get_logger().info(f"NavigateToPose goal (to navigate to pick platform approach) completed with status {wrappedResult.status}.")
+        
+    def handle_cubeDetection(self):
+        # In this state, the FSM waits for a certain amount of time (defined by the parameter pickingWaitingTime) in order to collect enough samples
+        # of the current cube marker before computing an estimate of its pose (it is supposed that the cube is in the current camera view).
+        # If during this waiting period no samples are collected, then the collection is restarted from scratch (this is a very simple behavior).
+        # Once the collection is completed, they are computed:
+        # (1) the final pose estimate of the cube w.r.t. the map reference frame
+        # (2) the final pose estimate of the cube w.r.t. the Tiago base_link reference frame
+        # (3) the approach pose for the Tiago gripper to indeed approach the cube (again, w.r.t. the Tiago base_link reference frame)
         if self.cubeDetectionWaitStartTime is None:
+            # Starting collection
             self.cubeDetectionWaitStartTime = self.get_clock().now()
-            self.get_logger().info(
-                f"[WAIT_BEFORE_CUBE_DETECTION] Collecting marker {self.currentCubeMarkerId} samples for "
-                f"{float(nodesParameters.pickingWaitingTime):.2f} seconds..."
-            )
-            return
-
-        elapsed = (self.get_clock().now() - self.cubeDetectionWaitStartTime).nanoseconds * 1e-9
-        if elapsed < float(nodesParameters.pickingWaitingTime):
-            return
-
-        self.collectCurrentCubeSamples = False
-
-        if len(self.currentCubeSamples) == 0:
-            self.get_logger().warn(
-                f"[WAIT_BEFORE_CUBE_DETECTION] No samples collected for marker {self.currentCubeMarkerId}. Restarting collection window."
-            )
-            self.currentCubeSamples.clear()
-            self.collectCurrentCubeSamples = True
+            self.logInfoWithStatus(f"Now collecting marker {self.cubesData[self.currentCubeIndex].markerID} samples for {params.pickingWaitingTime:.2f} seconds...")
+        else:
+            # Verifying collection
+            elapsedTime = (self.get_clock().now() - self.cubeDetectionWaitStartTime).nanoseconds * 1e-9
+            if elapsedTime < float(params.pickingWaitingTime): return
+            self.collectCurrentCubeSamplesENABLER = False
+            if len(self.currentCubeSamples) == 0:
+                self.logWarnWithStatus(
+                    f"No samples at all collected for marker {self.cubesData[self.currentCubeIndex].markerID} in the waiting period {params.pickingWaitingTime:.2f}. Restarting collection."
+                )
+                self.cubesData[self.currentCubeIndex].arucoSamples.clear()
+                self.collectCurrentCubeSamplesENABLER = True
+                self.cubeDetectionWaitStartTime = None
+                return
+            # Computing the final pose estimate and storing it
+            samples = self.cubesData[self.currentCubeIndex].arucoSamples
+            position = self.computePositionsMedoid(samples)
+            quaternion = self.computeOrientationsMedoid(samples)
+            frameId = samples[0].frame_id if samples[0].frame_id else params.fatherReferenceFrame
+            self.cubesData[self.currentCubeIndex].detectionWaitStartTime = self.cubeDetectionWaitStartTime
             self.cubeDetectionWaitStartTime = None
-            return
-
-        try:
-            rawPoseMap = nodesParameters.compute_pose_medoid_from_samples(
-                self.currentCubeSamples,
-                marker_id=self.currentCubeMarkerId,
-                label=f"cube_{self.currentCubeMarkerId}",
+            # Saving the final pose estimate referenced w.r.t. the map reference frame
+            self.cubesData[self.currentCubeIndex].finalPoseMap = params.ArucoPoseEstimate(
+                found = True, # Whether at least one valid marker sample was collected.
+                marker_id = self.cubesData[self.currentCubeIndex].markerID, # Numerical ID of the ArUco marker associated with this location.
+                label = self.cubesData[self.currentCubeIndex].markerNickname, # Semantic role of the location, e.g. "pick" or "place".
+                frame_id = frameId, # Reference frame in which the estimated pose is expressed, typically "map" ("map" is indeed used as a default value).
+                marker_frame = self.cubesData[self.currentCubeIndex].markerInfo.markerFrame, # TF frame name associated with the specific ArUco marker.
+                sample_count = len(samples), # Number of samples used to compute the estimate.
+                position = {'x': float(position[0]), 'y': float(position[1]), 'z': float(position[2])}, # Estimated marker position {"x": ..., "y": ..., "z": ...}, if found.
+                orientation = {'x': float(quaternion[0]), 'y': float(quaternion[1]), 'z': float(quaternion[2]), 'w': float(quaternion[3])} # Estimated marker orientation {"x": ..., "y": ..., "z": ..., "w": ...}, if found.
             )
-
-            rawOrientation = rawPoseMap['orientation']
-            yaw = self.yaw_from_quaternion(
-                float(rawOrientation['x']),
-                float(rawOrientation['y']),
-                float(rawOrientation['z']),
-                float(rawOrientation['w']),
+            # Saving the final pose estimate referenced w.r.t. the Tiago base_link reference frame
+            self.cubesData[self.currentCubeIndex].finalPoseBaseLink = self.transformChangeReferenceFrame(
+                self.cubesData[self.currentCubeIndex].finalPoseMap,
+                targetFrameID = params.tiagoBaseLinkReferenceFrame,
             )
-            rawPoseMap['orientation'] = self.quaternion_from_yaw(yaw)
-            self.currentCubeFinalPoseMap = rawPoseMap
-            self.currentCubeFinalPoseBaseLink = self.transform_pose_dict(rawPoseMap, 'base_link')
-
-            self.broadcast_pose_dict(
-                self.currentCubeFinalPoseMap,
-                f"task3_cube_{self.currentCubeMarkerId}_final_pose_map",
+            # Broadcasting the final pose estimates for visualization/debugging purposes (e.g. in RViz)
+            self.broadcastTF(
+                self.cubesData[self.currentCubeIndex].finalPoseMap.pose,
+                parentFrameID = self.cubesData[self.currentCubeIndex].finalPoseMap.frame_id,
+                frameID = f"task3_{self.cubesData[self.currentCubeIndex].markerNickname}_marker_pose_map"
             )
-            self.broadcast_pose_dict(
-                self.currentCubeFinalPoseBaseLink,
-                f"task3_cube_{self.currentCubeMarkerId}_final_pose_base_link",
+            self.broadcastTF(
+                self.cubesData[self.currentCubeIndex].finalPoseBaseLink.pose,
+                parentFrameID = self.cubesData[self.currentCubeIndex].finalPoseBaseLink.frame_id,
+                frameID = f"task3_{self.cubesData[self.currentCubeIndex].markerNickname}_marker_pose_base_link"
             )
-
-            self.get_logger().info(
-                f"[WAIT_BEFORE_CUBE_DETECTION] Marker {self.currentCubeMarkerId} final pose computed from "
-                f"{len(self.currentCubeSamples)} samples and stored in map/base_link."
+            self.logInfoWithStatus(
+                f"Cube {self.cubesData[self.currentCubeIndex].markerNickname} pose estimated from "
+                f"{len(self.currentCubeSamples)} samples and successfully stored (BOTH w.r.t. map/base_link reference frames)."
             )
-
-        except Exception as e:
-            self.get_logger().error(f"[WAIT_BEFORE_CUBE_DETECTION] Failed to compute current cube pose: {e}")
-            self.shouldShutdown = True
-            return
-
-        self.currentFSMstate = Task3FSMState.BUILD_CURRENT_CUBE_APPROACH_POSE
-
-    def handle_buildCurrentCubeApproachPose(self):
-        if self.currentCubeFinalPoseBaseLink is None:
-            self.get_logger().error("[BUILD_CURRENT_CUBE_APPROACH_POSE] Missing current cube pose in base_link.")
-            self.shouldShutdown = True
-            return
-
-        cubePose = self.currentCubeFinalPoseBaseLink
-        self.currentCubeApproachPosition = [
-            float(cubePose['position']['x']),
-            float(cubePose['position']['y']),
-            float(cubePose['position']['z']) + float(nodesParameters.cubeApproachHeight),
-        ]
-        currentApproachQuaternion = [
-            float(cubePose['orientation']['x']),
-            float(cubePose['orientation']['y']),
-            float(cubePose['orientation']['z']),
-            float(cubePose['orientation']['w']),
-        ]
-
-        pitchPlus90Quaternion = [
-            0.0,
-            math.sin(math.pi / 4.0),
-            0.0,
-            math.cos(math.pi / 4.0),
-        ]
-
-
-
-        self.currentCubeApproachQuaternion = nodesParameters.multiply_quaternions_xyzw(
-            currentApproachQuaternion,
-            pitchPlus90Quaternion,
-        )
-
-        approachPose = {
-            'marker_id': self.currentCubeMarkerId,
-            'label': f"cube_{self.currentCubeMarkerId}_approach",
-            'frame_id': 'base_link',
-            'position': {
-                'x': self.currentCubeApproachPosition[0],
-                'y': self.currentCubeApproachPosition[1],
-                'z': self.currentCubeApproachPosition[2],
-            },
-            'orientation': {
-                'x': self.currentCubeApproachQuaternion[0],
-                'y': self.currentCubeApproachQuaternion[1],
-                'z': self.currentCubeApproachQuaternion[2],
-                'w': self.currentCubeApproachQuaternion[3],
-            },
-        }
-        self.broadcast_pose_dict(
-            approachPose,
-            f"task3_cube_{self.currentCubeMarkerId}_approach_pose_base_link",
-        )
-
-        self.cubeApproachPosesBaseLink[int(self.currentCubeMarkerId)] = {
-            'position': list(self.currentCubeApproachPosition),
-            'quaternion': list(self.currentCubeApproachQuaternion),
-        }
-
-        self.get_logger().info(
-            f"[BUILD_CURRENT_CUBE_APPROACH_POSE] Built arm approach pose for marker {self.currentCubeMarkerId}: "
-            f"position={self.currentCubeApproachPosition}, quat_xyzw={self.currentCubeApproachQuaternion}."
-        )
-        self.currentFSMstate = Task3FSMState.MOVE_ARM_TO_PICKING_CONFIGURATION
+            # Building up the approach pose for the Tiago gripper to indeed approach the cube (w.r.t. the Tiago base_link reference frame)
+            cubePose = self.cubesData[self.currentCubeIndex].finalPoseBaseLink.pose # This is a Pose object
+            approachPose = Pose()
+            approachPose.position.x = cubePose.position.x
+            approachPose.position.y = cubePose.position.y
+            approachPose.position.z = cubePose.position.z + params.cubeApproachHeight
+            # Note: exploiting a quaternion representing a pitch rotation of +90 degrees (in radians) around the Y-axis
+            pitchPlus90Quaternion = [0.0, math.sin(math.pi / 4.0), 0.0, math.cos(math.pi / 4.0)]
+            approachQuaternion = self.multiplyQuaternionsAndNormalize(
+                [approachQuaternion.x, approachQuaternion.y, approachQuaternion.z, approachQuaternion.w],
+                pitchPlus90Quaternion,
+            )
+            approachPose.orientation.x = approachQuaternion[0]
+            approachPose.orientation.y = approachQuaternion[1]
+            approachPose.orientation.z = approachQuaternion[2]
+            approachPose.orientation.w = approachQuaternion[3]
+            self.cubesData[self.currentCubeIndex].approachPose = approachPose
+            # Broadcasting the approach pose for visualization/debugging purposes (e.g. in RViz)
+            self.broadcastTF(
+                approachPose,
+                parentFrameID = self.cubesData[self.currentCubeIndex].finalPoseBaseLink.frame_id,
+                frameID = f"task3_{self.cubesData[self.currentCubeIndex].markerNickname}_approach_pose_base_link"
+            )
+            self.logInfoWithStatus(
+                f"Built arm approach pose for cube {self.cubesData[self.currentCubeIndex].markerNickname}: "
+                f"position={self.currentCubeApproachPosition}, quat_xyzw={self.currentCubeApproachQuaternion}."
+            )
+            self.currentFSMstate = Task3FSMState.MOVE_ARM_TO_PICKING_CONFIGURATION
 
     def handle_moveArmToPickingConfiguration(self):
+        # In this state, the FSM exploits the TiagoArm Action Server in order to move the arm to a predefined picking configuration (joint positions).
+        # Note that the "picking configuration" (defined in the jointspace) is NOT the approach pose for the gripper; it's instead a predefined configuration
+        # to be firstly reached by the Tiago arm BEFORE moving the gripper to the approach pose (defined in the Cartesian space).
         if not self.tiagoArmActionClient.server_is_ready():
-            self.get_logger().info("[MOVE_ARM_TO_PICKING_CONFIGURATION] Waiting for TiagoArm Action Server...")
+            self.logInfoWithStatus("Waiting for TiagoArm Action Server...")
             return
-
         goalMsg = TiagoArm.Goal()
-        goalMsg.joint_positions = nodesParameters.PICKING_JOINT_POSITIONS
+        goalMsg.joint_positions = params.PICKING_JOINT_POSITIONS
         goalMsg.position_obj = []
         goalMsg.quat_xyzw_obj = []
 
@@ -1540,7 +1496,7 @@ class Task3FSMNode(Node):
         self.currentFSMstate = Task3FSMState.MOVE_ARM_TO_CURRENT_CUBE_GRASPING
 
     def handle_moveArmToCurrentCubeGrasping(self):
-        currentTorsoPosition = self.get_joint_position("torso_lift_joint")
+        currentTorsoPosition = self.getJointPosition("torso_lift_joint")
         if currentTorsoPosition is None:
             self.get_logger().info(
                 "[MOVE_ARM_TO_CURRENT_CUBE_GRASPING] Waiting for torso_lift_joint from /joint_states..."
@@ -1583,7 +1539,7 @@ class Task3FSMNode(Node):
 
         self.armGraspingGoalDone = False
         self.armGraspingGoalSucceeded = False
-        self.publish_torso_lift_command(
+        self.publishTorsoliftCommand(
             targetTorsoPosition,
             "MOVE_ARM_TO_CURRENT_CUBE_GRASPING",
         )
@@ -1617,7 +1573,7 @@ class Task3FSMNode(Node):
             self.armGraspingGoalSucceeded = False
 
     def handle_waitArmToCurrentCubeGrasping(self):
-        done, succeeded = self.is_torso_motion_completed("WAIT_ARM_TO_CURRENT_CUBE_GRASPING")
+        done, succeeded = self.isTorsoMotionCompleted("WAIT_ARM_TO_CURRENT_CUBE_GRASPING")
         if not done:
             return
 
@@ -1641,6 +1597,11 @@ class Task3FSMNode(Node):
 
         goalMsg = TiagoGripper.Goal()
         goalMsg.open = False
+        # def get_current_cube_gazebo_model_name(self):
+        #return f"aruco_cube_exam_id{int(self.currentCubeMarkerId)}"
+
+    #def get_current_cube_gazebo_link_name(self):
+     #   return "link"
         goalMsg.object_model_name = self.get_current_cube_gazebo_model_name()
         goalMsg.object_link_name = self.get_current_cube_gazebo_link_name()
 
@@ -1704,7 +1665,7 @@ class Task3FSMNode(Node):
 
         self.armReturnApproachGoalDone = False
         self.armReturnApproachGoalSucceeded = False
-        self.publish_torso_lift_command(
+        self.publishTorsoliftCommand(
             float(self.torsoApproachJointPosition),
             "MOVE_ARM_BACK_TO_CURRENT_CUBE_APPROACH",
         )
@@ -1738,7 +1699,7 @@ class Task3FSMNode(Node):
             self.armReturnApproachGoalSucceeded = False
 
     def handle_waitArmBackToCurrentCubeApproach(self):
-        done, succeeded = self.is_torso_motion_completed("WAIT_ARM_BACK_TO_CURRENT_CUBE_APPROACH")
+        done, succeeded = self.isTorsoMotionCompleted("WAIT_ARM_BACK_TO_CURRENT_CUBE_APPROACH")
         if not done:
             return
 
@@ -1833,9 +1794,9 @@ class Task3FSMNode(Node):
             return
 
         try:
-            placeGoal = self.build_platform_approach_goal(
+            placeGoal = self.buildPlatformApproachGoal(
                 self.task2DiscoveryResults.place,
-                approach_distance=float(nodesParameters.platformApproachDistance),
+                approachDistance=float(nodesParameters.platformApproachDistance),
             )
         except Exception as e:
             self.get_logger().error(f"[NAVIGATE_TO_PLACE_PLATFORM] Failed to build place platform goal: {e}")
@@ -1953,7 +1914,7 @@ class Task3FSMNode(Node):
         self.currentFSMstate = Task3FSMState.MOVE_TORSO_TO_PLACE
 
     def handle_moveTorsoToPlace(self):
-        currentTorsoPosition = self.get_joint_position("torso_lift_joint")
+        currentTorsoPosition = self.getJointPosition("torso_lift_joint")
         if currentTorsoPosition is None:
             self.get_logger().info("[MOVE_TORSO_TO_PLACE] Waiting for torso_lift_joint from /joint_states...")
             return
@@ -1990,11 +1951,11 @@ class Task3FSMNode(Node):
             f"[MOVE_TORSO_TO_PLACE] Reusing effective grasping descent {float(effectiveDescent):.4f} "
             f"for marker {self.currentCubeMarkerId}."
         )
-        self.publish_torso_lift_command(targetTorsoPosition, "MOVE_TORSO_TO_PLACE")
+        self.publishTorsoliftCommand(targetTorsoPosition, "MOVE_TORSO_TO_PLACE")
         self.currentFSMstate = Task3FSMState.WAIT_TORSO_TO_PLACE
 
     def handle_waitTorsoToPlace(self):
-        done, succeeded = self.is_torso_motion_completed("WAIT_TORSO_TO_PLACE")
+        done, succeeded = self.isTorsoMotionCompleted("WAIT_TORSO_TO_PLACE")
         if not done:
             return
 
@@ -2048,11 +2009,11 @@ class Task3FSMNode(Node):
             self.shouldShutdown = True
             return
 
-        self.publish_torso_lift_command(float(self.torsoApproachJointPosition), "MOVE_TORSO_BACK_FROM_PLACE")
+        self.publishTorsoliftCommand(float(self.torsoApproachJointPosition), "MOVE_TORSO_BACK_FROM_PLACE")
         self.currentFSMstate = Task3FSMState.WAIT_TORSO_BACK_FROM_PLACE
 
     def handle_waitTorsoBackFromPlace(self):
-        done, succeeded = self.is_torso_motion_completed("WAIT_TORSO_BACK_FROM_PLACE")
+        done, succeeded = self.isTorsoMotionCompleted("WAIT_TORSO_BACK_FROM_PLACE")
         if not done:
             return
 
@@ -2170,7 +2131,7 @@ class Task3FSMNode(Node):
 
         self.currentCubeMarkerId = self.cubeMarkerIdsToMove[self.currentCubeIndex]
         self.currentCubeSamples.clear()
-        self.collectCurrentCubeSamples = False
+        self.collectCurrentCubeSamplesENABLER = False
         self.cubeDetectionWaitStartTime = None
         self.currentCubeFinalPoseMap = None
         self.currentCubeFinalPoseBaseLink = None
