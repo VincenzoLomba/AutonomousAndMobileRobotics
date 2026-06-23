@@ -28,6 +28,22 @@ from nav2_msgs.action import ComputePathToPose, NavigateToPose
 from scipy.spatial.transform import Rotation as SciPyRotation
 from . import discoveryPlanner
 from dataclasses import asdict
+from typing import Optional, Dict, Any, List
+from dataclasses import dataclass, asdict
+from geometry_msgs.msg import Pose
+
+@dataclass
+class ArucoSample:
+    # This simple class represents the single sample collected via an Aruco Marker detection
+    stamp_sec: int # Seconds part of the ROS timestamp associated with the transform message.
+    stamp_nanosec: int # Nanoseconds part of the ROS timestamp associated with the transform message.
+    frame_id: str # Reference frame in which the marker pose is expressed, typically "map".
+    child_frame_id: str # TF child frame associated with the detected ArUco marker.
+    position: List[float] # Marker position [x, y, z] expressed in frame_id, in meters.
+    quaternion: List[float] # Normalized marker orientation [x, y, z, w] expressed in frame_id.
+    robot_position: Optional[Dict[str, float]] # Estimated robot position {"x": ..., "y": ...} from AMCL at detection time, if available.
+    robot_marker_distance_2d: Optional[float] # Planar distance between the robot and the marker in the map frame, if AMCL is available.
+    robot_marker_bearing_map: Optional[float] # Planar bearing angle from the robot to the marker in the map frame, in radians, if AMCL is available.
 
 class Task2FSMState(Enum):
     # Autonomous localization
@@ -100,7 +116,8 @@ class Task2FSMNode(Node):
         # Anyway, it has been experimentally verified as more effective a different policy: in-place rotation with eventual DriveOnHeading correction.
         # As it is explained more in detail in the following parts of the code, in the final version this second policy has been adopted.
 
-        self.headTiltTolerance = 0.02 # When modifying the head tilt position, this tolerance (in radians) is used to wait for the new positino to be actually reached
+        # When modifying the head tilt position, this tolerance (in radians) is used to wait for the new positino to be actually reached
+        self.headTiltTolerance = params.headTiltTolerance
 
         self.discoveryOrderedKeypoints = [] # This list will contain the ordered list of keypoints used for the discovery phase (in terms of x,y coordinates)
         self.discoveryOrderedGoals = [] # Same as the previous list, but in terms of NavigateToPose.Goal objects to be used with the NavigateToPose Action Server
@@ -132,8 +149,8 @@ class Task2FSMNode(Node):
         # Subscribe to the "joint_states" topic to get the current joint states of the robot
         self.jointStateSubscription = self.create_subscription(JointState, params.jointStateTopic, self.jointStateCallback, 10)
         # Subscribe to the Aruco Marker detection topics for both pick and place locations to get the detected marker poses
-        self.pickArucoSubscription = self.create_subscription(TransformStamped, '/aruco_pick/single/transform', self.pickArucoCallback, 10)
-        self.placeArucoSubscription = self.create_subscription(TransformStamped, '/aruco_place/single/transform', self.placeArucoCallback, 10)
+        self.pickArucoSubscription = self.create_subscription(TransformStamped, params.pickLocationMarker.getTopicTF(), self.pickArucoCallback, 10)
+        self.placeArucoSubscription = self.create_subscription(TransformStamped, params.placeLocationMarker.getTopicTF(), self.placeArucoCallback, 10)
         # Initialize the Publisher for commanding the head position (its tilt position) AKA publisher to the "/head_controller/joint_trajectory" topic
         self.headCommandPublisher = self.create_publisher(JointTrajectory, params.headCommandTopic, 10)
         # Initialize the Service Client "reinitialize_global_localization" to be used to reinitialize in a clean way the global autonomous localization process (that will be later on managed via AMCL)
@@ -143,14 +160,14 @@ class Task2FSMNode(Node):
         # Initialize the Action Client for the DriveOnHeading Action Server provided by the Nav2 Stack
         self.driveOnHeadingActionClient = ActionClient(self, DriveOnHeading, params.driveOnHeadingActionName)
         # Initialize the Service Client for enabling/disabling the collision monitor
-        self.collisionMonitorEnabler = self.create_client(SetParameters, '/collision_monitor/set_parameters')
+        self.collisionMonitorEnabler = self.create_client(SetParameters, params.collisionMonitorSetParametersServiceName)
         # Initialize the Service Clients for getting and setting parameters on the controller server (later on used to online get and set the yaw_goal_tolerance value of the Goal Checker used within the Nav2 Stack)
         self.controllerServerGetParametersClient = self.create_client(GetParameters, params.controllerServerGetParametersServiceName)
         self.controllerServerSetParametersClient = self.create_client(SetParameters, params.controllerServerSetParametersServiceName)
         # Initialize the Action Client for the ComputePathToPose Action Server provided by the Nav2 Stack
-        self.computePathActionClient = ActionClient(self, ComputePathToPose, 'compute_path_to_pose')
+        self.computePathActionClient = ActionClient(self, ComputePathToPose, params.computePathToPoseActionName)
         # Initialize the Action Client for the NavigateToPose Action Server provided by the Nav2 Stack
-        self.navigateToPoseActionClient = ActionClient(self, NavigateToPose, 'navigate_to_pose')
+        self.navigateToPoseActionClient = ActionClient(self, NavigateToPose, params.navigateToPoseActionName)
 
         # Initialize the internal state
         self.currentFSMstate = Task2FSMState.TUCK_ARM
@@ -223,7 +240,7 @@ class Task2FSMNode(Node):
             #         float(robotQ.w),
             #     ]).as_euler('xyz')[2]
             # )
-        sample = params.ArucoSample(
+        sample = ArucoSample(
             stamp_sec = int(msg.header.stamp.sec), # Seconds part of the ROS timestamp associated with the transform message.
             stamp_nanosec = int(msg.header.stamp.nanosec), # Nanoseconds part of the ROS timestamp associated with the transform message.
             frame_id = str(msg.header.frame_id), # Reference frame in which the marker pose is expressed, typically "map".
@@ -268,26 +285,34 @@ class Task2FSMNode(Node):
     def buildLocationEstimate(self, samples, label: str, marker_id: int, marker_frame: str):
         # This method builds the final estimate of the pick/place Aruco Marker location based on the collected samples
         if len(samples) == 0:
-            return params.ArucoLocationEstimate(
+            return params.ArucoPoseEstimate(
                 found = False, # Used only in case NO samples at all were collected (this should NOT happen if the discovery policy is a good one)
                 marker_id = marker_id,
                 label = label,
                 frame_id = params.fatherReferenceFrame,
                 marker_frame = marker_frame,
                 sample_count = 0,
+                pose = None
             )
         position = self.computePositionsMedoid(samples)
         quaternion = self.computeOrientationsMedoid(samples)
         frameId = samples[0].frame_id if samples[0].frame_id else params.fatherReferenceFrame
-        return params.ArucoLocationEstimate(
+        pose = Pose()
+        pose.position.x = float(position[0])
+        pose.position.y = float(position[1])
+        pose.position.z = float(position[2])
+        pose.orientation.x = float(quaternion[0])
+        pose.orientation.y = float(quaternion[1])
+        pose.orientation.z = float(quaternion[2])
+        pose.orientation.w = float(quaternion[3])
+        return params.ArucoPoseEstimate(
             found = True, # Whether at least one valid marker sample was collected.
             marker_id = marker_id, # Numerical ID of the ArUco marker associated with this location.
             label = label, # Semantic role of the location, e.g. "pick" or "place".
             frame_id = frameId, # Reference frame in which the estimated pose is expressed, typically "map" ("map" is indeed used as a default value).
             marker_frame = marker_frame, # TF frame name associated with the specific ArUco marker.
             sample_count = len(samples), # Number of samples used to compute the estimate.
-            position = {'x': float(position[0]), 'y': float(position[1]), 'z': float(position[2])}, # Estimated marker position {"x": ..., "y": ..., "z": ...}, if found.
-            orientation = {'x': float(quaternion[0]), 'y': float(quaternion[1]), 'z': float(quaternion[2]), 'w': float(quaternion[3])} # Estimated marker orientation {"x": ..., "y": ..., "z": ..., "w": ...}, if found.
+            pose = pose, # The estimated pose of the ArUco marker in the specified frame_id.
         )
 
     def saveLocationJSON(self, filename: str, data: dict):
@@ -336,10 +361,10 @@ class Task2FSMNode(Node):
             marker_id = params.placeLocationMarker.markerID,
             marker_frame = params.placeLocationMarker.markerFrame
         )
-        self.saveLocationJSON('PickLocation.json', pickData.to_dict())
-        self.saveLocationJSON('PlaceLocation.json', placeData.to_dict())
-        self.saveLocationJSON('PickLocationHistory.json', pickHistoryData)
-        self.saveLocationJSON('PlaceLocationHistory.json', placeHistoryData)
+        self.saveLocationJSON(params.pickLocationJSONFileName, pickData.toDict())
+        self.saveLocationJSON(params.placeLocationJSONFileName, placeData.toDict())
+        self.saveLocationJSON(params.pickLocationHistoryJSONFileName, pickHistoryData)
+        self.saveLocationJSON(params.placeLocationHistoryJSONFileName, placeHistoryData)
         self.arucoLocationsSaved = True
         self.logInfoWithStatus(f"Final samples: pick={len(self.pickArucoSamples)}, place={len(self.placeArucoSamples)}.")
 
@@ -729,12 +754,12 @@ class Task2FSMNode(Node):
     # |                                          Pick & Place Locations Discovery                                              |
     # +------------------------------------------------------------------------------------------------------------------------+
 
-    def getJointPosition(self, joint_name):
+    def getJointPosition(self, jointName):
         # A very simple method that exploit the last available JointState message to extract the current position of a given joint
         # If no info is available yet, or if it's not retrievable, then None is returned
         if self.latestJointState is None: return None
         try:
-            idx = self.latestJointState.name.index(joint_name)
+            idx = self.latestJointState.name.index(jointName)
             return float(self.latestJointState.position[idx])
         except (ValueError, IndexError): return None
 
@@ -747,7 +772,7 @@ class Task2FSMNode(Node):
         # That is, if we want to only alter the tilt, we must read the current pan position and explicitly publish it together with the new tilt position.
         current_head_pan = self.getJointPosition(params.panHeadJointName)
         if current_head_pan is None:
-            self.logWarnWithStatus("Cannot read current " + params.panHeadJointName + " yet from topic " + params.jointStateTopic + ".")
+            self.logWarnWithStatus("Cannot read current " + params.panHeadJointName + " yet from topic " + params.jointStateTopic + ", retrying...")
             return False
         target_head_tilt = float(params.headTiltDuringDiscovery)
         msg = JointTrajectory()
@@ -762,6 +787,7 @@ class Task2FSMNode(Node):
 
     def handle_setHeadForDiscovery(self):
         # In this state, once information about the current head pan is available, the FSM published a command to move to a specific head tilt value
+        # TODO: implement some WatchDog mechanism to avoid waiting indefinitely
         if self.publishHeadTiltCommand(): self.currentFSMstate = Task2FSMState.WAIT_HEAD_FOR_DISCOVERY
 
     def handle_waitHeadForDiscovery(self):

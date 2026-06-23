@@ -155,8 +155,8 @@ def generate_launch_description():
     pickLocationArucoNodeCMD = Node(
         package='aruco_ros',
         executable="single",
-        namespace='aruco_pick',
-        name='single',
+        namespace=tiagoExamParameters.pickLocationMarker.getNamespace(),
+        name=tiagoExamParameters.pickLocationMarker.getNodeName(),
         remappings=[
             ("/camera_info", "/head_front_camera/rgb/camera_info"),
             ("/image", "/head_front_camera/rgb/image_raw"),
@@ -177,8 +177,8 @@ def generate_launch_description():
     placeLocationArucoNodeCMD = Node(
         package='aruco_ros',
         executable="single",
-        namespace='aruco_place',
-        name='single',
+        namespace=tiagoExamParameters.placeLocationMarker.getNamespace(),
+        name=tiagoExamParameters.placeLocationMarker.getNodeName(),
         remappings=[
             ("/camera_info", "/head_front_camera/rgb/camera_info"),
             ("/image", "/head_front_camera/rgb/image_raw"),
