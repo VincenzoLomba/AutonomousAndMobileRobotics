@@ -56,8 +56,8 @@ placeLocationJSONFileName = "PlaceLocation.json"
 pickLocationHistoryJSONFileName = "PickLocationHistory.json"
 placeLocationHistoryJSONFileName = "PlaceLocationHistory.json"
 
-autonomousLocalizationMetricsTreshold = 0.02 # 0.015 # 0.02
-localizationMetricsWindowSize = 5
+autonomousLocalizationMetricsTreshold = 0.02 # 0.03 # 0.02 # 0.015 # 0.02
+localizationMetricsWindowSize = 4 # 5 era cinque in origine, ho abbassato per accellerare il retry della localizzazione
 localizationMetricsJumpUpResetPercent = 20
 localizationMetricsMinImprovementPercent = 5.0
 localizationGoodMetricConsecutiveCountRequired = 2
@@ -69,15 +69,28 @@ autonomousLocalizationDriveSpeed = 0.4
 autonomousLocalizationDriveTimeAllowance = 6.0
 
 headTiltDuringDiscovery = -0.12
+arucoSampleDistanceThresholdDuringDiscovery = 3
+
 fatherReferenceFrame = "map"
 tiagoBaseLinkReferenceFrame = "base_link"
 
 torsoCommandTopic = "/torso_controller/joint_trajectory"
 torsoLiftJointName = "torso_lift_joint"
-headTiltDuringPickAndPlace = -0.76 # -0.66
-platformApproachDistance = 0.25
-pickingWaitingTime = 3.0
+
+headTiltDuringPickAndPlace = -0.9 # 76 # -0.84 (da usare con velocità trasaz piu rapida) # -0.76 # -0.66
+headPanTolerance = headTiltTolerance
+headPanDuringPickAndPlace = 0.0
+headPanSweepEnabled = True
+headPanSweepPositions = [0.0, -0.25, 0.0, +0.25]
+headPanSweepPeriod = 2 # integer
+pickingWaitingTime = 5.0
+
+platformApproachDistance = 0.2 # 0.30 # 2 # 0.25 # 0.20 (da usare con velocità trasaz piu rapida) # 0.25
+platformApproachReorientation = True
+placingApproachForwardOffset = 0.07
 cubeApproachHeight = 0.50 # 0.48 #0.40 # 0.30
+verticalTranslationGrasping = 0.30 # 20
+safetyPlacingDeltaTranslation = 0.02
 
 HOME_JOINT_POSITIONS = [
     0.0,       # torso_lift_joint   0.0m
@@ -101,6 +114,8 @@ PICKING_JOINT_POSITIONS = [
     0.0,             # arm_7_joint         12°
 ]
 
+TRANSPORTATION_JOINT_POSITIONS = PICKING_JOINT_POSITIONS # Transport configuration defined as the same to the picking one, BUT it can be freely changed
+
 @dataclass(frozen = True)
 class MarkerInfo:
     # This class simply represents the relevant information about an Aruco Marker
@@ -109,9 +124,18 @@ class MarkerInfo:
     markerNickname: str # Human-readable semantic name, e.g. "pick" or "place", or "cube63" or "cube582".
     markerFrame: str # TF frame associated with this marker.
     markerReferenceFrame: str # Reference frame used to express the marker pose, e.g. "map".
+    gazeboModelName: Optional[str] = None # Name of the Gazebo model of the object associated with this marker, IF any.
+    gazeboModelLinkName: Optional[str] = None # Name of the Gazebo model LINK of the object associated with this marker, IF any.
     def getNamespace(self) -> str: return "aruco_" + self.markerNickname
     def getNodeName(self) -> str: return self.getNamespace() + "_single_node"
     def getTopicTF(self) -> str: return "/" + self.getNamespace() + "/" + self.getNodeName() + "/transform"
+
+# Note that the cubes are expressed to be Gazebo Objects in the form:
+# model: aruco_cube_exam_id{ID}
+# └── link: link
+#     ├── collision geometry
+#     ├── visual geometry
+#     └── inertial/mass
 
 pickLocationMarker = MarkerInfo(
     markerSize = 0.25,
@@ -132,14 +156,18 @@ cube63Marker = MarkerInfo(
     markerID = 63,
     markerNickname = "cube63",
     markerFrame = "aruco_marker_frame_63",
-    markerReferenceFrame = "map"
+    markerReferenceFrame = "map",
+    gazeboModelName = "aruco_cube_exam_id63",
+    gazeboModelLinkName = "link"
 )
 cube582Marker = MarkerInfo(
     markerSize = 0.07,
     markerID = 582,
     markerNickname = "cube582",
     markerFrame = "aruco_marker_frame_582",
-    markerReferenceFrame = "map"
+    markerReferenceFrame = "map",
+    gazeboModelName = "aruco_cube_exam_id582",
+    gazeboModelLinkName = "link"
 )
 cubes = [cube63Marker, cube582Marker]
 
