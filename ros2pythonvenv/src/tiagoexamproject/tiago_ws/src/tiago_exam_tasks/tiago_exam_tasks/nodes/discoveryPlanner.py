@@ -115,6 +115,18 @@ def _backtrackEndpoints(startingPoint: tuple[int, int], skeleton: np.ndarray, de
         previous = current
         current = nxt
 
+def _computeJunctionsKeypoints(junctionsLabels: np.ndarray, junctionsAmount: int, clearanceMap: np.ndarray):
+    # For each junction area, this method extracts a keypoint as the one point of that junction area with the maximum clearance.
+    # The returned keypoints are in pixel space as (row, col).
+
+    junctionsKeypoints: list[tuple[int, int]] = []
+    for label in range(1, junctionsAmount + 1): # Iterate through all the junctions (note that the label 0 is reserved for pixels that are NOT part of any junction)
+        pixels = list(zip(*np.nonzero(junctionsLabels == label))) # Retrieve the pixels of the current junction area (as a list of (row, col) tuples)
+        if not pixels: continue # A simple guard in case the current junction area is empty (this should NOT happen)
+        keypoint = max(pixels, key=lambda p: float(clearanceMap[p[0], p[1]]))
+        junctionsKeypoints.append(keypoint)
+    return junctionsKeypoints
+
 def _associatePointToJunctionArea(
         point: tuple[int, int],
         junctionLabels: np.ndarray,
@@ -327,10 +339,11 @@ def _buildNavGoals(pointsXY: list[tuple[float, float]]):
 #     That said, the backtracking stops when a specified clearance threshold is met, which is defined as a percentage of the clearance range measured on skeleton pixels.
 #     More specifically: given the minimumClearance and the maximumClearance measured ALL OVER the map, the threshold is defined as a percentage value
 #     within the interval defined as [minimumClearance, maximumClearance].
-# (4) Once all endpoints have been backtracked/refined, they are also merged by junction area:
+# (4) Also junction areas are considered as kaypoints: for each junction area, the one cell with the maximum clearance is selected as a keypoint.
+# (5) Once all endpoints have been backtracked/refined, they are also merged by junction area:
 #     If multiple refined endpoints are associated to the same junction area, only the one with the highest clearance is kept as a keypoint, while the others are discarded.
 #     An endpoint is associated to a junction area IFF it is within a radius equal to the robot radius from that junction area.
-# (5) Finally, the remaining refined keypoints are ordered by shortest-path distance along the skeleton,
+# (6) Finally, the remaining refined keypoints are ordered by shortest-path distance along the skeleton,
 #     starting from the robot location projected to the nearest skeleton pixel, then returned.
 #     In limit cases, during this reordering phase, some keypoints may appear to be NOT reachable through the skeleton from the robot location:
 #     in that case, the returned "firstSpuriousIndex" indicates the index of the first spurious keypoint of the returned ordered list.
@@ -381,27 +394,32 @@ def computeOrderedKeypoints(
     maximumClearance = float(np.max(skeletonClearances))
     thresholdClearanceMeters = minimumClearance + (clearancePercent / 100.0) * (maximumClearance - minimumClearance)
 
-    # Endpoints backtracking/refinement: for each endpoint, backtrack along the skeleton towards the interior of the green space until the clearance threshold is met.
+    # Endpoints backtracking/refinement (from endpoints):
+    # for each endpoint, backtrack along the skeleton towards the interior of the green space until the clearance threshold is met.
     endpointCoordinates = list(zip(*np.nonzero(endpoints))) # Remember: "endpoints" is a binary/boolean 2D mask
     if not endpointCoordinates: return [], [], 0 # A simple guard: a degenerate map with no endpoints at all
     backtrackedEndpointsCoordinates = [_backtrackEndpoints(ep, skel, degree, clearanceMapMeters, thresholdClearanceMeters) for ep in endpointCoordinates]
 
-    # Merging refined endpoints by junction area: if multiple refined endpoints are neighboring to the same junction area, only the one with the highest clearance is kept as a keypoint, while the others are discarded
-    mergedEndpointsCoordinates, groupedAssociatedEndpoints = _mergeEndpointsByJunctionArea(
-        backtrackedEndpointsCoordinates, clearanceMapMeters, junctionsLabels, robotRadius, mapResolution, junctionsClearance
+    # Keypoints extraction from junctions:
+    junctionsKeypointsCoordinates = _computeJunctionsKeypoints(junctionsLabels, junctionsAmount, clearanceMapMeters)
+    unmergedKeypointsCoordinates = backtrackedEndpointsCoordinates + junctionsKeypointsCoordinates
+
+    # Merging candidate keypoints by junction area: if multiple candidate keypoints are neighboring to the same junction area, only the one with the highest clearance is kept as a keypoint, while the others are discarded
+    mergedKeypointsCoordinates, groupedAssociatedKeypoints = _mergeEndpointsByJunctionArea(
+        unmergedKeypointsCoordinates, clearanceMapMeters, junctionsLabels, robotRadius, mapResolution, junctionsClearance
     )
 
     # Conversion of the finally computed endpoints from pixel coordinates to meters coordinates expressed in the MAP-frame
     keypointsCoordinatesInMAP: list[tuple[float, float]] = [
         _pixelToMap(row, col, originX, originY, mapResolution, imageHeight)
-        for row, col in mergedEndpointsCoordinates
+        for row, col in mergedKeypointsCoordinates
     ]
 
     # Computation of the location of the robot in terms of pixel coordinates
     robotXYlocationInPixels = _mapToPixel(robotXYlocation[0], robotXYlocation[1], originX, originY, mapResolution, imageHeight)
 
     # Ordering of the keypoints by shortest-path distance along the skeleton, starting from the robot location projected to the nearest skeleton pixel
-    order, firstSpuriousIndex = _skeletonShortestPathOrder(skel, degree, mergedEndpointsCoordinates, robotXYlocationInPixels, mapResolution)
+    order, firstSpuriousIndex = _skeletonShortestPathOrder(skel, degree, mergedKeypointsCoordinates, robotXYlocationInPixels, mapResolution)
     orderedKeypoints = [keypointsCoordinatesInMAP[i] for i in order]
 
     # Converting the list of keypoints to a list of Nav2 NavigateToPose goals (one per keypoint)
@@ -418,7 +436,7 @@ def computeOrderedKeypoints(
             junctionsAmount,
             chainsLabels,
             chainsAmount,
-            mergedEndpointsCoordinates,
+            mergedKeypointsCoordinates,
             order,
             robotXYlocation,
             originX,
@@ -442,7 +460,7 @@ def _saveDiscoveryPlots(
         junctionsAmount: int,
         chainsLabels: np.ndarray,
         chainsAmount: int,
-        mergedEndpointsCoordinates: list[tuple[int, int]],
+        mergedKeypointsCoordinates: list[tuple[int, int]],
         order: list[int],
         robotXYlocation: tuple[float, float],
         originX: float,
@@ -471,9 +489,9 @@ def _saveDiscoveryPlots(
     originRow = imageHeight - 0.5
 
     orderedMergedEndpointsCoordinates = [
-        mergedEndpointsCoordinates[i]
+        mergedKeypointsCoordinates[i]
         for i in order
-        if 0 <= i < len(mergedEndpointsCoordinates)
+        if 0 <= i < len(mergedKeypointsCoordinates)
     ]
 
     def _finishPlot(plotID: int) -> None:
@@ -641,9 +659,9 @@ def _saveDiscoveryPlots(
             zorder=4,
         )
 
-    if mergedEndpointsCoordinates:
-        ysMerged = [p[0] for p in mergedEndpointsCoordinates]
-        xsMerged = [p[1] for p in mergedEndpointsCoordinates]
+    if mergedKeypointsCoordinates:
+        ysMerged = [p[0] for p in mergedKeypointsCoordinates]
+        xsMerged = [p[1] for p in mergedKeypointsCoordinates]
         plt.scatter(
             xsMerged,
             ysMerged,
@@ -652,7 +670,7 @@ def _saveDiscoveryPlots(
             facecolors="red",
             edgecolors="white",
             linewidths=0.8,
-            label=f"refined keypoints ({len(mergedEndpointsCoordinates)} total)",
+            label=f"refined keypoints ({len(mergedKeypointsCoordinates)} total)",
             zorder=6,
         )
 
