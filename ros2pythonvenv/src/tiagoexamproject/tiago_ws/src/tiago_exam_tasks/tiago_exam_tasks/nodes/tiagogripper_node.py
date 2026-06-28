@@ -1,3 +1,4 @@
+
 # This Python file defines a ROS2 Humble Node which exposes an Action Server to be used to control the Tiago's gripper.
 
 from rclpy.node import Node
@@ -13,15 +14,13 @@ from . import nodesParameters
 
 # TODO: manage the possibility (unwanted, but possible) of receiving a new goal while one is already being executed
 
-# Gripper parameters
-GRIPPER_JOINT_NAMES = [
-    "gripper_left_finger_joint",
-    "gripper_right_finger_joint",
-]
+# Note: you may issue "ros2 launch tiago_moveit_config moveit_rviz.launch.py" to open the RViz page related to MoveIT to check for these values
+GRIPPER_JOINT_NAMES = ["gripper_left_finger_joint", "gripper_right_finger_joint"]
 
-OPEN_GRIPPER_POSITIONS = [0.04, 0.04]  # One value for each Tiago gripper joint, 4cm each.
-CLOSED_GRIPPER_POSITIONS = [0.032, 0.032]
-FULL_CLOSED_GRIPPER_POSITION = 0.0
+# Values to be used for the opening/closing of the gripper
+OPEN_GRIPPER_CONFIGURATION = [0.04, 0.04]  # One value for each Tiago gripper joint, 4cm each.
+CLOSED_GRASPING_GRIPPER_CONFIGURATION = [0.032, 0.032]
+CLOSED_FULL_GRIPPER_POSITION = 0.0
 
 # Name of the MoveIt planning group that contains the gripper joints.
 GRIPPER_GROUP_NAME = "gripper"
@@ -33,10 +32,9 @@ GRIPPER_COMMAND_ACTION_NAME = "gripper_controller/joint_trajectory"
 LINK_ATTACHER_ATTACH_SERVICE_NAME = "/ATTACHLINK"
 LINK_ATTACHER_DETACH_SERVICE_NAME = "/DETACHLINK"
 LINK_ATTACHER_TIAGO_MODEL_NAME = "tiago"
-LINK_ATTACHER_GRIPPER_LINK_NAME = "gripper_left_finger_link"
-LINK_ATTACHER_WAIT_TIMEOUT = 3.0
-LINK_ATTACHER_CALL_TIMEOUT = 5.0
-
+LINK_ATTACHER_GRIPPER_LINK_NAME = "gripper_left_finger_link" # We simply use the left finger reference frame to attach/detach the cube
+LINK_ATTACHER_WAIT_TIMEOUT = 5.0 # Maximum time to wait for the LinkAttacher service to become available
+LINK_ATTACHER_CALL_TIMEOUT = 5.0 # Maximum time to wait for the LinkAttacher service (available, to which we've made a request) to return a response
 
 class TiagoGripperNode(Node):
 
@@ -45,36 +43,31 @@ class TiagoGripperNode(Node):
         super().__init__('tiago_gripper_node')
         self.get_logger().info("Starting tiago_gripper_node initialization...")
 
-        # ReentrantCallbackGroup allows callbacks associated with the same node/group to be executed without strict mutual exclusion, which is useful here because
-        # indeed within this node the action server and the internal ROS interfaces used by GripperInterface may need to make progress concurrently.
-        # This choice only becomes truly meaningful when the node is spun by a MultiThreadedExecutor (i.e. with more than one worker thread);
+        # ReentrantCallbackGroup allows callbacks associated with the same node/group to be executed without strict mutual exclusion,
+        # which is useful here because indeed within this node the Action Server and the internal ROS interfaces used by MoveIt2 may need to make progress concurrently.
+        # This choice only becomes truly meaningful when the node is spun by a MultiThreadedExecutor (i.e. with more than one worker thread available), which is the case here;
         # indeed, with a single-threaded executor, callbacks are still processed one at a time.
         self.callback_group = ReentrantCallbackGroup()
 
-        # Create gripper interface. This does not require a full MoveIt2 arm interface: it commands the gripper trajectory controller.
+        # Create gripper interface. This does not require a full MoveIt2 arm interface: it commands only the gripper trajectory controller.
         self.gripper = GripperInterface(
             node = self,
             gripper_joint_names = GRIPPER_JOINT_NAMES,
-            open_gripper_joint_positions = OPEN_GRIPPER_POSITIONS,
-            closed_gripper_joint_positions = CLOSED_GRIPPER_POSITIONS,
+            open_gripper_joint_positions = OPEN_GRIPPER_CONFIGURATION,
+            closed_gripper_joint_positions = CLOSED_GRASPING_GRIPPER_CONFIGURATION,
             gripper_group_name = GRIPPER_GROUP_NAME,
             callback_group = self.callback_group,
             gripper_command_action_name = GRIPPER_COMMAND_ACTION_NAME,
         )
         self.get_logger().info("Gripper interface successfully created.")
 
-        self.attachLinkClient = self.create_client(
-            AttachLink,
-            LINK_ATTACHER_ATTACH_SERVICE_NAME,
-            callback_group = self.callback_group,
-        )
-        self.detachLinkClient = self.create_client(
-            DetachLink,
-            LINK_ATTACHER_DETACH_SERVICE_NAME,
-            callback_group = self.callback_group,
-        )
-        self.attachedObjectModelName = ""
-        self.attachedObjectLinkName = ""
+        # Defining a client to the Gazebo LinkAttacher Service
+        self.attachLinkClient = self.create_client(AttachLink, LINK_ATTACHER_ATTACH_SERVICE_NAME, callback_group = self.callback_group)
+        # Defining a client to the Gazebo LinkDetacher Service
+        self.detachLinkClient = self.create_client(DetachLink, LINK_ATTACHER_DETACH_SERVICE_NAME, callback_group = self.callback_group)
+
+        self.attachedObjectModelNameMemory = ""
+        self.attachedObjectLinkNameMemory = ""
 
         # Initializing the Action Server for controlling the Tiago's gripper that this Node is gonna expose.
         self.actionServer = ActionServer(
@@ -86,110 +79,107 @@ class TiagoGripperNode(Node):
         )
         self.get_logger().info(f"TiagoGripper Action Server is ready on action name '{nodesParameters.tiagoGripperActionName}'.")
 
-    def wait_for_future_without_spinning_this_node(self, future, timeout_sec: float) -> bool:
+    def waitForFutureWithoutSpinningThisNode(self, future, timeoutSec: float) -> bool:
         startTime = time.monotonic()
-        while rclpy.ok() and not future.done():
-            if time.monotonic() - startTime > float(timeout_sec):
-                return False
+        while rclpy.ok() and not future.done(): # This while-loop implements a simple "polling" waiting
+            if time.monotonic() - startTime > float(timeoutSec): return False
             time.sleep(0.02)
         return future.done()
 
-    def _call_link_attacher_service(self, client, requestType, service_name: str, object_model_name: str, object_link_name: str) -> bool:
-        if object_model_name is None or str(object_model_name).strip() == "":
-            self.get_logger().warn(f"Skipping {service_name}: empty object_model_name.")
-            return False
-        if object_link_name is None or str(object_link_name).strip() == "":
-            self.get_logger().warn(f"Skipping {service_name}: empty object_link_name.")
-            return False
-
+    def _callLinkAttacherService(self, client, requestType, serviceName, objectModelName, objectLinkName) -> bool:
+        # Waiting for the LinkAttacher service to become available
         self.get_logger().info(
-            f"Waiting for LinkAttacher service '{service_name}' "
+            f"Waiting for LinkAttacher service '{serviceName}' "
             f"to manage {LINK_ATTACHER_TIAGO_MODEL_NAME}/{LINK_ATTACHER_GRIPPER_LINK_NAME} "
-            f"<-> {str(object_model_name).strip()}/{str(object_link_name).strip()}..."
+            f"<-> {objectModelName}/{objectLinkName}..."
         )
+        # A note: wait_for_service() can be blocking because it only checks whether the service exists in the ROS graph.
+        # Indeed, it does not need this node to process a service response callback; it is just a bounded availability check with a timeout.
         if not client.wait_for_service(timeout_sec = LINK_ATTACHER_WAIT_TIMEOUT):
-            self.get_logger().error(f"LinkAttacher service '{service_name}' is not available.")
+            self.get_logger().error(f"LinkAttacher service '{serviceName}' is not available.")
             return False
 
         req = requestType()
         req.model1_name = LINK_ATTACHER_TIAGO_MODEL_NAME
         req.link1_name = LINK_ATTACHER_GRIPPER_LINK_NAME
-        req.model2_name = str(object_model_name).strip()
-        req.link2_name = str(object_link_name).strip()
+        req.model2_name = objectModelName
+        req.link2_name = objectLinkName
 
-        self.get_logger().info(
-            f"Calling LinkAttacher service '{service_name}': "
-            f"{req.model1_name}/{req.link1_name} <-> {req.model2_name}/{req.link2_name}."
-        )
+        self.get_logger().info(f"Calling LinkAttacher service '{serviceName}': {req.model1_name}/{req.link1_name} <-> {req.model2_name}/{req.link2_name}.")
+        # After call_async(), the service response must be processed by the executor to complete the future. 
+        # Since this node is already being spun by a MultiThreadedExecutor in another thread, it is better not to call a nested spin here.
+        # We only wait for the future to become done while letting the existing executor process the response.
+        # This waiting will be implemented in a "polling way".
+        # This should be analogous to wath is implemented in "self.gripper.wait_until_executed()"
         future = client.call_async(req)
 
-        if not self.wait_for_future_without_spinning_this_node(future, LINK_ATTACHER_CALL_TIMEOUT):
-            self.get_logger().error(f"LinkAttacher service '{service_name}' call timed out.")
+        if not self.waitForFutureWithoutSpinningThisNode(future, LINK_ATTACHER_CALL_TIMEOUT):
+            self.get_logger().error(f"LinkAttacher service '{serviceName}' call timed out.")
             return False
 
         try:
             response = future.result()
             if hasattr(response, 'success') and not bool(response.success):
                 message = response.message if hasattr(response, 'message') else "no message"
-                self.get_logger().error(f"LinkAttacher service '{service_name}' returned failure: {message}")
+                self.get_logger().error(f"LinkAttacher service '{serviceName}' returned failure: {message}")
                 return False
-
             message = response.message if hasattr(response, 'message') else "no message"
-            self.get_logger().info(f"LinkAttacher service '{service_name}' completed successfully: {message}")
+            self.get_logger().info(f"LinkAttacher service '{serviceName}' completed successfully: {message}")
             return True
         except Exception as exc:
-            self.get_logger().error(f"LinkAttacher service '{service_name}' call failed: {exc}")
+            self.get_logger().error(f"LinkAttacher service '{serviceName}' call failed: {exc}")
             return False
 
-    def attach_object(self, object_model_name: str, object_link_name: str) -> bool:
-        success = self._call_link_attacher_service(
+    def attachObject(self, objectModelName: str, objectLinkName: str) -> bool:
+        success = self._callLinkAttacherService(
             self.attachLinkClient,
             AttachLink.Request,
             LINK_ATTACHER_ATTACH_SERVICE_NAME,
-            object_model_name,
-            object_link_name,
+            objectModelName,
+            objectLinkName,
         )
         if success:
-            self.attachedObjectModelName = str(object_model_name).strip()
-            self.attachedObjectLinkName = str(object_link_name).strip()
+            self.attachedObjectModelNameMemory = objectModelName
+            self.attachedObjectLinkNameMemory = objectLinkName
         return success
 
-    def detach_object(self, object_model_name: str = "", object_link_name: str = "") -> bool:
-        modelName = str(object_model_name).strip() if object_model_name else self.attachedObjectModelName
-        linkName = str(object_link_name).strip() if object_link_name else self.attachedObjectLinkName
-
+    def detachObject(self, objectModelName: str = "", objectLinkName: str = ""):
+        # Exploit the LinkDetacher Service to detach the object that is currently attached to the gripper, if any.
+        modelName = objectModelName if objectModelName else self.attachedObjectModelNameMemory
+        linkName = objectLinkName if objectLinkName else self.attachedObjectLinkNameMemory
         if modelName == "" or linkName == "":
-            self.get_logger().info("No attached object remembered. Skipping LinkAttacher detach.")
+            self.get_logger().info(f"No memory about an attached object (modelName: {modelName}, linkName: {linkName}). Skipping LinkAttacher detach.")
             return True
-
-        success = self._call_link_attacher_service(
+        self.get_logger().info(f"Detaching memorized object {modelName}/{linkName} from gripper using LinkAttacher service...")
+        success = self._callLinkAttacherService(
             self.detachLinkClient,
             DetachLink.Request,
             LINK_ATTACHER_DETACH_SERVICE_NAME,
             modelName,
             linkName,
         )
-        if success and modelName == self.attachedObjectModelName and linkName == self.attachedObjectLinkName:
-            self.attachedObjectModelName = ""
-            self.attachedObjectLinkName = ""
+        if success and modelName == self.attachedObjectModelNameMemory and linkName == self.attachedObjectLinkNameMemory:
+            self.attachedObjectModelNameMemory = ""
+            self.attachedObjectLinkNameMemory = ""
         return success
 
     def actionServerExecuteCallback(self, goal_handle):
 
         self.get_logger().info("Received new TiagoGripper goal.")
-        feedbackMessage = TiagoGripper.Feedback()
-        result = TiagoGripper.Result()
+        feedbackMessage = TiagoGripper.Feedback() # The feedback message that is gonna be sent to the client to inform about the current state of the execution of the goal
+        result = TiagoGripper.Result() # The result message that is gonna be sent to the client when the goal is completed (successfully or not), to inform about the final outcome of the execution of the goal
 
         try:
-            openCommand = bool(goal_handle.request.open)
-            commandLabel = "open" if openCommand else "close"
-            objectModelName = str(goal_handle.request.object_model_name).strip()
-            objectLinkName = str(goal_handle.request.object_link_name).strip()
+            openCommand = bool(goal_handle.request.open) # 'True' for opening, 'False' for closing
+            commandLabel = "open" if openCommand else "close" # Used for printing/degugging purposes
+            objectModelName = str(goal_handle.request.object_model_name).strip() # Retrieve the object model name for the LickAttacher/Detacher Service, if any
+            objectLinkName = str(goal_handle.request.object_link_name).strip() # Retrieve the object link name for the LickAttacher/Detacher Service, if any
 
             if openCommand:
+                # If the command is to open the gripper, we first detach any object that may be attached to the gripper, if any.
                 feedbackMessage.current_state = "detaching"
                 goal_handle.publish_feedback(feedbackMessage)
-                if not self.detach_object(objectModelName, objectLinkName):
+                if not self.detachObject(objectModelName, objectLinkName):
                     msg = "Gripper open aborted because LinkAttacher detach failed."
                     self.get_logger().error(msg)
                     feedbackMessage.current_state = "failed"
@@ -199,6 +189,7 @@ class TiagoGripperNode(Node):
                     result.message = msg
                     return result
 
+            # We now proceed to plan and execute the gripper command (open or close) using the MoveIt2 GripperInterface.
             self.get_logger().info(f"Planning & waiting for execution of gripper command: {commandLabel}.")
             feedbackMessage.current_state = "planning"
             goal_handle.publish_feedback(feedbackMessage)
@@ -207,18 +198,18 @@ class TiagoGripperNode(Node):
                 self.gripper.open()
             else:
                 if objectModelName != "" and objectLinkName != "":
+                    # Closing the gripper with the intent of gripping an object
+                    self.get_logger().info(f"Closing gripper with intent to grip object {objectModelName}/{objectLinkName}.")
                     self.gripper.close()
                 else:
-                    self.get_logger().info(
-                        "Gripper close requested without complete LinkAttacher target. Using full closed gripper position."
-                    )
-                    self.gripper.move_to_position(float(FULL_CLOSED_GRIPPER_POSITION))
+                    self.get_logger().info("Closing gripper without intent to grip any object.")
+                    self.gripper.move_to_position(CLOSED_FULL_GRIPPER_POSITION)
 
             feedbackMessage.current_state = "executing"
             goal_handle.publish_feedback(feedbackMessage)
-            execution_result = self.gripper.wait_until_executed()
+            executionResult = self.gripper.wait_until_executed()
 
-            if execution_result is False:
+            if executionResult is False:
                 msg = f"Gripper {commandLabel} execution failed."
                 self.get_logger().error(msg)
                 feedbackMessage.current_state = "failed"
@@ -229,10 +220,11 @@ class TiagoGripperNode(Node):
                 return result
 
             if not openCommand:
+                # If the command was to close the gripper, we may need to attach the object to the gripper using the LinkAttacher Service, if the object model and link names were provided.
                 if objectModelName != "" and objectLinkName != "":
                     feedbackMessage.current_state = "attaching"
                     goal_handle.publish_feedback(feedbackMessage)
-                    if not self.attach_object(objectModelName, objectLinkName):
+                    if not self.attachObject(objectModelName, objectLinkName):
                         msg = "Gripper close completed, but LinkAttacher attach failed."
                         self.get_logger().error(msg)
                         feedbackMessage.current_state = "failed"
@@ -241,10 +233,7 @@ class TiagoGripperNode(Node):
                         result.success = False
                         result.message = msg
                         return result
-                else:
-                    self.get_logger().info(
-                        "Gripper close requested without complete LinkAttacher target. Skipping attach."
-                    )
+                else: self.get_logger().info("Gripper close requested without complete LinkAttacher target. Skipping attach.")
 
             feedbackMessage.current_state = "completed"
             goal_handle.publish_feedback(feedbackMessage)
@@ -263,7 +252,6 @@ class TiagoGripperNode(Node):
             result.success = False
             result.message = msg
             return result
-
 
 def main(args=None):
 
