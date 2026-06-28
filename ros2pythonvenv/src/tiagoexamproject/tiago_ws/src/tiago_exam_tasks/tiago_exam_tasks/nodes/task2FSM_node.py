@@ -103,8 +103,8 @@ class Task2FSMNode(Node):
         self.collisionMonitorEnabled = False # A simple FLAG that indicated if the Collision Monitor is currently enabled or disabled
 
         self.localizationPhase = None # During the localization phase, a Spin and a DriveOnHeading Actions are periodically alternated; this variable indicates the next Action to be performed: 0 for Spin, 1 for DriveOnHeading.
-        self.localizationGoodMetricConsecutiveCountRequired = 2 # Not only the threshold of the localization metric has to be satisfied, but also it has to be satisfied for a certain number of consecutive times (this variable defines that number)
-        self.localizationGoodMetricConsecutiveCount = params.localizationGoodMetricConsecutiveCountRequired # This variable is a simple counter that counts how many times the localization metric has been consecutively good
+        self.localizationGoodMetricConsecutiveCountRequired = params.localizationGoodMetricConsecutiveCountRequired # Not only the threshold of the localization metric has to be satisfied, but also it has to be satisfied for a certain number of consecutive times (this variable defines that number)
+        self.localizationGoodMetricConsecutiveCount = 0 # This variable is a simple counter that counts how many times the localization metric has been consecutively good
         self.robotXY = (0.0, 0.0) # The location of the robot (that will be correctly updated after the conclusion of the autonomous localization procedure)
         
         self.localizationSpinDone = False
@@ -282,21 +282,44 @@ class Task2FSMNode(Node):
         medoidIndex = int(np.argmin(totalDistances))
         return quaternions[medoidIndex].tolist()
 
-    def buildLocationEstimate(self, samples, label: str, marker_id: int, marker_frame: str):
+    def buildLocationEstimate(self, samples, label: str, markerID: int, markerFrame: str):
         # This method builds the final estimate of the pick/place Aruco Marker location based on the collected samples
         if len(samples) == 0:
+            self.logErrorWithStatus(f"No samples collected for {label} marker {markerID}. Returning an empty estimate.")
             return params.ArucoPoseEstimate(
                 found = False, # Used only in case NO samples at all were collected (this should NOT happen if the discovery policy is a good one)
-                marker_id = marker_id,
+                marker_id = markerID,
                 label = label,
                 frame_id = params.fatherReferenceFrame,
-                marker_frame = marker_frame,
+                marker_frame = markerFrame,
                 sample_count = 0,
                 pose = None
             )
-        position = self.computePositionsMedoid(samples)
-        quaternion = self.computeOrientationsMedoid(samples)
-        frameId = samples[0].frame_id if samples[0].frame_id else params.fatherReferenceFrame
+        # Filtering samples, preserving only ones that are sufficiently close to the Tiago (ad the moment of the detection)
+        filteredSamples = []
+        for sample in samples:
+            distance = sample.robot_marker_distance_2d
+            if distance is None:
+                continue
+            elif distance <= params.arucoSampleDistanceThresholdDuringDiscovery:
+                filteredSamples.append(sample)
+        if len(filteredSamples) == 0:
+            self.logErrorWithStatus(f"All {label} marker {markerID} samples were filtered out because they were too far from the robot (distance threshold: {params.arucoSampleDistanceThresholdDuringDiscovery} m).")
+            return params.ArucoPoseEstimate(
+                found = False, # Used only in case NO samples at all were collected (this should NOT happen if the discovery policy is a good one)
+                marker_id = markerID,
+                label = label,
+                frame_id = params.fatherReferenceFrame,
+                marker_frame = markerFrame,
+                sample_count = 0,
+                pose = None
+            )
+        else:
+            self.logInfoWithStatus(f"Collected {len(samples)} samples for {label} marker {markerID}, of which {len(filteredSamples)} were kept after filtering (distance threshold: {params.arucoSampleDistanceThresholdDuringDiscovery} m).")
+
+        position = self.computePositionsMedoid(filteredSamples)
+        quaternion = self.computeOrientationsMedoid(filteredSamples)
+        frameId = filteredSamples[0].frame_id if filteredSamples[0].frame_id else params.fatherReferenceFrame
         pose = Pose()
         pose.position.x = float(position[0])
         pose.position.y = float(position[1])
@@ -307,12 +330,12 @@ class Task2FSMNode(Node):
         pose.orientation.w = float(quaternion[3])
         return params.ArucoPoseEstimate(
             found = True, # Whether at least one valid marker sample was collected.
-            marker_id = marker_id, # Numerical ID of the ArUco marker associated with this location.
+            marker_id = markerID, # Numerical ID of the ArUco marker associated with this location.
             label = label, # Semantic role of the location, e.g. "pick" or "place".
             frame_id = frameId, # Reference frame in which the estimated pose is expressed, typically "map" ("map" is indeed used as a default value).
-            marker_frame = marker_frame, # TF frame name associated with the specific ArUco marker.
-            sample_count = len(samples), # Number of samples used to compute the estimate.
-            pose = pose, # The estimated pose of the ArUco marker in the specified frame_id.
+            marker_frame = markerFrame, # TF frame name associated with the specific ArUco marker.
+            sample_count = len(filteredSamples), # Number of samples used to compute the estimate.
+            pose = pose # The estimated pose of the ArUco marker in the specified frame_id.
         )
 
     def saveLocationJSON(self, filename: str, data: dict):
@@ -340,14 +363,14 @@ class Task2FSMNode(Node):
         pickData = self.buildLocationEstimate(
             self.pickArucoSamples,
             label = params.pickLocationMarker.markerNickname,
-            marker_id = params.pickLocationMarker.markerID,
-            marker_frame = params.pickLocationMarker.markerFrame
+            markerID = params.pickLocationMarker.markerID,
+            markerFrame = params.pickLocationMarker.markerFrame
         )
         placeData = self.buildLocationEstimate(
             self.placeArucoSamples,
             label = params.placeLocationMarker.markerNickname,
-            marker_id = params.placeLocationMarker.markerID,
-            marker_frame = params.placeLocationMarker.markerFrame
+            markerID = params.placeLocationMarker.markerID,
+            markerFrame = params.placeLocationMarker.markerFrame
         )
         pickHistoryData = self.buildLocationHistoryData(
             self.pickArucoSamples,
@@ -552,7 +575,7 @@ class Task2FSMNode(Node):
         except Exception as e: self.logErrorWithStatus(f"Exception in collision monitor callback (unexpected)(this will be ignored): {e}")
         finally:
             # TODO: manage in a better way the situation in wwhich the Collision Monitor response is an unexpected one
-            self.get_logger().info("\n |>\n |> Collision monitor callback completed\n |>")
+            self.logInfoWithStatus("\n |>\n |> Collision monitor callback completed\n |>")
             self.collisionMonitorResponseReceived = True
             
     def handle_evaluatingLocalization(self):
@@ -698,7 +721,7 @@ class Task2FSMNode(Node):
             self.localizationSpinDone = True
             self.localizationSpinSucceeded = False
             return
-        self.get_logger().info("[LOCALIZING] Spin goal accepted by Nav2.")
+        self.logInfoWithStatus("Spin goal accepted by Nav2.")
         getResultFuture = goalHandle.get_result_async()
         getResultFuture.add_done_callback(self.localizationSpinResultCallback)
 
