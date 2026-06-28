@@ -63,9 +63,10 @@ behavior_server:
     transform_tolerance: 0.1
     use_sim_time: true
     simulate_ahead_time: 2.0
-    max_rotational_vel: 0.5 # 1.0 original pre AMCL tune
-    min_rotational_vel: 0.2 # 0.4 original pre AMCL tune
-    rotational_acc_lim: 2.0 # 3.2 original pre AMCL tune
+    # Rotational motion params related to  
+    max_rotational_vel: 0.5 # 0.4 (threash 0.03) # 0.5 (threash 0.02) # 1.0 original pre AMCL tune
+    min_rotational_vel: 0.2 # 0.1 (threash 0.03) # 0.2 (threash 0.02) # 0.4 original pre AMCL tune
+    rotational_acc_lim: 2.0 # 1.5 (threash 0.03) # 2.0 (threash 0.02) # 3.2 original pre AMCL tune
 
 bt_navigator:
   ros__parameters:
@@ -160,27 +161,37 @@ controller_server:
     # Goal checker parameters
     general_goal_checker:
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.25
-      yaw_goal_tolerance: 0.25
+      xy_goal_tolerance: 0.25 # 0.15 # 0.25 ASSOCIATO42
+      yaw_goal_tolerance: 0.25 # 0.09 # piuOMeno 5gradi <> 0.25 piuOMeno 14.3gradi
       stateful: True
     # DWB parameters
+    # parameters for translational velocity/motion
+    #max_vel_x: 
+    #max_speed_xy: 
+    #acc_lim_x: 
+    #decel_lim_x: 
+    # parameters for rotation velocity/motion during planning (not related to Spin Action)
+    #max_vel_theta: 0.65
+    #min_speed_theta: 0.03
+    #acc_lim_theta: 1.2
+    #decel_lim_theta: -1.2
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
       debug_trajectory_details: True
       min_vel_x: 0.0
       min_vel_y: 0.0
-      max_vel_x: 0.40
+      max_vel_x: 0.4 # 0.3 # 0.40 (original) # ASSOCIATO
       max_vel_y: 0.0
-      max_vel_theta: 1.2 #0.8 # 2.0 # 1.0 #2.0 # 1.0 aaaaaaaaaaaa
+      max_vel_theta: 0.8 # <<<<<1.2 #0.8 # 2.0 # 1.0 #2.0 # 1.0 aaaaaaaaaaaa
       min_speed_xy: 0.0
-      max_speed_xy: 0.40
-      min_speed_theta: 0.1 # 0.42 # 0.15 aaaaaaaaaaaaaaaaaa
-      acc_lim_x: 1.4
+      max_speed_xy: 0.4 # 0.3 # 0.40 (original) # ASSOCIATO
+      min_speed_theta: 0.05 # 0.1 <<<<<<# 0.42 # 0.15 aaaaaaaaaaaaaaaaaa
+      acc_lim_x: 1.2 # 1.4 (original) # ASSOCIATO2
       acc_lim_y: 0.0
-      acc_lim_theta: 3.0
-      decel_lim_x: -1.4
+      acc_lim_theta: 1.5 # 3.0 <<<<<<<<< FORSE TROPPO BASSO IL ROBOT NON SI GIRA
+      decel_lim_x: -1.2 # -1.4 (original) # ASSOCIATO2
       decel_lim_y: 0.0
-      decel_lim_theta: -3.0
+      decel_lim_theta: -1.5 # -3.0 <<<<<<<<<
       vx_samples: 20
       vy_samples: 5
       vtheta_samples: 40
@@ -188,7 +199,7 @@ controller_server:
       linear_granularity: 0.05
       angular_granularity: 0.025
       transform_tolerance: 0.2
-      xy_goal_tolerance: 0.25
+      xy_goal_tolerance: 0.25 # 0.15 # 0.25 ASSOCIATO42
       trans_stopped_velocity: 0.03 # 0.05 dddddd
       short_circuit_trajectory_evaluation: True
       stateful: True
@@ -204,7 +215,7 @@ controller_server:
       RotateToGoal.slowing_factor: 5.0 #3.0
       RotateToGoal.lookahead_time: -1.0
 
-global_costmap:
+global_costmap: # Parameters that defines the map building
   global_costmap:
     ros__parameters:
       update_frequency: 1.0
@@ -212,7 +223,7 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_link
       use_sim_time: true
-      robot_radius: 0.24 # 0.29
+      robot_radius: 0.20 # 0.24 # 0.29 ASSOCIATO32
       resolution: 0.05
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
@@ -236,7 +247,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 4.0
-        inflation_radius: 0.80
+        inflation_radius: 0.85 # ASSOCIATION 37
       always_send_full_costmap: True
 
 local_costmap:
@@ -251,12 +262,12 @@ local_costmap:
       width: 3
       height: 3
       resolution: 0.05
-      robot_radius: 0.24 # 0.29
+      robot_radius: 0.20 # 0.24 # 0.29 ASSOCIATO 32
       plugins: ["voxel_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 4.0
-        inflation_radius: 0.80
+        inflation_radius: 0.85 # ASSOCIATION 37
       voxel_layer:
         plugin: "nav2_costmap_2d::VoxelLayer"
         enabled: True
@@ -309,7 +320,7 @@ planner_server:
       max_iterations: 1000000
       max_on_approach_iterations: 1000
       max_planning_time: 2.0
-      cost_travel_multiplier: 3.0
+      cost_travel_multiplier: 6.0 # 3.0 TESTTTTTTTTTT evita maggiormente l'inserimento non ortogonale nei bordi di mappa
 
 slam_toolbox:
   ros__parameters:
