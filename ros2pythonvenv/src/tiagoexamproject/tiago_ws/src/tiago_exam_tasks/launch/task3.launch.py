@@ -158,7 +158,7 @@ def generate_launch_description():
         }]
     )
 
-    # Using "Node" to include within this launch file the Node that implements the Aruco Marker detection for the pick location (marker ID 63)
+    # Using "Node" to include within this launch file the Node that implements the Aruco Marker detection with ID 63
     cube63ArucoNodeCMD = Node(
         package='aruco_ros',
         executable="single",
@@ -180,7 +180,7 @@ def generate_launch_description():
         }]
     )
 
-    # Using "Node" to include within this launch file the Node that implements the Aruco Marker detection for the pick location (marker ID 582)
+    # Using "Node" to include within this launch file the Node that implements the Aruco Marker detection with ID 582
     cube582ArucoNodeCMD = Node(
         package='aruco_ros',
         executable="single",
