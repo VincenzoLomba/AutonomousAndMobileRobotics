@@ -56,11 +56,11 @@ def arucoPoseEstimateFromDict(data: Dict[str, Any], fileName: str, expectedLabel
 
     for fieldName in requiredFields: _requireField(data, fileName, fieldName, expectedLabel)
 
-    markerID = _requireInt(data["marker_id"], "marker_id", expectedLabel)
+    markerID = _requireInt(data["marker_id"], fileName, "marker_id", expectedLabel)
     label = str(data["label"])
     frameID = str(data["frame_id"])
     markerFrame = str(data["marker_frame"])
-    sampleCount = _requireInt(data["sample_count"], "sample_count", expectedLabel)
+    sampleCount = _requireInt(data["sample_count"], fileName, "sample_count", expectedLabel)
 
     if label != expectedLabel: raise ValueError(f"Expected label '{expectedLabel}', got '{label}'.")
     if markerID != expectedMarkerID: raise ValueError(f"Expected marker_id {int(expectedMarkerID)}, got {markerID}.")
@@ -103,14 +103,14 @@ def arucoPoseEstimateFromDict(data: Dict[str, Any], fileName: str, expectedLabel
         )
 
     pose = Pose()
-    pose.position.x = _requireFiniteFloat(rawPosition["x"], "pose.position.x", expectedLabel)
-    pose.position.y = _requireFiniteFloat(rawPosition["y"], "pose.position.y", expectedLabel)
-    pose.position.z = _requireFiniteFloat(rawPosition["z"], "pose.position.z", expectedLabel)
+    pose.position.x = _requireFiniteFloat(rawPosition["x"], fileName, "pose.position.x", expectedLabel)
+    pose.position.y = _requireFiniteFloat(rawPosition["y"], fileName, "pose.position.y", expectedLabel)
+    pose.position.z = _requireFiniteFloat(rawPosition["z"], fileName, "pose.position.z", expectedLabel)
 
-    pose.orientation.x = _requireFiniteFloat(rawOrientation["x"], "pose.orientation.x", expectedLabel)
-    pose.orientation.y = _requireFiniteFloat(rawOrientation["y"], "pose.orientation.y", expectedLabel)
-    pose.orientation.z = _requireFiniteFloat(rawOrientation["z"], "pose.orientation.z", expectedLabel)
-    pose.orientation.w = _requireFiniteFloat(rawOrientation["w"], "pose.orientation.w", expectedLabel)
+    pose.orientation.x = _requireFiniteFloat(rawOrientation["x"], fileName, "pose.orientation.x", expectedLabel)
+    pose.orientation.y = _requireFiniteFloat(rawOrientation["y"], fileName, "pose.orientation.y", expectedLabel)
+    pose.orientation.z = _requireFiniteFloat(rawOrientation["z"], fileName, "pose.orientation.z", expectedLabel)
+    pose.orientation.w = _requireFiniteFloat(rawOrientation["w"], fileName, "pose.orientation.w", expectedLabel)
 
     quaternionNorm = math.sqrt(
         pose.orientation.x * pose.orientation.x
@@ -137,11 +137,13 @@ def loadTask2LocationEstimates(savedMapPath: str) -> tuple[params.ArucoPoseEstim
     placeData = loadJSONFile(savedMapPath, params.placeLocationJSONFileName)
     pickEstimate = arucoPoseEstimateFromDict(
         pickData,
+         params.pickLocationJSONFileName,
         expectedLabel = params.pickLocationMarker.markerNickname,
         expectedMarkerID = params.pickLocationMarker.markerID,
     )
     placeEstimate = arucoPoseEstimateFromDict(
         placeData,
+        params.placeLocationJSONFileName,
         expectedLabel = params.placeLocationMarker.markerNickname,
         expectedMarkerID = params.placeLocationMarker.markerID,
     )
