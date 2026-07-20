@@ -22,9 +22,9 @@ tasksFSMFolderName = "tiago_exam_tasks"
 task1FSMNodeName = "task1_fsm_node"
 task2FSMNodeName = "task2_fsm_node"
 task3FSMNodeName = "task3_fsm_node"
-task1FSMlaunchDelay = 15.0
-task2FSMlaunchDelay = 15.0
-task3FSMlaunchDelay = 15.0
+task1FSMlaunchDelay = 30.0
+task2FSMlaunchDelay = 30.0
+task3FSMlaunchDelay = 30.0
 
 exploreLiteNodeName = "explore_node"
 exploreLiteExploreResumeTopicLabel = "explore/resume"
@@ -86,7 +86,7 @@ headPanSweepPeriod = 2 # integer
 pickingWaitingTime = 5.0
 
 platformApproachDistance = 0.2 # 0.30 # 2 # 0.25 # 0.20 (da usare con velocità trasaz piu rapida) # 0.25
-platformApproachReorientation = True
+platformApproachReorientation = False # True
 placingApproachForwardOffset = 0.07
 cubeApproachHeight = 0.50 # 0.48 #0.40 # 0.30
 verticalTranslationGrasping = 0.30 # 20

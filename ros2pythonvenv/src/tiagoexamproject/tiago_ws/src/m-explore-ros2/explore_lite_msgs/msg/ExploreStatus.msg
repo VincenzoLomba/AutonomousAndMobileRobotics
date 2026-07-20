@@ -1,4 +1,4 @@
-# Exploration status constants — always kept 1:1 with the NodePhase internal enum.
+# Exploration status constants — always kept 1:1 with the NodePhase internal enum in the "newer" version by Vins
 #
 # EXPLORATION_STARTED:              Published exactly once on the very first start of
 #                                   exploration (via /explore/resume True or automatically

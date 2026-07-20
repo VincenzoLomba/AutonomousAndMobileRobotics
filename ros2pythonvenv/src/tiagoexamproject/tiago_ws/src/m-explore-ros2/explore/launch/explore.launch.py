@@ -15,8 +15,8 @@ def generate_launch_description():
     )
     use_sim_time = LaunchConfiguration("use_sim_time")
     namespace = LaunchConfiguration("namespace")
-    return_to_init = LaunchConfiguration("return_to_init")                   # MOD 18
-    start_exploration_immediately = LaunchConfiguration(                      # MOD 17
+    return_to_init = LaunchConfiguration("return_to_init")
+    start_exploration_immediately = LaunchConfiguration(
         "start_exploration_immediately")
 
     declare_use_sim_time_argument = DeclareLaunchArgument(
@@ -27,7 +27,7 @@ def generate_launch_description():
         default_value="",
         description="Namespace for the explore node",
     )
-    # MOD 18: return_to_init moved from params.yaml to launch argument.
+    # Note: return_to_init moved from params.yaml to launch argument.
     # Default true: robot returns to starting pose after exploration completes.
     declare_return_to_init_argument = DeclareLaunchArgument(
         "return_to_init",
@@ -37,7 +37,7 @@ def generate_launch_description():
             "completes. If false, the robot stops at its last position."
         ),
     )
-    # MOD 17: controls whether exploration starts immediately on node launch.
+    # Note: controls whether exploration starts immediately on node launch.
     # Default true: original ExploreLite behaviour (start immediately).
     # Set to false to start paused and wait for True on /explore/resume.
     declare_start_immediately_argument = DeclareLaunchArgument(

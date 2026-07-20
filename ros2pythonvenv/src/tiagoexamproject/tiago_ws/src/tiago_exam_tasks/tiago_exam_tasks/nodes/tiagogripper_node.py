@@ -10,7 +10,7 @@ from linkattacher_msgs.srv import AttachLink, DetachLink
 import rclpy
 import time
 from threading import Thread
-from . import nodesParameters
+from . import tiagoExamParameters as params
 
 # TODO: manage the possibility (unwanted, but possible) of receiving a new goal while one is already being executed
 
@@ -73,11 +73,11 @@ class TiagoGripperNode(Node):
         self.actionServer = ActionServer(
             self,
             TiagoGripper,
-            nodesParameters.tiagoGripperActionName,
+            params.tiagoGripperActionName,
             execute_callback = self.actionServerExecuteCallback,
             callback_group = self.callback_group,
         )
-        self.get_logger().info(f"TiagoGripper Action Server is ready on action name '{nodesParameters.tiagoGripperActionName}'.")
+        self.get_logger().info(f"TiagoGripper Action Server is ready on action name '{params.tiagoGripperActionName}'.")
 
     def waitForFutureWithoutSpinningThisNode(self, future, timeoutSec: float) -> bool:
         startTime = time.monotonic()

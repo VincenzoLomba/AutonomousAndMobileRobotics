@@ -67,7 +67,7 @@
     # frontier, not path length. In environments with strong detours (e.g.
     # U-shaped corridors) the robot may move away from the frontier in a straight
     # line while correctly following a longer path. In such cases consider
-    # increasing progress_timeout to avoid premature blacklisting.
+    # increasing progress_timeout to avoid premature blacklisting!
     progress_timeout: 60.0 # 30.0
 
     # ---------------------------------------------------------------------------
@@ -88,13 +88,12 @@
     # because new obstacles were revealed by the laser during the spin). If the
     # new heading differs from the previous one by more than this threshold, an
     # additional corrective Spin is performed, subject to max_spin_retries.
-    # Default ≈ 20 degrees.
+    # Default ≈ 10 degrees.
     post_spin_heading_tolerance: 0.1745 # 0.3490
 
     # Maximum total number of Spin attempts per pre-rotation sequence (including
-    # the first). When set to 1 (default), the behaviour is identical to the
-    # original implementation: one spin, no heading recheck. When set to 2 or
-    # more, up to (max_spin_retries - 1) corrective spins may follow.
+    # the first). When set to 1 (default): one spin, no heading recheck.
+    # When set to 2 or more, up to (max_spin_retries - 1) corrective spins may follow.
     max_spin_retries: 2 # 1
 
     # ---------------------------------------------------------------------------
@@ -116,7 +115,7 @@
     #   concurrently. The overlap window is bounded by behavior_server's
     #   cycle_frequency (configurable externally, default 10 Hz → 100 ms but
     #   can be as low as 1 Hz → 1 s). The invariant is enforced at startup with
-    #   an automatic correction and a WARN log if violated.
+    #   an automatic correction and a WARN log if violated. Good! :D
 
     # Time (seconds) to wait for Nav2 to acknowledge async_cancel_all_goals().
     cancel_request_timeout: 5.0
@@ -131,7 +130,6 @@
 
     # Time (seconds) to wait for Nav2 Spin to complete before falling back.
     # MUST be >= spin_time_allowance (see invariant note above).
-    # Recommended: spin_time_allowance + 5.0 s to absorb system load jitter.
     spin_watchdog_timeout: 25.0
 
     # Time budget (seconds) passed to Nav2's Spin behavior as time_allowance.

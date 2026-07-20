@@ -36,6 +36,56 @@
  *
  *********************************************************************/
 
+ /* +-----------------------------------------------------------------------------------+
+  * | Welcome fellow explorers, Ros2 Humble lovers and automation engineering students! |
+  * +-----------------------------------------------------------------------------------+
+  *
+  * This is a slightly modified version of the original ExploreLite ROS2 Humble package, which is a frontier-based exploration algorithm for mobile robots.
+  * The main behaviour of the original ExploreLite package in terms of how to carry out the exploration has been absolutely preserved.
+  * Around that main core of the original ExploreLite, some modifications and additions have been made, to make the exploration process more robust and to add some extra functionalities.
+  *
+  * At the moment, I haven’t had time yet to produce a complete documentation (also, C++ is not my top-tier primary programming language), but you're free to use and explore the following code!
+  * 
+  * Listing some major differences:
+  * (1) All the times a new goal to Nav2 has to be sent, BEFORE that, a Spin Action (in-place rotation) toward the GlobalPath (obtained via ComputeToPose) is performed,
+  *     to make sure the robot is then started facing in the best possible direction (eventually, even more then one single pre-spin are attempted, a configurable behaviour from the parameters file).
+  * (2) Two explicit states-variables/enums have been added:
+  *     NodePhase, reflecting the StatusMessage published externally from ExploreLite itself
+  *     CustomSequenceState, reflecting the internal state of a single navigation sequence (pre-spin, followed by navigation to frontier)
+  * (3) The externally published ExploreLite status message has been enriched:
+  *     EXPLORATION_STARTED, EXPLORATION_IN_PROGRESS, EXPLORATION_PAUSED, EXPLORATION_PAUSED_DURING_RETURN, RETURNING_TO_ORIGIN, RETURN_TO_ORIGIN_FAILED, EXPLORATION_COMPLETE
+  * (4) When launched, the ExploreLite Node does NOT anymore necessarly start the exploration immediately (this can be configured via an input parameters passed to the Node)
+  * (5) Having that Ros2 Humble Actions are asynchronous, "generations counters" (five of them, see resetExplorationState()) for the various exploited Actions have been added and used
+  *     (avoid to react to the feedback/response of an Action that is obsolete, with a new Action that has been already sent in the meantime)
+  *     (indeed, for example, feedbacks/results from an old NavigateToPose Action should be ignored! and this holds for all the exploited Actions)
+  * (6) When the frointier changes AND a new goal has to be sent (with, eventually, a pre-spin before it), BEFORE sending it, all existing goals/Actions are explicitly attempted to be cancelled
+  *     (it is "avvoided" to let Nav2 handling the cancellation of a previous NavigateToPose Action when providing an overriding new one, as insted it was done in the original version).
+  * (7) Some explicit WatchDog timers have been added (cancel_request_timeout, nav_termination_timeout, compute_path_timeout, spin_watchdog_timeout, spin_time_allowance, return_to_init_timeout)
+  *     Note that in the constructor, some of these WatchDog timers are checked for consistency and auto-corrected if needed (with a warning message).
+  * (8) Once a current Goal (AKA frontier to be explored) toward which we are navigating is actually reached, automatically re-start the exploration toward the new frontier (if any),
+  *     without waiting for the next makePlan() cycle to be called (this is DIFFERENT w.r.t. the original ExploreLite behaviour, which was instead waiting for the next makePlan() cycle to send the new goal).
+  * (9) The ExploreLite return to init/origin behaviour (after the complention of the exploration) has been made more robust.
+  *     Previously, EXPLORATION_COMPLETE was immediatly published after the last frontier was reached, and then a NavigateToPose to the init/origin was attemped, without any feddback or check
+  *     about it: no possibility to be paused, no possibility to retry in the case of an error, no WatchDog, etcetera.
+  *     In the newr version, EXPLORATION_COMPLETE is published only AFTER the origin/init has been reached (of course, IFF the return_to_init parameter is set to true),
+  *     and that return phase can be paused, retried, and is protected by a WatchDog timer (return_to_init_timeout).
+  * (10)The resume/stop command behaviour has been made more robust, and the pause/resume can be used also during the return to init/origin phase. Indeed (topic explore/resume): 
+  *     False (stop): passing to EXPLORATION_PAUSED if exploring, or passing to EXPLORATION_PAUSED_DURING_RETURN if returning to init.
+  *                   If EXPLORATION_STARTED, EXPLORATION_IN_PROGRESS or RETURN_TO_ORIGIN_FAILED, a complete exploration reset is performed and ExploreLite passes to EXPLORATION_PAUSED.
+  *                   Otherwise, idempotent.
+  *                   Indeed, note that when a return to init fails, an external user can easily call a stop() to reset the exploration state.
+  *     True (resume): if EXPLORATION_PAUSED restarting exploration, if EXPLORATION_PAUSED_DURING_RETURN restarting the return-init procedure, if RETURN_TO_ORIGIN_FAILED re-attempting a return-init,
+  *                    if RETURNING_TO_ORIGIN interrupts the return and starts a new exploration, if EXPLORATION_COMPLETE also re-starting a new exploration,
+  *                    otherwise idempotent.
+  *                    Indeed, note that when a return to init fails, an external user can easily call a resume() to re-attempt the return-init procedure.
+  *
+  * That's all! Note that this code file cames with the related header (explore.h) and parameters file (params.yaml).
+  * This is also only a "first&test" version (even if it has been tested and studied/designed by me while coding it, and I have used it in my Project). You are free to use and improve it!
+  *
+  * Cheers and love, Vincenzo Lombardi.
+  * Enjoy! :D
+  */
+
 #include <explore/explore.h>
 
 #include <thread>
@@ -56,9 +106,6 @@ inline static bool same_point(const geometry_msgs::msg::Point& one,
 namespace explore
 {
 
-// ---------------------------------------------------------------------------
-// Helper: phase name for logging
-// ---------------------------------------------------------------------------
 const char* Explore::phaseToString(NodePhase phase)
 {
   switch (phase) {
@@ -73,9 +120,6 @@ const char* Explore::phaseToString(NodePhase phase)
   }
 }
 
-// ---------------------------------------------------------------------------
-// MOD 6 — setPhase(): single point for state transitions and status publish.
-// ---------------------------------------------------------------------------
 void Explore::setPhase(NodePhase phase)
 {
   node_phase_ = phase;
@@ -119,29 +163,28 @@ void Explore::setPhase(NodePhase phase)
   status_pub_->publish(status_msg);
 }
 
-// ---------------------------------------------------------------------------
-// MOD 14 — resetExplorationState(): centralised full reset.
-// ---------------------------------------------------------------------------
+// --------------------------------------------------------------------------
+// resetExplorationState(): an explicit function for a centralised full reset
+// --------------------------------------------------------------------------
 void Explore::resetExplorationState()
 {
   // Invalidate all in-flight action callbacks via generation counters.
   // ++current_nav_generation_ is included so that any exploration
   // NavigateToPose result (e.g. SUCCEEDED) already queued in the executor
   // is ignored after resetExplorationState() returns. Without this, a
-  // SUCCEEDED result arriving after stop() would pass the FIX 6B generation
-  // check, call reachedGoal(SUCCEEDED) → makePlan(), and dispatch a new
-  // navigation goal while the node is in EXPLORATION_PAUSED.
+  // SUCCEEDED result arriving after stop() may cause reachedGoal(SUCCEEDED) → makePlan(),
+  // and dispatch a new navigation goal while the node is in EXPLORATION_PAUSED.
   ++current_nav_generation_;
   ++active_custom_sequence_id_;
   ++current_spin_generation_;
   ++current_compute_path_generation_;
   ++return_nav_generation_;
 
-  // Cancel all physical Nav2 actions (MOD 15 — spin cancel included).
+  // Cancel all physical Nav2 actions.
   move_base_client_->async_cancel_all_goals();
   spin_client_->async_cancel_all_goals();
 
-  // Cancel return-to-init watchdog (MOD 11 — always safe, idempotent if inactive).
+  // Cancel return-to-init watchdog timer if it is running.
   if (return_watchdog_timer_) {
     return_watchdog_timer_->cancel();
   }
@@ -164,7 +207,7 @@ void Explore::resetExplorationState()
   resuming_ = false;
 }
 
-Explore::Explore()
+Explore::Explore() // Constructor
   : Node("explore_node")
   , logger_(this->get_logger())
   , tf_buffer_(this->get_clock())
@@ -180,13 +223,12 @@ Explore::Explore()
   this->declare_parameter<double>("orientation_scale", 0.0);
   this->declare_parameter<double>("gain_scale", 1.0);
   this->declare_parameter<double>("min_frontier_size", 0.5);
-  this->declare_parameter<bool>("return_to_init", true);   // MOD 18: default true, pass as launch arg
+  this->declare_parameter<bool>("return_to_init", true); // Novelty; default true, pass as launch arg (not a YAML config parameter).
   this->declare_parameter<double>("min_prerotation_angle", 0.1745);
   this->declare_parameter<double>("post_spin_heading_tolerance", 0.3490);
   this->declare_parameter<int>("max_spin_retries", 1);
   // Watchdog timeouts for each phase of the pre-rotation custom sequence.
-  // All values are in seconds. See params.yaml for full documentation and
-  // inter-parameter constraints.
+  // All values are in seconds. See params.yaml for full documentation and inter-parameter constraints.
   this->declare_parameter<double>("cancel_request_timeout", 5.0);
   this->declare_parameter<double>("nav_termination_timeout", 5.0);
   this->declare_parameter<double>("compute_path_timeout", 5.0);
@@ -194,13 +236,13 @@ Explore::Explore()
   // Time budget (seconds) granted to Nav2's Spin behavior for each pre-rotation.
   // INVARIANT (enforced below): spin_watchdog_timeout >= spin_time_allowance.
   this->declare_parameter<double>("spin_time_allowance", 20.0);
-  // MOD 11: Total timeout (seconds) for the entire return-to-init sequence
+  // Total timeout (seconds) for the entire return-to-init sequence
   // (ComputePath + optional spin + NavigateToPose combined).
   // Must be >> spin_time_allowance + expected NavigateToPose travel time.
   this->declare_parameter<double>("return_to_init_timeout", 300.0);
-  // MOD 17: If true, start exploration immediately on node startup (original behaviour).
+  // Novelty: ONLY if "start_exploration_immediately" is True, start exploration immediately on node startup (original behaviour).
   // If false, start paused and wait for True on /explore/resume.
-  // Passed as a launch argument — not a YAML config parameter.
+  // Passed as a launch argument (not a YAML config parameter).
   this->declare_parameter<bool>("start_exploration_immediately", true);
 
   this->get_parameter("planner_frequency", planner_frequency_);
@@ -227,16 +269,7 @@ Explore::Explore()
 
   progress_timeout_ = timeout;
 
-  // MOD 2 — Enforce the invariant: spin_watchdog_timeout >= spin_time_allowance.
-  //
-  // If violated, the ExploreLite watchdog would fire while Nav2's Spin behavior
-  // is still legitimately executing and publishing cmd_vel. The overlap window
-  // between the watchdog firing and Nav2 stopping is bounded by Nav2's
-  // behavior_server cycle period (1 / cycle_frequency). Because cycle_frequency
-  // is an externally configurable parameter (default 10 Hz → 100 ms, but can be
-  // as low as 1 Hz → 1 s or lower), this window is not bounded to a fixed small
-  // value. Relying on numeric defaults is therefore insufficient: the invariant
-  // must be guaranteed structurally via this runtime check.
+  // Enforce the invariant: spin_watchdog_timeout >= spin_time_allowance.
   if (spin_watchdog_timeout_sec_ < spin_time_allowance_sec_) {
     RCLCPP_WARN(
         logger_,
@@ -250,14 +283,12 @@ Explore::Explore()
         spin_time_allowance_sec_);
     spin_watchdog_timeout_sec_ = spin_time_allowance_sec_;
   }
-  // FIX 9 — Enforce the soft invariant: return_to_init_timeout >= spin_time_allowance.
+  // Enforce the soft invariant: return_to_init_timeout >= spin_time_allowance.
   // The return-to-init sequence includes an optional pre-rotation spin (capped by
   // spin_time_allowance) plus a NavigateToPose that may take considerable time in
   // large environments. A timeout smaller than spin_time_allowance would cause the
   // return-to-init watchdog to fire before the pre-rotation spin has even completed,
   // immediately transitioning to RETURN_TO_ORIGIN_FAILED.
-  // Consistent with the MOD 2 pattern for spin_watchdog_timeout, this is enforced
-  // with an auto-correction to the minimum safe value (spin_time_allowance_sec_).
   if (return_to_init_ && return_to_init_timeout_sec_ < spin_time_allowance_sec_) {
     RCLCPP_WARN(
         logger_,
@@ -337,29 +368,21 @@ Explore::Explore()
     }
   }
 
-  // Create the exploration planning timer.
+  // Create the exploration planning timer (as in canonical ExploreLite)
   exploring_timer_ = this->create_wall_timer(
       std::chrono::milliseconds((uint32_t)(1000.0 / planner_frequency_)),
       [this]() { makePlan(); });
 
-  // MOD 17 — start_exploration_immediately governs startup behaviour only.
   if (start_exploration_immediately) {
-    // Original ExploreLite behaviour: start exploring immediately.
-    // Initialise progress tracking exactly as resume() does, to ensure the
-    // first makePlan() cycle is protected from premature blacklisting:
-    //   last_progress_ = this->now(): prevents a spurious progress timeout
-    //     if sim_time at startup is already >> progress_timeout (e.g. 200s > 60s),
-    //     which would occur if last_progress_ were left at rclcpp::Time() = t=0.
-    //   resuming_ = true: guards the very first makePlan() cycle against
-    //     blacklisting even in the degenerate case where last_progress_ is
-    //     not updated before the progress check (frontier exactly at origin).
+    // Original ExploreLite behaviour: start exploring immediately. This is a novelty (not anymore automatic start).
+    // This is like an internally forced "resume call" (AKA True on /explore/resume).
     last_progress_ = this->now();
     resuming_ = true;
     has_ever_started_ = true;
     setPhase(NodePhase::EXPLORATION_STARTED);
     makePlan();
   } else {
-    // V5 behaviour: start paused, wait for True on /explore/resume.
+    // Start paused (no automatic start), wait for True on /explore/resume.
     exploring_timer_->cancel();
     setPhase(NodePhase::EXPLORATION_PAUSED);
     RCLCPP_INFO(logger_,
@@ -367,7 +390,7 @@ Explore::Explore()
   }
 }
 
-Explore::~Explore()
+Explore::~Explore() // Destructor
 {
   stop();
 }
@@ -469,12 +492,12 @@ void Explore::makePlan()
 
   if (frontiers.empty()) {
     RCLCPP_WARN(logger_, "No frontiers found, stopping.");
-    // MOD 9/10: do NOT call stop(). Separate the two paths cleanly.
+    // Modification: do NOT immediately call stop(). Separate the two paths cleanly (check if we have to return to init).
     if (return_to_init_) {
       // Map complete — begin the return journey without stopping the robot.
       beginReturnToInitSequence();
     } else {
-      // Map complete, no return required — full reset and mark as done.
+      // Map complete, no return required — full reset and mark as done!
       resetExplorationState();
       setPhase(NodePhase::EXPLORATION_COMPLETE);
     }
@@ -486,7 +509,7 @@ void Explore::makePlan()
     visualizeFrontiers(frontiers);
   }
 
-  // find non blacklisted frontier
+  // find non blacklisted frontier (mabye frontiers is not empty BUT all contained frontiers are blacklisted)
   auto frontier =
       std::find_if_not(frontiers.begin(), frontiers.end(),
                        [this](const frontier_exploration::Frontier& f) {
@@ -494,7 +517,7 @@ void Explore::makePlan()
                        });
   if (frontier == frontiers.end()) {
     RCLCPP_WARN(logger_, "All frontiers traversed/tried out, stopping.");
-    // MOD 9/10: same logic as the empty frontiers case above.
+    // Again: same logic as the empty frontiers case above.
     if (return_to_init_) {
       beginReturnToInitSequence();
     } else {
@@ -505,24 +528,24 @@ void Explore::makePlan()
   }
   geometry_msgs::msg::Point target_position = frontier->centroid;
 
-  // time out if we are not making any progress
   bool same_goal = same_point(prev_goal_, target_position);
 
   prev_goal_ = target_position;
   if (!same_goal || prev_distance_ > frontier->min_distance) {
-    // we have different goal or we made some progress
+    // we have different goal OR we made some progress
+    // (this progress check is not trivial: for large environments, use large timers for makePlan() periodic call)
     last_progress_ = this->now();
     prev_distance_ = frontier->min_distance;
   }
 
-  // MOD 4 — Freeze the progress timer during intentional non-navigation states.
+  // Novelty: freeze the progress timer during intentional non-navigation states!
   //
   // The progress_timeout mechanism was designed for the original ExploreLite
   // behaviour where the robot always navigates directly toward the frontier:
   // if min_distance does not decrease for progress_timeout seconds, the robot
   // is genuinely stuck and the frontier should be blacklisted.
   //
-  // The V5 pre-rotation sequence introduces four states in which the robot is
+  // The new pre-rotation sequence introduces four states in which the robot is
   // stationary or spinning in place by design, NOT because it is stuck:
   //   CANCEL_REQUESTED          — waiting for Nav2 to acknowledge the cancel
   //   WAITING_NAV_TERMINATION   — waiting for the previous nav result callback
@@ -541,12 +564,16 @@ void Explore::makePlan()
   //               unknown external reasons, and the original timer must apply.
   //   NAV_ACTIVE — the robot is navigating toward the frontier; this is
   //               exactly the phase progress_timeout is designed to monitor.
+  //
+  // INDEED REMEMBER: if after progress_timeout seconds we are not making any progress,
+  // the current frontier is blacklisted and a new one is searched for.
+  // This is the original ExploreLite behaviour, which has been preserved.
   if (custom_sequence_state_ != CustomSequenceState::IDLE &&
       custom_sequence_state_ != CustomSequenceState::NAV_ACTIVE) {
     last_progress_ = this->now();
   }
 
-  // black list if we've made no progress for a long time
+  // Indeed: blacklist if we've made no progress for a long time
   if ((this->now() - last_progress_ >
       tf2::durationFromSec(progress_timeout_)) && !resuming_) {
     frontier_blacklist_.push_back(target_position);
@@ -555,12 +582,14 @@ void Explore::makePlan()
     return;
   }
 
-  // ensure only first call of makePlan was set resuming to true
+  // Ensure only first call of makePlan was set resuming to true.
+  // Indeed, resuming_ is protecting the first makePlan() cycle/call after
+  // a start/resume from being eventually blacklisted immediately.
   if (resuming_) {
     resuming_ = false;
   }
 
-  // we don't need to do anything if we still pursuing the same goal
+  // We don't need to do anything if we still pursuing the same goal
   if (same_goal) {
     return;
   }
@@ -641,16 +670,6 @@ void Explore::sendNavigateToPoseGoal(
       [this,
        target_position,
        goal_generation](const NavigationGoalHandle::WrappedResult& result) {
-        // FIX 6B: reachedGoal() is now inside the generation check.
-        // Previously, reachedGoal() was called unconditionally even for stale
-        // results (generation mismatch), which allowed reachedGoal(SUCCEEDED)
-        // to call makePlan() after beginReturnToInitSequence() had already
-        // started (Problema F, under-scenario 2: SUCCEEDED already in the
-        // executor queue before async_cancel_all_goals() took effect).
-        // With this fix, any stale result — regardless of result code — is
-        // silently ignored. nav_active_ is managed by the caller context:
-        // beginReturnToInitSequence() resets it directly as part of its
-        // exploration cleanup block.
         if (goal_generation != current_nav_generation_) {
           RCLCPP_DEBUG(logger_,
                        "Ignoring stale exploration NavigateToPose result "
@@ -778,7 +797,7 @@ void Explore::handleComputePathResult(
         "ExploreLite will now deliberately fall back to its original canonical behavior: "
         "it will send the normal NavigateToPose goal without any custom pre-rotation, and "
         "Nav2 plus the existing ExploreLite logic will handle planning, replanning, recovery, "
-        "timeouts, and any eventual frontier blacklisting exactly as in the unmodified package.");
+        "timeouts, and any eventual frontier blacklisting exactly as in the original version.");
     custom_sequence_state_ = CustomSequenceState::IDLE;
     pending_target_valid_ = false;
     sendNavigateToPoseGoal(target_position);
@@ -795,7 +814,7 @@ void Explore::handleComputePathResult(
         "to its original canonical behavior: it will send the normal NavigateToPose goal without "
         "any custom pre-rotation, and Nav2 plus the existing ExploreLite logic will handle "
         "planning, replanning, recovery, timeouts, and any eventual frontier blacklisting exactly "
-        "as in the unmodified package.");
+        "as in the original version.");
     custom_sequence_state_ = CustomSequenceState::IDLE;
     pending_target_valid_ = false;
     sendNavigateToPoseGoal(target_position);
@@ -1011,7 +1030,7 @@ void Explore::checkCustomSequenceWatchdogs()
 
   if (custom_sequence_state_ == CustomSequenceState::SPIN_ACTIVE &&
       (now - spin_start_time_ > tf2::durationFromSec(spin_watchdog_timeout_sec_))) {
-    // MOD 3 — Cancel the in-flight Spin on Nav2's behavior_server before falling back.
+    // Important: NOT sinply/only inalidate generations, BUT cancel the in-flight Spin on Nav2's behavior_server before falling back.
     //
     // fallbackToCanonicalNavigate() will invalidate our result callback via
     // ++current_spin_generation_, but that only prevents ExploreLite from acting
@@ -1098,6 +1117,9 @@ void Explore::handleCancelAllGoalsResponse(
                "path request and spin.");
 }
 
+// Goal really reached? Automatically restart toward the new frontier!
+// This is to avoid waiting that the re-start is triggered only once the next makePlan() is called.
+// Note: this is a novelty w.r.t. the original ExploreLite, which would wait for the next makePlan() cycle to send the new goal.
 void Explore::tryAdvancePendingSequenceAfterNavTermination()
 {
   if (!pending_target_valid_ || !cancel_ack_received_ || nav_active_) {
@@ -1115,18 +1137,6 @@ void Explore::fallbackToCanonicalNavigate(const char* error_message)
   if (error_message != nullptr) {
     RCLCPP_ERROR(logger_, "%s", error_message);
   }
-
-  // Invalidate any in-flight Spin and ComputePathToPose callbacks.
-  // ++current_spin_generation_: always correct — if a Spin was active (SPIN_ACTIVE
-  //   watchdog branch), its result_callback is now stale.
-  // ++current_compute_path_generation_: critical for the PRE_ROTATION_PATH_REQUESTED
-  //   watchdog branch, where a ComputePath was accepted by Nav2 but timed out locally.
-  //   Without this increment, a late ComputePath response would pass the generation
-  //   check in handleComputePathResult(), launch a Spin, and produce two simultaneous
-  //   cmd_vel sources (Spin + the NavigateToPose dispatched below).
-  //   In the other fallback branches (CANCEL_REQUESTED, WAITING_NAV_TERMINATION,
-  //   SPIN_ACTIVE, handleCancelAllGoalsResponse) no ComputePath is in flight, so
-  //   this increment is redundant but harmless.
   ++current_spin_generation_;
   ++current_compute_path_generation_;
   cancel_ack_received_ = false;
@@ -1214,37 +1224,6 @@ void Explore::beginReturnToInitSequence()
   RCLCPP_INFO(logger_,
               "Starting return-to-init sequence with pre-rotation. "
               "Computing path to initial pose to determine heading.");
-
-  // FIX 6A — Clean up all in-flight exploration actions before starting
-  // the return sequence. This restores the invariant that stop(true) used
-  // to guarantee before MOD 9 separated return-to-init from stop().
-  //
-  // Without this block, if the robot is in SPIN_ACTIVE when the map is
-  // exhausted, the exploration spin and the return NavigateToPose would
-  // publish cmd_vel simultaneously. If in NAV_ACTIVE, the exploration
-  // NavigateToPose would remain in flight while the return NavigateToPose
-  // is sent, producing undefined behaviour depending on the Nav2 BT config.
-  //
-  // What stop(true) did — operation by operation:
-  //   ++current_nav_generation_        → ADDED (new vs stop: explicit invalidation
-  //                                      as defence against SUCCEEDED already in
-  //                                      executor queue before cancel takes effect)
-  //   ++active_custom_sequence_id_     → ADDED
-  //   ++current_spin_generation_       → ADDED
-  //   ++current_compute_path_generation_ → ADDED (overwritten again below before
-  //                                        the return ComputePath is sent, OK)
-  //   ++return_nav_generation_         → NOT added: that counter guards the return
-  //                                      NavigateToPose we are about to create;
-  //                                      incrementing it here would invalidate it.
-  //   move_base_client_->async_cancel_all_goals() → ADDED
-  //   spin_client_->async_cancel_all_goals()      → ADDED
-  //   custom_sequence_state_ = IDLE   → ADDED
-  //   nav_active_ = false             → ADDED
-  //   cancel_ack_received_ = false    → ADDED
-  //   pending_target_valid_ = false   → ADDED
-  //   exploring_timer_->cancel()      → already present below ✓
-  //   frontier_blacklist_.clear()     → NOT added: blacklist must be preserved
-  //   EXPLORATION_PAUSED publish      → NOT added: eliminated by MOD 9/5 ✓
   ++current_nav_generation_;
   ++active_custom_sequence_id_;
   ++current_spin_generation_;
@@ -1256,21 +1235,21 @@ void Explore::beginReturnToInitSequence()
   cancel_ack_received_ = false;
   pending_target_valid_ = false;
 
-  // MOD 9: The robot is not stopping — explicitly cancel the exploration timer
+  // The robot is not stopping (BUT returning to init) — explicitly cancel the exploration timer
   // so makePlan() does not fire while the return sequence is in progress.
   exploring_timer_->cancel();
 
-  // MOD 10/6: Transition to RETURNING_TO_ORIGIN via setPhase().
+  // Transition to RETURNING_TO_ORIGIN via setPhase().
   setPhase(NodePhase::RETURNING_TO_ORIGIN);
 
-  // MOD 11: One-shot watchdog for the entire return-to-init sequence.
-  // FIX 8 — Note on watchdog mechanism: this uses create_wall_timer (a ROS2
+  // One-shot watchdog for the entire return-to-init sequence.
+  // Note on watchdog mechanism: this uses create_wall_timer (a ROS2
   // timer that fires autonomously) rather than the timestamp+check pattern
   // used by the exploration pre-rotation watchdogs. The reason is that the
   // exploration watchdogs are checked inside makePlan() via
   // checkCustomSequenceWatchdogs(). During return-to-init, exploring_timer_
   // is cancelled, so makePlan() is never called and timestamp-based checks
-  // would never fire. A self-firing timer is the only viable mechanism here.
+  // would never fire. A self-firing timer is the only viable mechanism here!
   return_watchdog_timer_ = this->create_wall_timer(
       std::chrono::duration_cast<std::chrono::nanoseconds>(
           std::chrono::duration<double>(return_to_init_timeout_sec_)),
@@ -1281,7 +1260,7 @@ void Explore::beginReturnToInitSequence()
                     "Return-to-init watchdog fired: sequence did not complete within %.1fs. "
                     "Transitioning to RETURN_TO_ORIGIN_FAILED.",
                     return_to_init_timeout_sec_);
-        // FIX 7: include active_custom_sequence_id_ for consistency with the
+        // Note: I have included active_custom_sequence_id_ for consistency with the
         // pattern "when resetting everything, increment all generation counters".
         // During RETURNING_TO_ORIGIN no pre-rotation sequences are active, so
         // this is defensive/cosmetic, not functionally required.
@@ -1296,9 +1275,6 @@ void Explore::beginReturnToInitSequence()
 
   // Increment the compute path generation counter before sending: any callback
   // arriving with the old generation value will be ignored as stale.
-  // Note: current_compute_path_generation_ was already incremented in the
-  // exploration cleanup block above; this further increment produces the
-  // generation value that the return ComputePath callbacks will check against.
   const uint64_t compute_gen = ++current_compute_path_generation_;
 
   auto goal = nav2_msgs::action::ComputePathToPose::Goal();
@@ -1394,17 +1370,10 @@ void Explore::handleReturnComputePathResult(
       rclcpp_action::Client<nav2_msgs::action::Spin>::SendGoalOptions();
 
   // goal_response_callback: handle immediate rejection by Nav2's behavior_server.
-  // This is critical during return-to-init: exploring_timer_ is cancelled so
-  // checkCustomSequenceWatchdogs() never runs, and custom_sequence_state_ is
-  // IDLE (from FIX 6A cleanup), so the spin_watchdog is not applicable here.
-  // Without this callback, a rejected spin goal leaves the node stuck in
-  // RETURNING_TO_ORIGIN until return_watchdog_timer_ fires (default 300s).
-  // With this callback, rejection falls back to returnToInitialPose() immediately
-  // — the same fallback used when the pre-rotation is skipped or the spin fails.
   send_goal_options.goal_response_callback =
       [this, spin_gen](SpinGoalHandle::SharedPtr goal_handle) {
         if (spin_gen != current_spin_generation_) {
-          return;  // stale — stop() or resume() has already moved on
+          return;
         }
         if (!goal_handle) {
           RCLCPP_WARN(logger_,
@@ -1445,6 +1414,7 @@ void Explore::handleReturnSpinResult(const SpinGoalHandle::WrappedResult& result
                 "Pre-rotation Spin for return-to-init completed successfully. "
                 "Proceeding with return NavigateToPose.");
   }
+  // IMPORTANT: note that, for the return to init, only ONE SINGLE pre-rotation is attempted
   returnToInitialPose();
 }
 
@@ -1456,9 +1426,6 @@ void Explore::returnToInitialPose()
 {
   RCLCPP_INFO(logger_, "Sending NavigateToPose goal to return to initial pose.");
 
-  // Increment the generation counter before sending, so that if resume() is
-  // called while this goal is in flight, the counter will be incremented again
-  // and the result callback will detect the mismatch and ignore the stale result.
   const uint64_t return_gen = ++return_nav_generation_;
 
   auto goal = nav2_msgs::action::NavigateToPose::Goal();
@@ -1470,18 +1437,13 @@ void Explore::returnToInitialPose()
   auto send_goal_options =
       rclcpp_action::Client<nav2_msgs::action::NavigateToPose>::SendGoalOptions();
 
-  // Problema A fix: handle immediate goal rejection by Nav2.
-  // Without this callback, a rejected goal leaves the node stuck in
-  // RETURNING_TO_ORIGIN with no recovery path except the return watchdog
-  // (default 300s). With this callback, a rejected goal triggers an immediate
-  // transition to RETURN_TO_ORIGIN_FAILED — consistent with the behaviour of
-  // sendNavigateToPoseGoal() for exploration, which also has a goal_response_callback.
+  // Handle immediate goal rejection by Nav2.
   // Note: unlike the exploration case, there is no timer to trigger a retry
-  // automatically. The user must publish True on /explore/resume to retry.
+  // automatically. The user must publish True on /explore/resume to retry!
   send_goal_options.goal_response_callback =
       [this, return_gen](NavigationGoalHandle::SharedPtr goal_handle) {
         if (return_gen != return_nav_generation_) {
-          return;  // stale — a stop() or resume() has already moved on
+          return;
         }
         if (!goal_handle) {
           RCLCPP_WARN(logger_,
@@ -1504,11 +1466,11 @@ void Explore::returnToInitialPose()
                        "(generation mismatch).");
           return;
         }
-        // MOD 11: cancel the return watchdog — the sequence has concluded.
+        // Cancel the return watchdog — the sequence has concluded.
         if (return_watchdog_timer_) return_watchdog_timer_->cancel();
 
         if (result.code == rclcpp_action::ResultCode::SUCCEEDED) {
-          // MOD 10: Successful return — publish EXPLORATION_COMPLETE (not RETURNED_TO_ORIGIN).
+          // Successful return — publish EXPLORATION_COMPLETE (not RETURNED_TO_ORIGIN).
           RCLCPP_INFO(logger_, "Successfully returned to initial pose.");
           setPhase(NodePhase::EXPLORATION_COMPLETE);
         } else {
@@ -1528,7 +1490,7 @@ void Explore::returnToInitialPose()
 
 void Explore::stop()
 {
-  // MOD 7: Idempotent for states that are already stopped/paused.
+  // Idempotent for states that are already stopped/paused.
   if (node_phase_ == NodePhase::EXPLORATION_PAUSED ||
       node_phase_ == NodePhase::EXPLORATION_PAUSED_DURING_RETURN ||
       node_phase_ == NodePhase::EXPLORATION_COMPLETE) {
@@ -1538,15 +1500,15 @@ void Explore::stop()
   }
 
   if (node_phase_ == NodePhase::RETURNING_TO_ORIGIN) {
-    // MOD 13: During return-to-init, stop() pauses the return without discarding it.
+    // During return-to-init, stop() pauses the return without discarding it.
     // Cancel in-flight return-to-init actions but do NOT call resetExplorationState()
     // (which would clear the blacklist and exploration state needlessly).
     RCLCPP_INFO(logger_, "stop() during return-to-init: pausing the return sequence.");
-    ++current_spin_generation_;          // MOD 12: invalidate spin callback
-    ++current_compute_path_generation_;  // invalidate ComputePath callback
-    ++return_nav_generation_;            // invalidate NavigateToPose callback
+    ++current_spin_generation_;
+    ++current_compute_path_generation_;
+    ++return_nav_generation_;
     move_base_client_->async_cancel_all_goals();
-    spin_client_->async_cancel_all_goals();  // MOD 12: cancel physical spin
+    spin_client_->async_cancel_all_goals();
     if (return_watchdog_timer_) return_watchdog_timer_->cancel();
     setPhase(NodePhase::EXPLORATION_PAUSED_DURING_RETURN);
     return;
@@ -1554,13 +1516,6 @@ void Explore::stop()
 
   // For EXPLORATION_STARTED, EXPLORATION_IN_PROGRESS, and RETURN_TO_ORIGIN_FAILED:
   // full reset and transition to EXPLORATION_PAUSED.
-  //
-  // RETURN_TO_ORIGIN_FAILED does not need a dedicated branch: by the time the
-  // node reaches that phase, it is already quiescent — the return watchdog has
-  // fired and cancelled all in-flight Nav2 actions, or the result_callback has
-  // done so. resetExplorationState() handles it safely with the same full
-  // cleanup as the active exploration states (idempotent cancel calls are safe).
-  // MOD 15: resetExplorationState() also cancels any residual spin.
   RCLCPP_INFO(logger_, "Stopping exploration (was: %s).", phaseToString(node_phase_));
   resetExplorationState();
   setPhase(NodePhase::EXPLORATION_PAUSED);
@@ -1568,7 +1523,7 @@ void Explore::stop()
 
 void Explore::resume()
 {
-  // MOD 8: Ignore if exploration is already actively in progress.
+  // Ignore if exploration is already actively in progress.
   if (node_phase_ == NodePhase::EXPLORATION_STARTED ||
       node_phase_ == NodePhase::EXPLORATION_IN_PROGRESS) {
     RCLCPP_WARN(logger_,
@@ -1577,31 +1532,31 @@ void Explore::resume()
     return;
   }
 
-  // MOD 16 — EXPLORATION_PAUSED_DURING_RETURN: resume the return-to-init.
+  // EXPLORATION_PAUSED_DURING_RETURN: resume the return-to-init.
   if (node_phase_ == NodePhase::EXPLORATION_PAUSED_DURING_RETURN) {
     RCLCPP_INFO(logger_, "Resuming return-to-init from current position.");
     beginReturnToInitSequence();
     return;
   }
 
-  // MOD 16 — RETURN_TO_ORIGIN_FAILED: retry the return-to-init.
+  // RETURN_TO_ORIGIN_FAILED: retry the return-to-init.
   if (node_phase_ == NodePhase::RETURN_TO_ORIGIN_FAILED) {
     RCLCPP_INFO(logger_, "Retrying return-to-init after previous failure.");
     beginReturnToInitSequence();
     return;
   }
 
-  // MOD 16 — RETURNING_TO_ORIGIN: interrupt the return and start fresh exploration.
+  // RETURNING_TO_ORIGIN: interrupt the return and start fresh exploration.
   if (node_phase_ == NodePhase::RETURNING_TO_ORIGIN) {
     RCLCPP_INFO(logger_,
                 "resume() during return-to-init: interrupting return and starting "
                 "fresh exploration.");
-    // MOD 12: cancel spin + nav + watchdog via resetExplorationState.
+    // cancel spin + nav + watchdog via resetExplorationState.
     resetExplorationState();
     // Fall through to start exploration below.
   }
 
-  // MOD 16 — EXPLORATION_COMPLETE: full reset, start fresh exploration.
+  // EXPLORATION_COMPLETE: full reset, start fresh exploration.
   else if (node_phase_ == NodePhase::EXPLORATION_COMPLETE) {
     RCLCPP_INFO(logger_, "Starting fresh exploration after completion.");
     resetExplorationState();  // clears blacklist

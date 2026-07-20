@@ -116,10 +116,7 @@ private:
   // This is the single point where internal state and external topic are updated.
   void setPhase(NodePhase phase);
 
-  // Phase name for logging. Must be a member function (not a free function)
-  // because NodePhase is a private nested type: a free function outside the
-  // class cannot name a private member type, even when given an instance of
-  // it as a parameter — this produces a hard compile error, not a warning.
+  // Phase name for logging.
   static const char* phaseToString(NodePhase phase);
 
   // Reset all exploration state to a clean starting point. Cancels all in-flight
@@ -130,21 +127,21 @@ private:
   // Always safe to call: all cancel operations are idempotent.
   void resetExplorationState();
 
-  // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------------
   // Exploration pre-rotation state machine
-  // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------------
   // States:
-  //   IDLE                      - no sequence in progress
-  //   NAV_ACTIVE                - NavigateToPose is running toward a frontier
-  //   CANCEL_REQUESTED          - async_cancel_all_goals() sent, awaiting ack
-  //   WAITING_NAV_TERMINATION   - cancel ack received, awaiting nav result callback
+  //   IDLE                        - no sequence in progress
+  //   NAV_ACTIVE                  - NavigateToPose is running toward a frontier
+  //   CANCEL_REQUESTED            - async_cancel_all_goals() sent, awaiting ack
+  //   WAITING_NAV_TERMINATION     - cancel ack received, awaiting nav result callback
   //   PRE_ROTATION_PATH_REQUESTED - ComputePathToPose sent, target LOCKED
-  //   SPIN_ACTIVE               - Nav2 Spin behavior running, target LOCKED
+  //   SPIN_ACTIVE                 - Nav2 Spin behavior running, target LOCKED
   //
   // Target is LOCKED from PRE_ROTATION_PATH_REQUESTED onward: the heading
   // computed by ComputePathToPose must remain coherent with the NavigateToPose
   // goal that follows the Spin.
-  // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------------
   enum class CustomSequenceState
   {
     IDLE,

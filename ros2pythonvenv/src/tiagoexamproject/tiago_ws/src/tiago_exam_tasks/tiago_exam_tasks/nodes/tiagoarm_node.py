@@ -9,7 +9,7 @@ from pymoveit2 import MoveIt2
 import rclpy
 import math
 from threading import Thread
-from . import nodesParameters
+from . import tiagoExamParameters as params
 
 # TODO: manage the possibility (unwanted, but possible) of receiving a new goal while one is already being executed
 
@@ -93,11 +93,11 @@ class TiagoArmNode(Node):
         self.actionServer = ActionServer(
             self,
             TiagoArm,
-            nodesParameters.tiagoArmActionName,
+            params.tiagoArmActionName,
             execute_callback = self.actionServerExecuteCallback,
             callback_group = self.callback_group,
         )
-        self.get_logger().info(f"TiagoArm Action Server is ready on action name '{nodesParameters.tiagoArmActionName}'.")
+        self.get_logger().info(f"TiagoArm Action Server is ready on action name '{params.tiagoArmActionName}'.")
 
     def actionServerExecuteCallback(self, goal_handle):
 
