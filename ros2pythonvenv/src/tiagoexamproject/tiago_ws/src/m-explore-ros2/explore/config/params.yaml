@@ -40,7 +40,7 @@
 
     # Minimum frontier arc length (metres) to be considered for navigation.
     # Smaller frontiers are discarded as noise.
-    min_frontier_size: 1.0 # 0.75
+    min_frontier_size: 1.0 # 0.75 # 1.0 # 0.75
 
     # ---------------------------------------------------------------------------
     # Exploration timing

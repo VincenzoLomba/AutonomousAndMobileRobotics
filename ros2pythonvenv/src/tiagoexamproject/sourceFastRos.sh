@@ -8,6 +8,7 @@
 # Important: if needed, recall to source this file automatically in the "~/.bashrc" file!
 # Usually, a variable such as FASTROS_SOURCE="/../sourceFastRos.sh" is properly defined and then used to source this file (named indeed "sourceFastRos.sh")!
 # IMPORTANT NOTE: this version of the FastRos Library is customized to be in particular used within the project folder "tiagoexamproject"
+# Code and have fun! Dear greetings from Vins Lombardi
 
 # fastrosEcho:
 # A simple standardized colored message printer
